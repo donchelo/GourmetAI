@@ -30,8 +30,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "server": "node server.js",
-    "restart-server": "powershell -ExecutionPolicy Bypass -File ./reiniciar-servidor.ps1",
+    "server": "node server/index.js",
+    "restart-server": "powershell -ExecutionPolicy Bypass -File ./scripts/reiniciar-servidor.ps1",
     "dev": "concurrently --names \"SERVER,REACT\" --prefix-colors \"cyan,magenta\" \"npm run server\" \"npm start\""
   },
   "eslintConfig": {

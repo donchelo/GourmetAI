@@ -421,25 +421,3 @@ export const generateGourmetVariants = async (imageBase64, parameters, ingredien
   }
 };
 
-/**
- * Genera variantes usando una aproximación alternativa
- * Esta función puede ser reemplazada cuando Gemini 3.0 tenga generación de imágenes
- */
-export const generateGourmetVariantsAlternative = async (imageBase64, parameters, ingredients) => {
-  // Esta es una función placeholder que puede ser implementada con una alternativa
-  // como usar otra API de generación de imágenes o procesamiento de imagen
-  
-  const prompt = buildPrompt(parameters, ingredients);
-  const seed = Date.now();
-  
-  // Retornar estructura esperada (4 variantes)
-  // En producción, esto debería llamar a la API real de Gemini 3.0
-  return {
-    variants: [],
-    seed,
-    prompt,
-    message: 'La generación de imágenes con Gemini 3.0 aún no está disponible públicamente. Por favor, consulta la documentación oficial de Google para cuando esté disponible.'
-  };
-};
-
-

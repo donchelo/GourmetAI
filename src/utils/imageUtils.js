@@ -1,16 +1,6 @@
 // Utilidades para manejo de imágenes
 
 /**
- * Valida el formato de imagen
- * @param {File} file - Archivo de imagen
- * @returns {boolean} - True si el formato es válido
- */
-export const validateImageFormat = (file) => {
-  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  return validTypes.includes(file.type);
-};
-
-/**
  * Convierte una imagen a base64
  * @param {File} file - Archivo de imagen
  * @returns {Promise<string>} - Imagen en base64
@@ -135,19 +125,5 @@ export const downloadImage = async (imageUrl, filename = 'gourmet-image.png') =>
       }
     }
   }
-};
-
-/**
- * Crea un objeto de imagen desde una URL base64 o blob
- * @param {string} dataUrl - URL de datos o blob URL
- * @returns {Promise<HTMLImageElement>}
- */
-export const createImageFromUrl = (dataUrl) => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = dataUrl;
-  });
 };
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { Box, Grid, Container } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import Layout from './components/Layout';
 import ImageUploader from './components/ImageUploader';
 import ParameterPanel from './components/ParameterPanel';

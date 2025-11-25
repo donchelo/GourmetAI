@@ -15,6 +15,6 @@ Write-Host "🚀 Iniciando servidor proxy..." -ForegroundColor Green
 Write-Host "📝 El servidor estará disponible en http://localhost:3001" -ForegroundColor Cyan
 Write-Host ""
 
-node server.js
+node server/index.js
 
 

@@ -28,41 +28,6 @@ export const metadataToJSON = (metadata) => {
 };
 
 /**
- * Intenta incrustar metadata en una imagen usando EXIF
- * Nota: Esta función requiere una biblioteca externa como exif-js o piexifjs
- * Por ahora, creamos un archivo de texto separado con la metadata
- * @param {string} imageUrl - URL de la imagen
- * @param {Object} metadata - Metadata a incrustar
- * @returns {Promise<string>} - Nueva URL de imagen con metadata (o original si falla)
- */
-export const embedMetadataInImage = async (imageUrl, metadata) => {
-  try {
-    // Por ahora, retornamos la imagen original
-    // En producción, se puede usar una biblioteca como piexifjs para incrustar EXIF
-    // o crear un archivo JSON separado con la metadata
-    
-    // Opción 1: Guardar metadata en un archivo JSON separado
-    const metadataBlob = new Blob([metadataToJSON(metadata)], {
-      type: 'application/json'
-    });
-    
-    // Retornamos tanto la imagen como la metadata
-    return {
-      imageUrl,
-      metadataUrl: URL.createObjectURL(metadataBlob),
-      metadata
-    };
-  } catch (error) {
-    console.error('Error incrustando metadata:', error);
-    return {
-      imageUrl,
-      metadataUrl: null,
-      metadata
-    };
-  }
-};
-
-/**
  * Descarga una imagen junto con su archivo de metadata
  * @param {string} imageUrl - URL de la imagen
  * @param {Object} metadata - Metadata a guardar
