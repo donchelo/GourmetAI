@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box, Grid } from '@mui/material';
 import Layout from './components/Layout';
@@ -8,7 +7,8 @@ import ParameterPanel from './components/ParameterPanel';
 import GeneratedImages from './components/GeneratedImages';
 import History from './components/History';
 import useImageGeneration from './hooks/useImageGeneration';
-import { validateImageFile, validateParameters } from './utils/validation';
+import { validateParameters } from './utils/validation';
+import { ThemeContextProvider } from './context/ThemeContext';
 import {
   ESTILOS_PLATO,
   ILUMINACIONES,
@@ -17,18 +17,7 @@ import {
   INTENSIDAD_GOURMET_DEFAULT
 } from './constants/parameters';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
-
-function App() {
+function AppContent() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [parameters, setParameters] = useState({
     intensidadGourmet: INTENSIDAD_GOURMET_DEFAULT,
@@ -41,7 +30,6 @@ function App() {
 
   const {
     generate,
-    reset,
     isGenerating,
     error,
     generatedImages,
@@ -78,12 +66,10 @@ function App() {
   const handleLoadGeneration = (generationData) => {
     setSelectedImage(generationData.imagenOriginal);
     setParameters(generationData.parametros);
-    // Opcional: cargar las imágenes generadas también
-    // setGeneratedImages(generationData.imagenesGeneradas);
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <CssBaseline />
       <Layout>
         <Grid container spacing={3}>
@@ -121,9 +107,16 @@ function App() {
           <History onLoadGeneration={handleLoadGeneration} />
         </Box>
       </Layout>
-    </ThemeProvider>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <ThemeContextProvider>
+      <AppContent />
+    </ThemeContextProvider>
   );
 }
 
 export default App;
-

@@ -1,24 +1,27 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Grid,
   Paper,
   Button,
   Typography,
-  CircularProgress,
   Dialog,
   DialogContent,
   IconButton,
-  Alert
+  Alert,
+  Skeleton,
+  useTheme,
+  alpha
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import { downloadImage } from '../utils/imageUtils';
 import { downloadImageWithMetadata, createMetadata } from '../utils/metadataUtils';
 
 const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredients }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const theme = useTheme();
 
   const handleImageClick = (imageUrl) => {
     setSelectedImage(imageUrl);
@@ -45,7 +48,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mb: 2 }}>
+      <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
         {error}
       </Alert>
     );
@@ -53,23 +56,20 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
 
   if (isLoading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '400px',
-          gap: 2
-        }}
-      >
-        <CircularProgress size={60} />
-        <Typography variant="h6" color="text.secondary">
-          Creando tu versión gourmet...
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Esto puede tomar unos momentos
-        </Typography>
+      <Box sx={{ width: '100%' }}>
+         <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Skeleton variant="circular" width={40} height={40} />
+            <Skeleton variant="text" width={200} height={32} />
+         </Box>
+         <Skeleton 
+            variant="rectangular" 
+            width="100%" 
+            height={400} 
+            sx={{ borderRadius: 4 }}
+          />
+         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+            <Skeleton variant="text" width="60%" />
+         </Box>
       </Box>
     );
   }
@@ -77,23 +77,25 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
   if (!images || images.length === 0) {
     return (
       <Paper
-        elevation={2}
+        elevation={0}
         sx={{
-          p: 6,
+          p: 8,
           textAlign: 'center',
-          backgroundColor: 'grey.50',
+          backgroundColor: alpha(theme.palette.text.primary, 0.03),
           minHeight: '400px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          borderRadius: 4,
+          border: `2px dashed ${theme.palette.divider}`
         }}
       >
-        <Box>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            La imagen generada aparecerá aquí
+        <Box sx={{ maxWidth: 400 }}>
+          <Typography variant="h5" fontWeight="600" color="text.secondary" gutterBottom>
+            Tu Lienzo Culinario
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Sube una imagen y ajusta los parámetros para comenzar
+          <Typography variant="body1" color="text.secondary">
+            Las imágenes generadas por nuestra IA aparecerán aquí con calidad de estudio.
           </Typography>
         </Box>
       </Paper>
@@ -105,99 +107,113 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
 
   return (
     <>
-      <Box>
-        <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-          Imagen Gourmet Generada
-        </Typography>
-        <Box
+      <Box sx={{ animation: 'fadeIn 0.5s ease-in' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+           <Typography variant="h6" fontWeight="700">
+             Resultado Gourmet
+           </Typography>
+        </Box>
+        
+        <Paper
+          elevation={4}
           sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: 4,
+            cursor: 'zoom-in',
+            width: '100%',
+            aspectRatio: '1',
+            bgcolor: 'background.paper',
+            '&:hover .overlay': {
+              opacity: 1
+            },
+            '&:hover img': {
+               transform: 'scale(1.03)'
+            }
           }}
+          onClick={() => handleImageClick(imageUrl)}
         >
-          <Paper
-            elevation={3}
-            sx={{
-              position: 'relative',
-              overflow: 'hidden',
-              cursor: 'pointer',
-              maxWidth: '600px',
-              width: '100%',
-              '&:hover': {
-                transform: 'scale(1.01)',
-                transition: 'transform 0.2s'
-              }
-            }}
-            onClick={() => handleImageClick(imageUrl)}
-          >
-            <Box
-              sx={{
+            <img
+              src={imageUrl}
+              alt="Imagen gourmet generada"
+              style={{
                 width: '100%',
-                paddingTop: '100%',
-                position: 'relative',
-                backgroundColor: 'grey.200'
+                height: '100%',
+                objectFit: 'cover',
+                transition: 'transform 0.5s ease'
               }}
-            >
-              <img
-                src={imageUrl}
-                alt="Imagen gourmet generada"
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
-              />
-            </Box>
+            />
+            
             <Box
+              className="overlay"
               sx={{
                 position: 'absolute',
+                top: 0, 
+                left: 0, 
+                right: 0, 
                 bottom: 0,
-                left: 0,
-                right: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                p: 1,
+                background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.3) 100%)',
+                opacity: 0,
+                transition: 'opacity 0.3s ease',
                 display: 'flex',
-                justifyContent: 'center'
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                p: 3
               }}
             >
-              <Button
+               <Box sx={{ alignSelf: 'flex-end' }}>
+                 <IconButton sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.2)' }}>
+                    <ZoomInIcon />
+                 </IconButton>
+               </Box>
+               
+               <Button
                 variant="contained"
-                size="small"
+                size="large"
                 startIcon={<DownloadIcon />}
                 onClick={async (e) => {
                   e.stopPropagation();
                   await handleDownload(imageUrl, 0);
                 }}
-                sx={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', color: 'black' }}
+                sx={{ 
+                   bgcolor: 'white', 
+                   color: 'black', 
+                   fontWeight: 'bold',
+                   alignSelf: 'center',
+                   '&:hover': { bgcolor: '#f5f5f5' }
+                }}
               >
-                Descargar
+                Descargar Obra
               </Button>
             </Box>
-          </Paper>
-        </Box>
+        </Paper>
       </Box>
 
       {/* Dialog para vista ampliada */}
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        maxWidth="md"
+        maxWidth="lg"
         fullWidth
+        PaperProps={{
+          sx: { 
+            bgcolor: 'transparent', 
+            boxShadow: 'none',
+            overflow: 'hidden'
+          }
+        }}
       >
-        <DialogContent sx={{ p: 0, position: 'relative' }}>
+        <DialogContent sx={{ p: 0, position: 'relative', display: 'flex', justifyContent: 'center' }}>
           <IconButton
-            aria-label="close"
             onClick={() => setOpenDialog(false)}
             sx={{
               position: 'absolute',
-              right: 8,
-              top: 8,
-              zIndex: 1,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)'
+              right: 16,
+              top: 16,
+              color: 'white',
+              bgcolor: 'rgba(0,0,0,0.5)',
+              '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+              zIndex: 10
             }}
           >
             <CloseIcon />
@@ -207,9 +223,10 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
               src={selectedImage}
               alt="Vista ampliada"
               style={{
-                width: '100%',
-                height: 'auto',
-                display: 'block'
+                maxWidth: '100%',
+                maxHeight: '90vh',
+                borderRadius: '8px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
               }}
             />
           )}
@@ -220,4 +237,3 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
 };
 
 export default GeneratedImages;
-

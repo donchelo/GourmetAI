@@ -4,18 +4,20 @@ import {
   Paper,
   Typography,
   IconButton,
-  CircularProgress,
-  Alert
+  Skeleton,
+  useTheme,
+  alpha
 } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import HistoryIcon from '@mui/icons-material/History';
 import { getHistory } from '../services/airtableService';
 
 const History = ({ onLoadGeneration }) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const theme = useTheme();
 
   useEffect(() => {
     loadHistory();
@@ -23,19 +25,12 @@ const History = ({ onLoadGeneration }) => {
 
   const loadHistory = async () => {
     setLoading(true);
-    setError(null);
     try {
       const records = await getHistory(20);
       setHistory(records);
-      // Si no hay registros, no mostrar error (puede ser que Airtable no esté configurado)
-      if (records.length === 0) {
-        setError(null); // No mostrar error si simplemente no hay datos
-      }
     } catch (err) {
-      // Solo mostrar error si es crítico, de lo contrario silenciar
       console.warn('Historial no disponible:', err.message);
-      setError(null); // No mostrar error al usuario
-      setHistory([]); // Asegurar que history esté vacío
+      setHistory([]);
     } finally {
       setLoading(false);
     }
@@ -54,7 +49,6 @@ const History = ({ onLoadGeneration }) => {
   };
 
   const handleImageClick = (record) => {
-    // Cargar la generación seleccionada
     if (onLoadGeneration) {
       const fields = record.fields;
       onLoadGeneration({
@@ -66,37 +60,50 @@ const History = ({ onLoadGeneration }) => {
     }
   };
 
-  // No mostrar nada si está cargando o si no hay historial (puede ser que Airtable no esté configurado)
   if (loading) {
-    return null; // Ocultar mientras carga para evitar errores visuales
+    return (
+      <Paper elevation={0} sx={{ p: 2, bgcolor: 'transparent' }}>
+        <Skeleton variant="text" width={200} height={32} sx={{ mb: 2 }} />
+        <Box sx={{ display: 'flex', gap: 2, overflow: 'hidden' }}>
+          {[1, 2, 3, 4, 5].map((item) => (
+             <Skeleton key={item} variant="rectangular" width={160} height={160} sx={{ borderRadius: 3 }} />
+          ))}
+        </Box>
+      </Paper>
+    );
   }
 
-  // Si no hay historial, simplemente no mostrar nada (no es un error)
   if (history.length === 0) {
-    return null; // Ocultar si no hay datos
+    return null;
   }
 
   return (
-    <Paper elevation={2} sx={{ p: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        Historial de Generaciones
-      </Typography>
+    <Box sx={{ mt: 6, mb: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <HistoryIcon color="action" />
+        <Typography variant="h6" fontWeight="600">
+          Inspiración Reciente
+        </Typography>
+      </Box>
+      
       <Box sx={{ position: 'relative' }}>
         <IconButton
           onClick={() => handleScroll('left')}
-          disabled={scrollPosition === 0}
           sx={{
             position: 'absolute',
-            left: 0,
+            left: -20,
             top: '50%',
             transform: 'translateY(-50%)',
-            zIndex: 1,
-            backgroundColor: 'background.paper',
-            '&:hover': { backgroundColor: 'action.hover' }
+            zIndex: 2,
+            bgcolor: theme.palette.background.paper,
+            boxShadow: theme.shadows[3],
+            '&:hover': { bgcolor: theme.palette.background.default },
+            display: { xs: 'none', md: 'flex' }
           }}
         >
-          <ArrowBackIosIcon />
+          <ArrowBackIosIcon fontSize="small" />
         </IconButton>
+
         <Box
           id="history-container"
           sx={{
@@ -104,12 +111,11 @@ const History = ({ onLoadGeneration }) => {
             gap: 2,
             overflowX: 'auto',
             scrollBehavior: 'smooth',
-            px: 5,
-            py: 1,
-            '&::-webkit-scrollbar': {
-              display: 'none'
-            },
-            scrollbarWidth: 'none'
+            py: 2,
+            px: 1,
+            '&::-webkit-scrollbar': { display: 'none' },
+            scrollbarWidth: 'none',
+            maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)'
           }}
         >
           {history.map((record) => {
@@ -117,60 +123,59 @@ const History = ({ onLoadGeneration }) => {
             if (!firstGeneratedImage) return null;
 
             return (
-              <Box
+              <Paper
                 key={record.id}
+                elevation={2}
                 onClick={() => handleImageClick(record)}
                 sx={{
-                  minWidth: 150,
+                  minWidth: 160,
+                  width: 160,
+                  height: 160,
+                  borderRadius: 3,
+                  overflow: 'hidden',
                   cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  border: '2px solid transparent',
                   '&:hover': {
-                    transform: 'scale(1.05)',
-                    transition: 'transform 0.2s'
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[8],
+                    borderColor: theme.palette.primary.main
                   }
                 }}
               >
-                <Paper elevation={2} sx={{ overflow: 'hidden' }}>
-                  <Box
-                    sx={{
-                      width: 150,
-                      height: 150,
-                      position: 'relative',
-                      backgroundColor: 'grey.200'
-                    }}
-                  >
-                    <img
-                      src={firstGeneratedImage}
-                      alt="Historial"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover'
-                      }}
-                    />
-                  </Box>
-                </Paper>
-              </Box>
+                <img
+                  src={firstGeneratedImage}
+                  alt="Historial"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
+              </Paper>
             );
           })}
         </Box>
+
         <IconButton
           onClick={() => handleScroll('right')}
           sx={{
             position: 'absolute',
-            right: 0,
+            right: -20,
             top: '50%',
             transform: 'translateY(-50%)',
-            zIndex: 1,
-            backgroundColor: 'background.paper',
-            '&:hover': { backgroundColor: 'action.hover' }
+            zIndex: 2,
+            bgcolor: theme.palette.background.paper,
+            boxShadow: theme.shadows[3],
+            '&:hover': { bgcolor: theme.palette.background.default },
+            display: { xs: 'none', md: 'flex' }
           }}
         >
-          <ArrowForwardIosIcon />
+          <ArrowForwardIosIcon fontSize="small" />
         </IconButton>
       </Box>
-    </Paper>
+    </Box>
   );
 };
 
 export default History;
-
