@@ -11,6 +11,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Variable para almacenar la URL de ngrok (se puede actualizar dinámicamente)
+let ngrokUrl = process.env.NGROK_URL || process.env.REACT_APP_PROXY_URL || null;
+
 // Middleware
 app.use(cors());
 // Aumentar límite de tamaño del body para manejar imágenes grandes en base64
@@ -118,49 +121,69 @@ app.post('/api/generate-image', async (req, res) => {
 });
 
 /**
- * Convierte una imagen base64 a Buffer y la sube a un servicio público
- * Para Airtable, necesitamos URLs públicas accesibles desde internet, no data URLs
- * Intenta usar Imgur primero (público y gratuito), si falla usa almacenamiento local
+ * Obtiene la URL de ngrok automáticamente desde la API local de ngrok
+ * ngrok expone una API local en http://localhost:4040/api/tunnels
+ */
+const getNgrokUrl = async () => {
+  // Si ya tenemos una URL configurada, usarla
+  if (ngrokUrl && !ngrokUrl.includes('localhost')) {
+    return ngrokUrl;
+  }
+  
+  // Intentar obtener la URL automáticamente desde la API de ngrok
+  try {
+    const ngrokApiResponse = await axios.get('http://localhost:4040/api/tunnels', {
+      timeout: 2000
+    });
+    
+    if (ngrokApiResponse.data && ngrokApiResponse.data.tunnels && ngrokApiResponse.data.tunnels.length > 0) {
+      // Buscar el túnel HTTPS (preferido) o HTTP
+      const httpsTunnel = ngrokApiResponse.data.tunnels.find(t => t.proto === 'https');
+      const tunnel = httpsTunnel || ngrokApiResponse.data.tunnels[0];
+      
+      if (tunnel && tunnel.public_url) {
+        ngrokUrl = tunnel.public_url;
+        console.log(`✅ URL de ngrok detectada automáticamente: ${ngrokUrl}`);
+        return ngrokUrl;
+      }
+    }
+  } catch (error) {
+    // Si ngrok no está corriendo o no está disponible, continuar con la URL configurada
+    // No mostrar error aquí, solo intentar usar la URL de variables de entorno
+  }
+  
+  // Si no se pudo obtener automáticamente, usar la URL de las variables de entorno
+  const envUrl = process.env.NGROK_URL || process.env.REACT_APP_PROXY_URL;
+  if (envUrl && !envUrl.includes('localhost')) {
+    ngrokUrl = envUrl;
+    return ngrokUrl;
+  }
+  
+  return null;
+};
+
+/**
+ * Convierte una imagen base64 a Buffer y la guarda localmente
+ * Usa ngrok para exponer el servidor públicamente y crear URLs accesibles para Airtable
  */
 const uploadImageToTempStorage = async (base64Image, filename, apiKey) => {
   try {
+    // Obtener la URL de ngrok (automáticamente o desde variables de entorno)
+    const currentNgrokUrl = await getNgrokUrl();
+    
+    if (!currentNgrokUrl || currentNgrokUrl.includes('localhost')) {
+      console.error('❌ ERROR: No se encontró URL de ngrok válida.');
+      console.error('   Opciones para solucionarlo:');
+      console.error('   1. Ejecuta ngrok: ngrok http 3000');
+      console.error('   2. O configura NGROK_URL en tu archivo .env');
+      console.error('   3. O actualiza la URL usando: POST /api/update-ngrok-url con {"url": "https://tu-url.ngrok.io"}');
+      throw new Error('NGROK_URL no disponible. Por favor, ejecuta ngrok o configura NGROK_URL en tu archivo .env');
+    }
+    
     // Extraer el base64 sin el prefijo data:image/...
     const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
     const imageBuffer = Buffer.from(base64Data, 'base64');
     
-    // Intentar subir a Imgur primero (servicio público gratuito)
-    // Nota: Para producción, deberías usar tu propio Client ID de Imgur
-    const imgurClientId = process.env.IMGUR_CLIENT_ID || '546c25a59c58ad7'; // Client ID público (limitado)
-    
-    try {
-      // Imgur acepta base64 directamente como string en formato form-urlencoded
-      const imgurResponse = await axios.post(
-        'https://api.imgur.com/3/image',
-        `image=${encodeURIComponent(base64Data)}`,
-        {
-          headers: {
-            'Authorization': `Client-ID ${imgurClientId}`,
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          timeout: 15000,
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity
-        }
-      );
-      
-      if (imgurResponse.data && imgurResponse.data.data && imgurResponse.data.data.link) {
-        console.log(`✅ Imagen subida a Imgur: ${imgurResponse.data.data.link}`);
-        return imgurResponse.data.data.link;
-      }
-    } catch (imgurError) {
-      console.warn('⚠️ No se pudo subir a Imgur, usando almacenamiento local:', imgurError.message);
-      if (imgurError.response) {
-        console.warn('   Detalles del error de Imgur:', imgurError.response.data);
-      }
-      // Continuar con almacenamiento local
-    }
-    
-    // Método alternativo: almacenamiento local (solo funciona si el servidor está expuesto públicamente)
     // Determinar la extensión del archivo basado en el tipo MIME
     let extension = 'jpg';
     if (base64Image.includes('image/png')) {
@@ -184,28 +207,72 @@ const uploadImageToTempStorage = async (base64Image, filename, apiKey) => {
     // Guardar el archivo
     fs.writeFileSync(filePath, imageBuffer);
     
-    // Retornar URL pública que Airtable puede acceder
-    // IMPORTANTE: Esta URL solo funcionará si el servidor está expuesto públicamente
-    // Para desarrollo local, considera usar ngrok o un servicio similar
-    const baseUrl = process.env.REACT_APP_PROXY_URL || 'http://localhost:3001';
-    const publicUrl = `${baseUrl}/uploads/${uniqueFilename}`;
+    // Construir URL pública usando ngrok
+    const publicUrl = `${currentNgrokUrl.replace(/\/$/, '')}/uploads/${uniqueFilename}`;
     
     console.log(`📁 Imagen guardada localmente: ${uniqueFilename}`);
-    console.warn(`⚠️ NOTA: La URL local (${publicUrl}) solo funcionará si el servidor está expuesto públicamente.`);
-    console.warn(`   Para desarrollo local, considera usar ngrok o configurar Imgur Client ID.`);
+    console.log(`🌐 URL pública (ngrok): ${publicUrl}`);
     
     return publicUrl;
   } catch (error) {
     console.error('❌ Error guardando imagen:', error);
-    throw new Error(`No se pudo subir la imagen: ${error.message}`);
+    throw new Error(`No se pudo guardar la imagen: ${error.message}`);
   }
 };
 
 // Servir archivos estáticos desde la carpeta public
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
+// Endpoint para actualizar la URL de ngrok dinámicamente (útil cuando cambia)
+app.post('/api/update-ngrok-url', (req, res) => {
+  const { url } = req.body;
+  
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'URL requerida en el body: { "url": "https://tu-url.ngrok.io" }' 
+    });
+  }
+  
+  if (!url.startsWith('http')) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'La URL debe comenzar con http:// o https://' 
+    });
+  }
+  
+  ngrokUrl = url.replace(/\/$/, ''); // Remover trailing slash
+  console.log(`✅ URL de ngrok actualizada: ${ngrokUrl}`);
+  
+  return res.json({ 
+    success: true, 
+    message: 'URL de ngrok actualizada correctamente',
+    url: ngrokUrl 
+  });
+});
+
+// Endpoint para obtener la URL de ngrok actual
+app.get('/api/ngrok-url', async (req, res) => {
+  try {
+    const currentUrl = await getNgrokUrl();
+    return res.json({ 
+      success: true, 
+      url: currentUrl,
+      source: currentUrl === ngrokUrl ? 'cached' : 'auto-detected'
+    });
+  } catch (error) {
+    return res.json({ 
+      success: false, 
+      url: null,
+      error: error.message 
+    });
+  }
+});
+
 // Endpoint para guardar en Airtable (evita problemas de CORS)
 app.post('/api/save-to-airtable', async (req, res) => {
+  let record = null; // Declarar fuera del try para acceso en catch
+  
   try {
     console.log('📝 Recibida solicitud para guardar en Airtable');
     const generationData = req.body;
@@ -223,53 +290,82 @@ app.post('/api/save-to-airtable', async (req, res) => {
 
     const url = `https://api.airtable.com/v0/${baseId}/${tableName}`;
 
-    // Convertir imágenes base64 a URLs públicas antes de crear attachments
+    // Convertir imágenes base64 a URLs públicas para Airtable
+    // Airtable requiere URLs HTTP/HTTPS públicas, no data URLs
     let imagenOriginalAttachment = [];
     if (generationData.imagenOriginal) {
-      console.log('📤 Subiendo imagen original a almacenamiento temporal...');
+      console.log('📤 Guardando imagen original localmente para ngrok...');
       try {
         const imageUrl = await uploadImageToTempStorage(
           generationData.imagenOriginal,
           'imagen_original.jpg',
           apiKey
         );
-        imagenOriginalAttachment = [{
-          url: imageUrl,
-          filename: 'imagen_original.jpg'
-        }];
-        console.log('✅ Imagen original subida:', imageUrl);
+        
+        if (imageUrl && imageUrl.startsWith('http')) {
+          imagenOriginalAttachment = [{
+            url: imageUrl,
+            filename: 'imagen_original.jpg'
+          }];
+          console.log('✅ Imagen original guardada y disponible vía ngrok:', imageUrl);
+        } else {
+          console.warn('⚠️ URL de imagen original no es válida:', imageUrl);
+        }
       } catch (error) {
-        console.error('❌ Error subiendo imagen original:', error);
+        console.error('❌ Error guardando imagen original:', error.message);
+        console.warn('⚠️ Continuando sin imagen original. Las imágenes no se guardarán en Airtable.');
+        console.warn('   Para solucionarlo, asegúrate de que ngrok esté corriendo y configura NGROK_URL en tu archivo .env');
         // Continuar sin la imagen original si falla
       }
     }
 
     let imagenesGeneradasAttachments = [];
     if (generationData.imagenesGeneradas && generationData.imagenesGeneradas.length > 0) {
-      console.log(`📤 Subiendo ${generationData.imagenesGeneradas.length} imagen(es) generada(s)...`);
+      console.log(`📤 Guardando ${generationData.imagenesGeneradas.length} imagen(es) generada(s) localmente para ngrok...`);
       try {
         const uploadPromises = generationData.imagenesGeneradas.map(async (img, index) => {
-          const imageBase64 = typeof img === 'string' ? img : (img.url || img);
-          const imageUrl = await uploadImageToTempStorage(
-            imageBase64,
-            `gourmet_image${index > 0 ? `_${index + 1}` : ''}.png`,
-            apiKey
-          );
-          return {
-            url: imageUrl,
-            filename: `gourmet_image${index > 0 ? `_${index + 1}` : ''}.png`
-          };
+          try {
+            const imageBase64 = typeof img === 'string' ? img : (img.url || img);
+            const imageUrl = await uploadImageToTempStorage(
+              imageBase64,
+              `gourmet_image${index > 0 ? `_${index + 1}` : ''}.png`,
+              apiKey
+            );
+            
+            if (imageUrl && imageUrl.startsWith('http')) {
+              return {
+                url: imageUrl,
+                filename: `gourmet_image${index > 0 ? `_${index + 1}` : ''}.png`
+              };
+            } else {
+              console.warn(`⚠️ URL de imagen ${index + 1} no es válida:`, imageUrl);
+              return null;
+            }
+          } catch (imgError) {
+            console.warn(`⚠️ Error guardando imagen ${index + 1}:`, imgError.message);
+            return null;
+          }
         });
-        imagenesGeneradasAttachments = await Promise.all(uploadPromises);
-        console.log(`✅ ${imagenesGeneradasAttachments.length} imagen(es) generada(s) subida(s)`);
+        
+        const results = await Promise.all(uploadPromises);
+        imagenesGeneradasAttachments = results.filter(item => item !== null);
+        
+        if (imagenesGeneradasAttachments.length > 0) {
+          console.log(`✅ ${imagenesGeneradasAttachments.length} de ${generationData.imagenesGeneradas.length} imagen(es) guardada(s) y disponible(s) vía ngrok`);
+        } else {
+          console.warn('⚠️ No se pudo guardar ninguna imagen generada. Las imágenes no se guardarán en Airtable.');
+          console.warn('   Para solucionarlo, asegúrate de que ngrok esté corriendo y configura NGROK_URL en tu archivo .env');
+        }
       } catch (error) {
-        console.error('❌ Error subiendo imágenes generadas:', error);
+        console.error('❌ Error guardando imágenes generadas:', error.message);
+        console.warn('⚠️ Continuando sin imágenes generadas. Las imágenes no se guardarán en Airtable.');
+        console.warn('   Para solucionarlo, asegúrate de que ngrok esté corriendo y configura NGROK_URL en tu archivo .env');
         // Continuar sin las imágenes generadas si falla
       }
     }
 
     // Construir record - usar solo campos que existan en Airtable
-    const record = {
+    record = {
       fields: {}
     };
 
@@ -298,27 +394,42 @@ app.post('/api/save-to-airtable', async (req, res) => {
       // se calcula automáticamente basándose en el número de elementos en "Imágenes Generadas"
     }
     
+    // Campo Parámetros (Long text)
     if (generationData.parametros) {
       const parametrosTexto = formatParameters(generationData.parametros);
       record.fields['Parámetros'] = parametrosTexto;
-      record.fields['Resumen de Parámetros'] = generateParametersSummary(generationData.parametros);
     }
     
+    // Campo Semilla (Number)
     if (generationData.semilla) {
       record.fields['Semilla'] = generationData.semilla;
     }
     
+    // Campo Ingredientes Detectados (Long text)
     if (generationData.ingredientesDetectados) {
       record.fields['Ingredientes Detectados'] = generationData.ingredientesDetectados;
-      record.fields['Clasificación de Ingredientes'] = classifyIngredients(generationData.ingredientesDetectados);
     }
-    
-    // Fecha de Generación
-    const fechaGeneracion = new Date();
-    const fechaFormateada = `${fechaGeneracion.getDate().toString().padStart(2, '0')}/${(fechaGeneracion.getMonth() + 1).toString().padStart(2, '0')}/${fechaGeneracion.getFullYear()}`;
-    record.fields['Fecha de Generación'] = fechaFormateada;
 
     console.log('📤 Enviando a Airtable:', Object.keys(record.fields));
+    
+    // Log detallado de campos críticos antes de enviar
+    console.log('📋 Campos a enviar:');
+    Object.keys(record.fields).forEach(key => {
+      const value = record.fields[key];
+      if (typeof value === 'string') {
+        console.log(`  - ${key}: "${value}" (${value.length} caracteres)`);
+      } else if (Array.isArray(value)) {
+        console.log(`  - ${key}: [${value.length} elementos]`);
+      } else {
+        console.log(`  - ${key}: ${typeof value}`);
+      }
+    });
+    
+    // Validación de campos antes de enviar
+    // Asegurar que todos los campos requeridos estén presentes
+    if (!record.fields['Name']) {
+      record.fields['Name'] = 'Generación Gourmet';
+    }
     
     // Calcular tamaño aproximado del payload para logging
     const payloadSize = JSON.stringify(record).length;
@@ -377,10 +488,27 @@ app.post('/api/save-to-airtable', async (req, res) => {
     // Mensajes más específicos según el tipo de error
     if (error.response?.status === 422) {
       const errorData = error.response.data;
+      console.error('❌ Error 422 - Detalles completos:', JSON.stringify(errorData, null, 2));
+      
+      // Intentar extraer información específica del campo problemático
       if (errorData.error && errorData.error.message) {
-        errorMessage = `Error de validación en Airtable: ${errorData.error.message}`;
+        const message = errorData.error.message;
+        console.error(`❌ Mensaje de error de Airtable: ${message}`);
+        
+        // Loggear información sobre campos problemáticos
+        if (message.includes('cannot accept')) {
+          console.error(`❌ Campo rechazado por Airtable. Verifica que el campo exista y sea del tipo correcto.`);
+          console.error(`❌ Campos enviados: ${Object.keys(record?.fields || {}).join(', ')}`);
+        }
+        
+        errorMessage = `Error de validación en Airtable: ${message}`;
       } else {
         errorMessage = 'Error de validación en Airtable. Verifica que los campos de la tabla coincidan con los esperados.';
+      }
+      
+      // Loggear el record completo para debugging
+      if (record && record.fields) {
+        console.error('❌ Record que causó el error:', JSON.stringify(record, null, 2));
       }
     } else if (error.response?.status === 401 || error.response?.status === 403) {
       errorMessage = 'Error de autenticación con Airtable. Verifica tu API Key.';

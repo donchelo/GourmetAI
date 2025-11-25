@@ -63,34 +63,74 @@ const formatParameters = (parametros) => {
 };
 
 /**
+ * Sanitiza un string para Airtable removiendo caracteres problemáticos
+ * @param {string} str - String a sanitizar
+ * @returns {string} - String sanitizado
+ */
+const sanitizeForAirtable = (str) => {
+  if (!str || typeof str !== 'string') {
+    return '';
+  }
+  
+  // Remover caracteres de control y normalizar espacios
+  return str
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remover caracteres de control
+    .replace(/\s+/g, ' ') // Normalizar espacios múltiples
+    .trim();
+};
+
+/**
  * Genera un resumen corto de los parámetros
+ * Limitado a 200 caracteres para cumplir con Single line text de Airtable (255 max)
+ * Usa valores sin acentos para evitar problemas de encoding
  * @param {Object} parametros - Parámetros de generación
- * @returns {string} - Resumen corto
+ * @returns {string} - Resumen corto (máximo 200 caracteres)
  */
 const generateParametersSummary = (parametros) => {
   if (!parametros || typeof parametros !== 'object') {
-    return '';
+    return 'Sin parametros';
   }
   
   const partes = [];
   
+  // Mapeo de estilos (sin acentos para evitar problemas)
   if (parametros.estiloPlato) {
     const estiloMap = {
-      'rustico': 'Rústico',
+      'rustico': 'Rustico',
       'minimalista': 'Minimalista',
-      'clasico-elegante': 'Clásico',
+      'clasico-elegante': 'Clasico',
       'moderno': 'Moderno'
     };
-    partes.push(estiloMap[parametros.estiloPlato] || parametros.estiloPlato);
+    const estilo = estiloMap[parametros.estiloPlato] || parametros.estiloPlato;
+    if (estilo) {
+      partes.push(estilo);
+    }
   }
   
+  // Intensidad gourmet
   if (parametros.intensidadGourmet !== undefined) {
     const intensidad = parametros.intensidadGourmet <= 3 ? 'sutil' : 
                       parametros.intensidadGourmet <= 7 ? 'moderado' : 'extremo';
     partes.push(intensidad);
   }
   
-  return partes.join(', ') || 'Sin parámetros';
+  // Generar resumen
+  let resumen = partes.join(', ') || 'Sin parametros';
+  
+  // Sanitizar el resumen
+  resumen = sanitizeForAirtable(resumen);
+  
+  // Limitar a 200 caracteres para estar seguro del límite de Single line text (255)
+  if (resumen.length > 200) {
+    resumen = resumen.substring(0, 197) + '...';
+  }
+  
+  // Asegurar que no sea null o undefined y tenga al menos un valor válido
+  if (!resumen || resumen.length === 0) {
+    resumen = 'Sin parametros';
+  }
+  
+  return resumen;
 };
 
 /**
