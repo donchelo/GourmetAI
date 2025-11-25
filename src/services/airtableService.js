@@ -75,9 +75,9 @@ const compressImage = async (imageBase64, maxWidth = 800, quality = 0.6) => {
  */
 export const saveGeneration = async (generationData) => {
   try {
-    // Usar el servidor proxy para evitar problemas de CORS
-    const proxyUrl = process.env.REACT_APP_PROXY_URL || 'http://localhost:3001';
-    const url = `${proxyUrl}/api/save-to-airtable`;
+    // Usar ruta relativa para que funcione con el proxy de React y ngrok
+    // El proxy en package.json redirige /api/* al backend (puerto 3001)
+    const url = '/api/save-to-airtable';
     
     console.log('📤 Guardando en Airtable a través del proxy...');
     

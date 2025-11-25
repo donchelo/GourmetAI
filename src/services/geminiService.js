@@ -515,7 +515,7 @@ export const generateGourmetVariants = async (imageBase64, parameters, ingredien
     if (error.response?.status === 404) {
       const errorDetails = error.response?.data;
       console.error('❌ Error 404 detalles:', errorDetails);
-      throw new Error(`Servidor proxy no responde correctamente (404). Verifica que el servidor esté ejecutándose en ${process.env.REACT_APP_PROXY_URL || 'http://localhost:3001'}. Detalles: ${errorDetails?.error || errorMsg}`);
+      throw new Error(`Servidor proxy no responde correctamente (404). Verifica que el servidor esté ejecutándose. Detalles: ${errorDetails?.error || errorMsg}`);
     }
     
     if (error.response?.data?.error) {
