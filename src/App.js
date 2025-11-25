@@ -14,18 +14,40 @@ import {
   ILUMINACIONES,
   FONDOS,
   ANGULOS_CAMARA,
-  INTENSIDAD_GOURMET_DEFAULT
+  INTENSIDAD_GOURMET_DEFAULT,
+  // Nuevos parámetros
+  TIPOS_VAJILLA,
+  COLORES_VAJILLA,
+  AMBIENTES,
+  MOMENTOS_DIA,
+  PROFUNDIDADES_CAMPO,
+  ASPECT_RATIOS,
+  EFECTOS_VAPOR,
+  EFECTOS_FRESCURA
 } from './constants/parameters';
 
 function AppContent() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [parameters, setParameters] = useState({
+    // Parámetros originales
     intensidadGourmet: INTENSIDAD_GOURMET_DEFAULT,
     estiloPlato: ESTILOS_PLATO[0].value,
     iluminacion: ILUMINACIONES[0].value,
     fondo: FONDOS[0].value,
     decoracionesExtra: [],
-    anguloCamara: ANGULOS_CAMARA[0].value
+    anguloCamara: ANGULOS_CAMARA[0].value,
+    // Nuevos parámetros - Categoría 1: Vajilla
+    tipoVajilla: TIPOS_VAJILLA[0].value,
+    colorVajilla: COLORES_VAJILLA[0].value,
+    // Nuevos parámetros - Categoría 2: Ambiente
+    ambiente: AMBIENTES[0].value,
+    momentoDelDia: MOMENTOS_DIA[0].value,
+    // Nuevos parámetros - Categoría 3: Técnica Fotográfica
+    profundidadCampo: PROFUNDIDADES_CAMPO[0].value,
+    aspectRatio: ASPECT_RATIOS[0].value,
+    // Nuevos parámetros - Categoría 4: Efectos Especiales
+    efectoVapor: EFECTOS_VAPOR[0].value,
+    efectoFrescura: EFECTOS_FRESCURA[0].value
   });
 
   const {

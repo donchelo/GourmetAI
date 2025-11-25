@@ -14,13 +14,15 @@ import {
   AccordionSummary,
   AccordionDetails,
   useTheme,
-  alpha
+  alpha,
+  CircularProgress
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import TuneIcon from '@mui/icons-material/Tune';
 import CameraEnhanceIcon from '@mui/icons-material/CameraEnhance';
 import StyleIcon from '@mui/icons-material/Style';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import {
   ESTILOS_PLATO,
   ILUMINACIONES,
@@ -28,7 +30,16 @@ import {
   DECORACIONES_EXTRA,
   ANGULOS_CAMARA,
   INTENSIDAD_GOURMET_MIN,
-  INTENSIDAD_GOURMET_MAX
+  INTENSIDAD_GOURMET_MAX,
+  // Nuevos parámetros
+  TIPOS_VAJILLA,
+  COLORES_VAJILLA,
+  AMBIENTES,
+  MOMENTOS_DIA,
+  PROFUNDIDADES_CAMPO,
+  ASPECT_RATIOS,
+  EFECTOS_VAPOR,
+  EFECTOS_FRESCURA
 } from '../constants/parameters';
 
 const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGenerating }) => {
@@ -39,7 +50,16 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     iluminacion,
     fondo,
     decoracionesExtra,
-    anguloCamara
+    anguloCamara,
+    // Nuevos parámetros
+    tipoVajilla,
+    colorVajilla,
+    ambiente,
+    momentoDelDia,
+    profundidadCampo,
+    aspectRatio,
+    efectoVapor,
+    efectoFrescura
   } = parameters;
 
   const handleDecoracionChange = (value) => {
@@ -141,7 +161,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          <FormControl fullWidth>
+          <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Fondo</InputLabel>
             <Select
               value={fondo}
@@ -151,6 +171,50 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             >
               {FONDOS.map((f) => (
                 <MenuItem key={f.value} value={f.value}>{f.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Nuevos: Vajilla */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Tipo de Vajilla</InputLabel>
+            <Select
+              value={tipoVajilla || 'original'}
+              label="Tipo de Vajilla"
+              onChange={(e) => onParameterChange({ tipoVajilla: e.target.value })}
+              disabled={isGenerating}
+            >
+              {TIPOS_VAJILLA.map((v) => (
+                <MenuItem key={v.value} value={v.value}>{v.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Color de Vajilla</InputLabel>
+            <Select
+              value={colorVajilla || 'original'}
+              label="Color de Vajilla"
+              onChange={(e) => onParameterChange({ colorVajilla: e.target.value })}
+              disabled={isGenerating}
+            >
+              {COLORES_VAJILLA.map((c) => (
+                <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Nuevo: Ambiente */}
+          <FormControl fullWidth>
+            <InputLabel>Ambiente</InputLabel>
+            <Select
+              value={ambiente || 'sin-preferencia'}
+              label="Ambiente"
+              onChange={(e) => onParameterChange({ ambiente: e.target.value })}
+              disabled={isGenerating}
+            >
+              {AMBIENTES.map((a) => (
+                <MenuItem key={a.value} value={a.value}>{a.label}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -182,7 +246,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          <FormControl fullWidth>
+          <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Ángulo de Cámara</InputLabel>
             <Select
               value={anguloCamara}
@@ -195,10 +259,95 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
               ))}
             </Select>
           </FormControl>
+
+          {/* Nuevo: Profundidad de Campo */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Profundidad de Campo</InputLabel>
+            <Select
+              value={profundidadCampo || 'moderado'}
+              label="Profundidad de Campo"
+              onChange={(e) => onParameterChange({ profundidadCampo: e.target.value })}
+              disabled={isGenerating}
+            >
+              {PROFUNDIDADES_CAMPO.map((p) => (
+                <MenuItem key={p.value} value={p.value}>{p.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Nuevo: Aspect Ratio */}
+          <FormControl fullWidth>
+            <InputLabel>Relación de Aspecto</InputLabel>
+            <Select
+              value={aspectRatio || 'original'}
+              label="Relación de Aspecto"
+              onChange={(e) => onParameterChange({ aspectRatio: e.target.value })}
+              disabled={isGenerating}
+            >
+              {ASPECT_RATIOS.map((ar) => (
+                <MenuItem key={ar.value} value={ar.value}>{ar.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </AccordionDetails>
       </Accordion>
 
-      {/* Sección 3: Detalles Extra */}
+      {/* Sección 3: Efectos Especiales (Nueva) */}
+      <Accordion sx={accordionStyle}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ p: 0.5, borderRadius: 1, bgcolor: alpha(theme.palette.warning.main, 0.1), color: 'warning.main' }}>
+              <AutoAwesomeIcon fontSize="small" />
+            </Box>
+            <Typography variant="subtitle1" fontWeight="600">Efectos Especiales</Typography>
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails sx={{ px: 0, pb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Momento del Día</InputLabel>
+            <Select
+              value={momentoDelDia || 'sin-preferencia'}
+              label="Momento del Día"
+              onChange={(e) => onParameterChange({ momentoDelDia: e.target.value })}
+              disabled={isGenerating}
+            >
+              {MOMENTOS_DIA.map((m) => (
+                <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Efecto de Vapor</InputLabel>
+            <Select
+              value={efectoVapor || 'sin-vapor'}
+              label="Efecto de Vapor"
+              onChange={(e) => onParameterChange({ efectoVapor: e.target.value })}
+              disabled={isGenerating}
+            >
+              {EFECTOS_VAPOR.map((ev) => (
+                <MenuItem key={ev.value} value={ev.value}>{ev.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel>Efecto de Frescura</InputLabel>
+            <Select
+              value={efectoFrescura || 'sin-efecto'}
+              label="Efecto de Frescura"
+              onChange={(e) => onParameterChange({ efectoFrescura: e.target.value })}
+              disabled={isGenerating}
+            >
+              {EFECTOS_FRESCURA.map((ef) => (
+                <MenuItem key={ef.value} value={ef.value}>{ef.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Sección 4: Detalles Extra */}
       <Box sx={{ mt: 2 }}>
         <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5 }}>
           Decoración Extra
@@ -230,15 +379,39 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         size="large"
         onClick={onGenerate}
         disabled={isGenerating}
-        startIcon={!isGenerating && <AutoFixHighIcon />}
+        startIcon={isGenerating ? <CircularProgress size={20} color="inherit" /> : <AutoFixHighIcon />}
         sx={{ 
           mt: 4, 
           py: 1.5,
-          background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-          fontSize: '1.1rem'
+          background: isGenerating 
+            ? `linear-gradient(45deg, ${alpha(theme.palette.primary.main, 0.7)}, ${alpha(theme.palette.primary.dark, 0.7)})`
+            : `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+          fontSize: '1.1rem',
+          position: 'relative',
+          overflow: 'hidden',
+          '&.Mui-disabled': {
+            color: 'white',
+            opacity: 0.9
+          },
+          ...(isGenerating && {
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '200%',
+              height: '100%',
+              background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.2)}, transparent)`,
+              animation: 'shimmer 2s infinite',
+            },
+            '@keyframes shimmer': {
+              '0%': { transform: 'translateX(-50%)' },
+              '100%': { transform: 'translateX(50%)' }
+            }
+          })
         }}
       >
-        {isGenerating ? 'Creando Obra Maestra...' : 'Generar Gourmet'}
+        {isGenerating ? 'Generando tu obra maestra...' : 'Generar Gourmet'}
       </Button>
     </Paper>
   );

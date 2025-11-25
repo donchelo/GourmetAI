@@ -36,6 +36,7 @@ export const validateImageFile = (file) => {
  * @returns {Object} - { valid: boolean, error?: string }
  */
 export const validateParameters = (parameters) => {
+  // Parámetros originales requeridos
   const required = [
     'intensidadGourmet',
     'estiloPlato',
@@ -43,6 +44,18 @@ export const validateParameters = (parameters) => {
     'fondo',
     'anguloCamara'
   ];
+
+  // Parámetros nuevos opcionales (con valores por defecto)
+  const optionalWithDefaults = {
+    tipoVajilla: 'original',
+    colorVajilla: 'original',
+    ambiente: 'sin-preferencia',
+    momentoDelDia: 'sin-preferencia',
+    profundidadCampo: 'moderado',
+    aspectRatio: 'original',
+    efectoVapor: 'sin-vapor',
+    efectoFrescura: 'sin-efecto'
+  };
 
   for (const field of required) {
     if (parameters[field] === undefined || parameters[field] === null) {
@@ -62,6 +75,28 @@ export const validateParameters = (parameters) => {
       valid: false,
       error: 'La intensidad gourmet debe estar entre 1 y 10'
     };
+  }
+
+  // Validar valores permitidos para nuevos parámetros
+  const validValues = {
+    tipoVajilla: ['original', 'redondo', 'cuadrado', 'rectangular', 'bowl', 'pizarra', 'tabla-madera'],
+    colorVajilla: ['original', 'blanco', 'negro', 'terracota', 'crema'],
+    ambiente: ['sin-preferencia', 'restaurante', 'cocina-casera', 'terraza', 'buffet', 'estudio'],
+    momentoDelDia: ['sin-preferencia', 'desayuno', 'brunch', 'almuerzo', 'cena'],
+    profundidadCampo: ['moderado', 'bokeh-fuerte', 'todo-foco'],
+    aspectRatio: ['original', '1:1', '4:3', '16:9', '4:5'],
+    efectoVapor: ['sin-vapor', 'sutil', 'intenso'],
+    efectoFrescura: ['sin-efecto', 'gotas', 'escarcha']
+  };
+
+  for (const [field, allowedValues] of Object.entries(validValues)) {
+    const value = parameters[field] || optionalWithDefaults[field];
+    if (value && !allowedValues.includes(value)) {
+      return {
+        valid: false,
+        error: `Valor inválido para ${field}: ${value}`
+      };
+    }
   }
 
   return { valid: true };

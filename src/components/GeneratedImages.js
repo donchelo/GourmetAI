@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -10,7 +10,9 @@ import {
   Alert,
   Skeleton,
   useTheme,
-  alpha
+  alpha,
+  CircularProgress,
+  LinearProgress
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -18,10 +20,53 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import { downloadImage } from '../utils/imageUtils';
 import { downloadImageWithMetadata, createMetadata } from '../utils/metadataUtils';
 
+const LOADING_MESSAGES = [
+  { text: 'Analizando tu imagen...', icon: '🔍' },
+  { text: 'Detectando ingredientes...', icon: '🥗' },
+  { text: 'Preparando la transformación gourmet...', icon: '👨‍🍳' },
+  { text: 'Aplicando técnicas culinarias de élite...', icon: '✨' },
+  { text: 'Ajustando iluminación profesional...', icon: '💡' },
+  { text: 'Emplatando con precisión artística...', icon: '🍽️' },
+  { text: 'Añadiendo toques finales de chef...', icon: '🎨' },
+  { text: 'Capturando la esencia gourmet...', icon: '📸' },
+  { text: 'Casi listo... Un poco más de magia...', icon: '🪄' },
+];
+
 const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredients }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
   const theme = useTheme();
+
+  // Ciclar entre mensajes de carga y simular progreso
+  useEffect(() => {
+    if (!isLoading) {
+      setLoadingMessageIndex(0);
+      setProgress(0);
+      return;
+    }
+
+    // Cambiar mensaje cada 3 segundos
+    const messageInterval = setInterval(() => {
+      setLoadingMessageIndex(prev => 
+        prev < LOADING_MESSAGES.length - 1 ? prev + 1 : prev
+      );
+    }, 3000);
+
+    // Simular progreso gradual (no llega a 100% hasta que termine)
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) return prev; // Se detiene en 90% hasta que termine
+        return prev + Math.random() * 8;
+      });
+    }, 500);
+
+    return () => {
+      clearInterval(messageInterval);
+      clearInterval(progressInterval);
+    };
+  }, [isLoading]);
 
   const handleImageClick = (imageUrl) => {
     setSelectedImage(imageUrl);
@@ -55,22 +100,162 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
   }
 
   if (isLoading) {
+    const currentMessage = LOADING_MESSAGES[loadingMessageIndex];
+    
     return (
-      <Box sx={{ width: '100%' }}>
-         <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Skeleton variant="circular" width={40} height={40} />
-            <Skeleton variant="text" width={200} height={32} />
-         </Box>
-         <Skeleton 
-            variant="rectangular" 
-            width="100%" 
-            height={400} 
-            sx={{ borderRadius: 4 }}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 4,
+          borderRadius: 4,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+          minHeight: '450px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Fondo animado con ondas */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            opacity: 0.1,
+            background: `
+              radial-gradient(circle at 20% 80%, ${theme.palette.primary.main} 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, ${theme.palette.secondary.main} 0%, transparent 50%)
+            `,
+            animation: 'pulse 4s ease-in-out infinite',
+            '@keyframes pulse': {
+              '0%, 100%': { opacity: 0.1, transform: 'scale(1)' },
+              '50%': { opacity: 0.2, transform: 'scale(1.05)' }
+            }
+          }}
+        />
+
+        {/* Indicador principal con spinner */}
+        <Box
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 4
+          }}
+        >
+          <CircularProgress
+            size={100}
+            thickness={2}
+            sx={{
+              color: alpha(theme.palette.primary.main, 0.2),
+              position: 'absolute'
+            }}
+            variant="determinate"
+            value={100}
           />
-         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-            <Skeleton variant="text" width="60%" />
-         </Box>
-      </Box>
+          <CircularProgress
+            size={100}
+            thickness={2}
+            sx={{
+              color: theme.palette.primary.main,
+              animationDuration: '1.5s'
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '2.5rem',
+              animation: 'bounce 1s ease-in-out infinite',
+              '@keyframes bounce': {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-5px)' }
+              }
+            }}
+          >
+            {currentMessage.icon}
+          </Box>
+        </Box>
+
+        {/* Mensaje de estado */}
+        <Typography
+          variant="h6"
+          fontWeight="600"
+          color="text.primary"
+          sx={{
+            mb: 1,
+            textAlign: 'center',
+            animation: 'fadeIn 0.5s ease-in',
+            '@keyframes fadeIn': {
+              '0%': { opacity: 0, transform: 'translateY(10px)' },
+              '100%': { opacity: 1, transform: 'translateY(0)' }
+            }
+          }}
+          key={loadingMessageIndex} // Key para forzar re-render y animación
+        >
+          {currentMessage.text}
+        </Typography>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mb: 3, textAlign: 'center' }}
+        >
+          Esto puede tomar entre 15-30 segundos
+        </Typography>
+
+        {/* Barra de progreso */}
+        <Box sx={{ width: '80%', maxWidth: 300 }}>
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              '& .MuiLinearProgress-bar': {
+                borderRadius: 4,
+                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              }
+            }}
+          />
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block', textAlign: 'center', mt: 1 }}
+          >
+            {Math.round(progress)}% completado
+          </Typography>
+        </Box>
+
+        {/* Tips mientras espera */}
+        <Box
+          sx={{
+            mt: 4,
+            p: 2,
+            borderRadius: 2,
+            backgroundColor: alpha(theme.palette.info.main, 0.08),
+            maxWidth: 350
+          }}
+        >
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
+            💡 <strong>Tip:</strong> Cuanto mayor sea el nivel de transformación, más dramático será el resultado gourmet.
+          </Typography>
+        </Box>
+      </Paper>
     );
   }
 
