@@ -12,7 +12,8 @@ import {
   useTheme,
   alpha,
   CircularProgress,
-  LinearProgress
+  LinearProgress,
+  useMediaQuery
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -38,6 +39,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Ciclar entre mensajes de carga y simular progreso
   useEffect(() => {
@@ -210,7 +212,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
           color="text.secondary"
           sx={{ mb: 3, textAlign: 'center' }}
         >
-          Esto puede tomar entre 15-30 segundos
+          Esto puede tomar entre 1-2 minutos
         </Typography>
 
         {/* Barra de progreso */}
@@ -314,6 +316,11 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
             },
             '&:hover img': {
                transform: 'scale(1.03)'
+            },
+            [theme.breakpoints.down('sm')]: {
+              '& .overlay': {
+                opacity: 1
+              }
             }
           }}
           onClick={() => handleImageClick(imageUrl)}
@@ -343,18 +350,25 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                p: 3
+                p: { xs: 2, sm: 3 }
               }}
             >
                <Box sx={{ alignSelf: 'flex-end' }}>
-                 <IconButton sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.2)' }}>
-                    <ZoomInIcon />
+                 <IconButton 
+                   sx={{ 
+                     color: 'white', 
+                     bgcolor: 'rgba(255,255,255,0.2)',
+                     '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
+                     padding: { xs: 1, sm: 1.5 }
+                   }}
+                 >
+                    <ZoomInIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
                  </IconButton>
                </Box>
                
                <Button
                 variant="contained"
-                size="large"
+                size={isMobile ? "medium" : "large"}
                 startIcon={<DownloadIcon />}
                 onClick={async (e) => {
                   e.stopPropagation();
@@ -365,13 +379,45 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
                    color: 'black', 
                    fontWeight: 'bold',
                    alignSelf: 'center',
-                   '&:hover': { bgcolor: '#f5f5f5' }
+                   minWidth: { xs: 'auto', sm: '200px' },
+                   px: { xs: 2, sm: 3 },
+                   py: { xs: 1, sm: 1.5 },
+                   fontSize: { xs: '0.875rem', sm: '1rem' },
+                   '&:hover': { bgcolor: '#f5f5f5' },
+                   '& .MuiButton-startIcon': {
+                     marginRight: { xs: 0.5, sm: 1 }
+                   }
                 }}
               >
-                Descargar Obra
+                {isMobile ? 'Descargar' : 'Descargar Obra'}
               </Button>
             </Box>
         </Paper>
+        
+        {/* Botón de descarga adicional para móviles (fuera del overlay) */}
+        {isMobile && (
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            startIcon={<DownloadIcon />}
+            onClick={async () => {
+              await handleDownload(imageUrl, 0);
+            }}
+            sx={{ 
+              mt: 2,
+              bgcolor: theme.palette.primary.main,
+              color: 'white',
+              fontWeight: 'bold',
+              py: 1.5,
+              '&:hover': { 
+                bgcolor: theme.palette.primary.dark 
+              }
+            }}
+          >
+            Descargar Imagen
+          </Button>
+        )}
       </Box>
 
       {/* Dialog para vista ampliada */}
