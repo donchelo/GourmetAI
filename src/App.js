@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box, Grid } from '@mui/material';
 import Layout from './components/Layout';
@@ -28,6 +28,7 @@ import {
 
 function AppContent() {
   const [selectedImage, setSelectedImage] = useState(null);
+  const historyRef = useRef(null);
   const [parameters, setParameters] = useState({
     // Parámetros originales
     intensidadGourmet: INTENSIDAD_GOURMET_DEFAULT,
@@ -79,6 +80,12 @@ function AppContent() {
 
     try {
       await generate(selectedImage, parameters);
+      // Refrescar historial después de generar exitosamente
+      if (historyRef.current) {
+        setTimeout(() => {
+          historyRef.current?.refresh();
+        }, 1000); // Esperar 1 segundo para que Airtable procese
+      }
     } catch (err) {
       // El error ya está manejado en el hook
       console.error('Error en generación:', err);
@@ -94,10 +101,17 @@ function AppContent() {
     <>
       <CssBaseline />
       <Layout>
-        <Grid container spacing={3}>
-          {/* Columna Izquierda: Input y Parámetros */}
-          <Grid item xs={12} md={5}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {/* Columna Izquierda: Foto Original y Parámetros */}
+          <Grid item xs={12} md={6}>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: 3,
+                pr: { md: 1 }
+              }}
+            >
               <ImageUploader
                 onImageSelect={setSelectedImage}
                 selectedImage={selectedImage}
@@ -111,22 +125,24 @@ function AppContent() {
             </Box>
           </Grid>
 
-          {/* Columna Derecha: Output */}
-          <Grid item xs={12} md={7}>
-            <GeneratedImages
-              images={generatedImages}
-              isLoading={isGenerating}
-              error={error}
-              parameters={lastParameters}
-              seed={lastSeed}
-              ingredients={ingredients}
-            />
+          {/* Columna Derecha: Foto Convertida */}
+          <Grid item xs={12} md={6}>
+            <Box sx={{ minHeight: '600px', height: { md: 'calc(100vh - 200px)' }, display: 'flex', flexDirection: 'column' }}>
+              <GeneratedImages
+                images={generatedImages}
+                isLoading={isGenerating}
+                error={error}
+                parameters={lastParameters}
+                seed={lastSeed}
+                ingredients={ingredients}
+              />
+            </Box>
           </Grid>
         </Grid>
 
         {/* Historial en la parte inferior */}
         <Box sx={{ mt: 4 }}>
-          <History onLoadGeneration={handleLoadGeneration} />
+          <History ref={historyRef} onLoadGeneration={handleLoadGeneration} />
         </Box>
       </Layout>
     </>

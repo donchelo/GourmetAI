@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import {
   Box,
   Paper,
@@ -13,10 +13,9 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import HistoryIcon from '@mui/icons-material/History';
 import { getHistory } from '../services/airtableService';
 
-const History = ({ onLoadGeneration }) => {
+const History = forwardRef(({ onLoadGeneration }, ref) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [scrollPosition, setScrollPosition] = useState(0);
   const theme = useTheme();
 
   useEffect(() => {
@@ -36,15 +35,20 @@ const History = ({ onLoadGeneration }) => {
     }
   };
 
+  // Exponer método para refrescar desde el componente padre
+  useImperativeHandle(ref, () => ({
+    refresh: loadHistory
+  }));
+
   const handleScroll = (direction) => {
     const container = document.getElementById('history-container');
     if (container) {
       const scrollAmount = 300;
+      const currentScroll = container.scrollLeft;
       const newPosition = direction === 'left'
-        ? scrollPosition - scrollAmount
-        : scrollPosition + scrollAmount;
+        ? currentScroll - scrollAmount
+        : currentScroll + scrollAmount;
       container.scrollTo({ left: newPosition, behavior: 'smooth' });
-      setScrollPosition(newPosition);
     }
   };
 
@@ -176,6 +180,8 @@ const History = ({ onLoadGeneration }) => {
       </Box>
     </Box>
   );
-};
+});
+
+History.displayName = 'History';
 
 export default History;

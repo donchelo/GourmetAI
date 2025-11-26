@@ -38,15 +38,53 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
   const [openDialog, setOpenDialog] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [startTime, setStartTime] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Ciclar entre mensajes de carga y simular progreso
+  // Función para calcular progreso basado en tiempo transcurrido
+  // Tiempo estimado: 120 segundos (2 minutos)
+  const calculateProgress = (elapsedSeconds) => {
+    const totalEstimatedSeconds = 120; // 2 minutos
+    const progressRatio = Math.min(elapsedSeconds / totalEstimatedSeconds, 0.95); // Máximo 95%
+    
+    // Curva de progreso más realista:
+    // - Inicio rápido (0-30%): primeros 20 segundos
+    // - Medio más lento (30-70%): siguientes 60 segundos  
+    // - Final acelerado (70-95%): últimos 40 segundos
+    
+    if (progressRatio <= 0.167) { // Primeros 20 segundos (0-30%)
+      return progressRatio * 1.8; // Acelera rápido al inicio
+    } else if (progressRatio <= 0.667) { // Siguientes 60 segundos (30-70%)
+      return 0.3 + (progressRatio - 0.167) * 0.8; // Progreso más lento
+    } else { // Últimos 40 segundos (70-95%)
+      return 0.7 + (progressRatio - 0.667) * 0.75; // Acelera hacia el final
+    }
+  };
+
+  // Completar progreso al 100% cuando termine la carga
+  useEffect(() => {
+    if (!isLoading && startTime !== null) {
+      setProgress(100);
+      const timer = setTimeout(() => {
+        setLoadingMessageIndex(0);
+        setProgress(0);
+        setStartTime(null);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, startTime]);
+
+  // Ciclar entre mensajes de carga y simular progreso basado en tiempo
   useEffect(() => {
     if (!isLoading) {
-      setLoadingMessageIndex(0);
-      setProgress(0);
       return;
+    }
+
+    // Inicializar tiempo de inicio cuando comienza la carga
+    if (startTime === null) {
+      setStartTime(Date.now());
+      setProgress(0);
     }
 
     // Cambiar mensaje cada 3 segundos
@@ -56,19 +94,20 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
       );
     }, 3000);
 
-    // Simular progreso gradual (no llega a 100% hasta que termine)
+    // Actualizar progreso basado en tiempo transcurrido (cada segundo)
     const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) return prev; // Se detiene en 90% hasta que termine
-        return prev + Math.random() * 8;
-      });
-    }, 500);
+      if (startTime !== null) {
+        const elapsedSeconds = (Date.now() - startTime) / 1000;
+        const calculatedProgress = calculateProgress(elapsedSeconds);
+        setProgress(Math.min(calculatedProgress * 100, 95)); // Máximo 95% hasta que termine
+      }
+    }, 1000); // Actualizar cada segundo para mayor precisión
 
     return () => {
       clearInterval(messageInterval);
       clearInterval(progressInterval);
     };
-  }, [isLoading]);
+  }, [isLoading, startTime]);
 
   const handleImageClick = (imageUrl) => {
     setSelectedImage(imageUrl);
@@ -112,7 +151,8 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
           borderRadius: 4,
           background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
           border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-          minHeight: '450px',
+          minHeight: '100%',
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -212,7 +252,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
           color="text.secondary"
           sx={{ mb: 3, textAlign: 'center' }}
         >
-          Esto puede tomar entre 1-2 minutos
+          Tiempo estimado: ~2 minutos
         </Typography>
 
         {/* Barra de progreso */}
@@ -269,7 +309,8 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
           p: 8,
           textAlign: 'center',
           backgroundColor: alpha(theme.palette.text.primary, 0.03),
-          minHeight: '400px',
+          minHeight: '100%',
+          height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -294,7 +335,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
 
   return (
     <>
-      <Box sx={{ animation: 'fadeIn 0.5s ease-in' }}>
+      <Box sx={{ animation: 'fadeIn 0.5s ease-in', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
            <Typography variant="h6" fontWeight="700">
              Resultado Gourmet
@@ -309,8 +350,10 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
             borderRadius: 4,
             cursor: 'zoom-in',
             width: '100%',
-            aspectRatio: '1',
+            flex: 1,
+            minHeight: 0,
             bgcolor: 'background.paper',
+            display: 'flex',
             '&:hover .overlay': {
               opacity: 1
             },
@@ -320,7 +363,8 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
             [theme.breakpoints.down('sm')]: {
               '& .overlay': {
                 opacity: 1
-              }
+              },
+              aspectRatio: '1'
             }
           }}
           onClick={() => handleImageClick(imageUrl)}
@@ -331,7 +375,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
+                objectFit: 'contain',
                 transition: 'transform 0.5s ease'
               }}
             />

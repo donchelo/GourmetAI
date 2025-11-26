@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Container, Typography, AppBar, Toolbar, IconButton, useTheme, alpha } from '@mui/material';
-import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useColorMode } from '../context/ThemeContext';
@@ -22,18 +21,19 @@ const Layout = ({ children }) => {
         }}
       >
         <Toolbar>
-          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 1.5 }}>
             <Box 
+              component="img"
+              src="/images/logo.png"
+              alt="GourmetAI Logo"
               sx={{ 
-                p: 1, 
-                borderRadius: '12px', 
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                color: 'primary.main',
-                display: 'flex'
+                height: 40,
+                width: 'auto',
+                objectFit: 'contain',
+                filter: mode === 'dark' ? 'invert(1)' : 'none',
+                transition: 'filter 0.3s ease'
               }}
-            >
-              <RestaurantMenuIcon />
-            </Box>
+            />
             <Typography 
               variant="h5" 
               component="div" 
@@ -62,7 +62,7 @@ const Layout = ({ children }) => {
           </IconButton>
         </Toolbar>
       </AppBar>
-      <Container maxWidth="xl" sx={{ flexGrow: 1, py: 4, px: { xs: 2, md: 4 } }}>
+      <Container maxWidth="xl" sx={{ flexGrow: 1, py: 4, px: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column' }}>
         {children}
       </Container>
       <Box 
