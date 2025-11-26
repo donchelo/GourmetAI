@@ -24,25 +24,25 @@ export const spacing = {
 // Factor de espaciado para MUI (base 8px)
 export const spacingUnit = 8;
 
-// Sistema de sombras elegantes
+// Sistema de sombras elegantes y minimalistas (más sutiles)
 export const shadows = {
   none: 'none',
   
-  // Sombras sutiles para elementos elevados
-  xs: '0 1px 2px rgba(26, 25, 24, 0.04)',
-  sm: '0 2px 4px rgba(26, 25, 24, 0.06)',
-  md: '0 4px 8px rgba(26, 25, 24, 0.08)',
-  lg: '0 8px 16px rgba(26, 25, 24, 0.1)',
-  xl: '0 16px 32px rgba(26, 25, 24, 0.12)',
-  '2xl': '0 24px 48px rgba(26, 25, 24, 0.16)',
+  // Sombras sutiles para elementos elevados - Estilo "Flat" sofisticado
+  xs: '0 1px 2px rgba(0, 0, 0, 0.03)',
+  sm: '0 2px 4px rgba(0, 0, 0, 0.04)',
+  md: '0 4px 12px rgba(0, 0, 0, 0.06)',
+  lg: '0 12px 24px rgba(0, 0, 0, 0.08)',
+  xl: '0 20px 40px rgba(0, 0, 0, 0.10)',
+  '2xl': '0 24px 48px rgba(0, 0, 0, 0.12)',
   
   // Sombras para focus y hover
-  focus: '0 0 0 3px rgba(61, 58, 54, 0.15)',
-  focusPrimary: '0 0 0 3px rgba(61, 58, 54, 0.2)',
+  focus: '0 0 0 2px rgba(61, 58, 54, 0.1)',
+  focusPrimary: '0 0 0 2px rgba(61, 58, 54, 0.15)',
   
   // Sombra interna sutil
-  inner: 'inset 0 1px 2px rgba(26, 25, 24, 0.06)',
-  innerLg: 'inset 0 2px 4px rgba(26, 25, 24, 0.08)',
+  inner: 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
+  innerLg: 'inset 0 2px 4px rgba(0, 0, 0, 0.05)',
 };
 
 // Array de sombras para MUI (0-24)
@@ -103,15 +103,15 @@ export const darkShadows = [
   '0 56px 112px rgba(0, 0, 0, 0.65)',                  // 24
 ];
 
-// Bordes redondeados
+// Bordes redondeados - Más sutiles para look minimalista
 export const borderRadius = {
   none: '0',
-  sm: '4px',
-  md: '8px',
-  lg: '12px',
-  xl: '16px',
-  '2xl': '24px',
-  '3xl': '32px',
+  sm: '2px',
+  md: '4px',
+  lg: '8px',
+  xl: '12px',
+  '2xl': '16px',
+  '3xl': '24px',
   full: '9999px',
 };
 
@@ -179,7 +179,7 @@ export const breakpoints = {
 
 // Configuración de forma para MUI
 export const shape = {
-  borderRadius: 12, // valor por defecto
+  borderRadius: 8, // Valor por defecto más pequeño para un look más limpio
 };
 
 const tokensExports = {

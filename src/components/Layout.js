@@ -24,27 +24,27 @@ const Layout = ({ children }) => {
         position="sticky" 
         elevation={0}
         sx={{ 
-          backgroundColor: alpha(theme.palette.background.paper, isLight ? 0.85 : 0.9),
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
+          backgroundColor: alpha(theme.palette.background.paper, 0.8), // Más transparencia
+          backdropFilter: 'blur(12px)', // Menos blur para más nitidez
+          WebkitBackdropFilter: 'blur(12px)',
           color: 'text.primary',
-          borderBottom: `1px solid ${theme.palette.divider}`,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`, // Borde más sutil
         }}
       >
         <Toolbar 
           sx={{ 
-            minHeight: { xs: '64px', md: '80px' },
+            minHeight: { xs: '60px', md: '70px' }, // Altura reducida
             px: { xs: 2, md: 4 },
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 1.5 }}>
             {/* Logo */}
             <Box 
               component="img"
               src="/images/logo.png"
               alt="GourmetAI Logo"
               sx={{ 
-                height: { xs: 36, md: 44 },
+                height: { xs: 32, md: 40 },
                 width: 'auto',
                 objectFit: 'contain',
                 filter: mode === 'dark' ? 'invert(1) brightness(0.9)' : 'none',
@@ -52,59 +52,45 @@ const Layout = ({ children }) => {
               }}
             />
             
-            {/* Nombre de la marca */}
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <Typography 
-                variant="h4" 
-                component="div" 
+            {/* Nombre de la marca - Minimalista */}
+            <Typography 
+              variant="h5" 
+              component="div" 
+              sx={{ 
+                fontFamily: "'Cormorant Garamond', serif",
+                fontWeight: 400,
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
+                color: 'text.primary',
+                fontSize: { xs: '1.5rem', md: '1.75rem' },
+              }}
+            >
+              Gourmet
+              <Box 
+                component="span" 
                 sx={{ 
-                  fontWeight: 300,
-                  letterSpacing: '-0.02em',
-                  lineHeight: 1,
-                  color: 'text.primary',
-                  fontSize: { xs: '1.5rem', md: '1.875rem' },
+                  fontStyle: 'italic',
+                  fontWeight: 500,
+                  color: 'secondary.main',
                 }}
               >
-                Gourmet
-                <Box 
-                  component="span" 
-                  sx={{ 
-                    fontWeight: 500,
-                    color: 'secondary.main',
-                  }}
-                >
-                  AI
-                </Box>
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'text.secondary',
-                  letterSpacing: '0.15em',
-                  textTransform: 'uppercase',
-                  fontSize: '0.625rem',
-                  mt: 0.25,
-                  display: { xs: 'none', sm: 'block' },
-                }}
-              >
-                Transformación culinaria
-              </Typography>
-            </Box>
+                AI
+              </Box>
+            </Typography>
           </Box>
           
-          {/* Toggle de tema */}
+          {/* Toggle de tema - Más minimalista */}
           <IconButton 
             onClick={toggleColorMode} 
             size="medium"
             sx={{ 
-              borderRadius: '12px',
-              border: `1.5px solid ${theme.palette.divider}`,
-              p: 1.25,
+              borderRadius: '8px', // Menos redondeado
+              border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+              p: 1,
               transition: 'all 0.2s ease',
               '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.06),
+                backgroundColor: alpha(theme.palette.text.primary, 0.04),
                 borderColor: theme.palette.text.secondary,
-                transform: 'scale(1.05)',
               },
             }}
           >

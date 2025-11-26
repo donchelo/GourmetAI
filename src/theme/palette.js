@@ -68,14 +68,14 @@ export const lightPalette = {
   
   divider: colors.sand,
   
-  // Colores de acción
+  // Colores de acción - Muy sutiles
   action: {
     active: colors.espresso,
-    hover: 'rgba(61, 58, 54, 0.04)',
-    selected: 'rgba(61, 58, 54, 0.08)',
+    hover: 'rgba(61, 58, 54, 0.03)',
+    selected: 'rgba(61, 58, 54, 0.06)',
     disabled: colors.stone,
     disabledBackground: colors.sand,
-    focus: 'rgba(61, 58, 54, 0.12)',
+    focus: 'rgba(61, 58, 54, 0.10)',
   },
   
   // Estados funcionales

@@ -124,14 +124,14 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     '&.Mui-expanded': { minHeight: 52 },
   };
 
-  // Estilo de sección con icono
-  const SectionIcon = ({ icon: Icon, color }) => (
+  // Estilo de sección con icono minimalista
+  const SectionIcon = ({ icon: Icon, color, customColor }) => (
     <Box 
       sx={{ 
         p: 0.75, 
-        borderRadius: 2, 
-        bgcolor: alpha(theme.palette[color].main, isLight ? 0.08 : 0.12),
-        color: `${color}.main`,
+        borderRadius: 1.5, // Menos redondeado
+        bgcolor: customColor ? alpha(customColor, 0.1) : alpha(theme.palette[color].main, 0.08),
+        color: customColor || `${color}.main`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -146,7 +146,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       elevation={0} 
       sx={{ 
         p: { xs: 2.5, md: 3 }, 
-        borderRadius: 4, 
+        borderRadius: 2, // 16px -> 8px/12px según token. Aquí pongo 2 unidades (16px) que es razonable, pero antes era 4 (32px)
         border: `1px solid ${theme.palette.divider}`,
         backgroundColor: 'background.paper',
       }}
@@ -156,8 +156,8 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         <Box 
           sx={{ 
             p: 1, 
-            borderRadius: 2, 
-            bgcolor: alpha(theme.palette.primary.main, isLight ? 0.08 : 0.12),
+            borderRadius: 1.5,
+            bgcolor: alpha(theme.palette.primary.main, 0.05),
             color: 'primary.main',
             display: 'flex',
           }}
@@ -379,7 +379,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       <Accordion sx={accordionStyle}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <SectionIcon icon={CameraEnhanceIcon} color="info" />
+            <SectionIcon icon={CameraEnhanceIcon} color="primary" /> {/* Info -> Primary */}
             <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
               Cámara & Iluminación
             </Typography>
@@ -531,7 +531,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       <Accordion sx={accordionStyle}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <SectionIcon icon={TableRestaurantIcon} color="success" />
+            <SectionIcon icon={TableRestaurantIcon} color="secondary" /> {/* Success -> Secondary */}
             <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
               Props & Decoración
             </Typography>
@@ -622,17 +622,19 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         sx={{ 
           mt: 4, 
           py: 1.75,
-          borderRadius: 3,
+          borderRadius: 2, // Reducido de 3 a 2
           bgcolor: 'primary.main',
           fontSize: '1rem',
           fontWeight: 500,
-          letterSpacing: '0.02em',
+          letterSpacing: '0.05em', // Espaciado más elegante
+          textTransform: 'uppercase', // Estilo Marquet para botones principales
           position: 'relative',
           overflow: 'hidden',
+          boxShadow: 'none', // Sin sombra por defecto
           '&:hover': {
             bgcolor: 'primary.dark',
             transform: 'translateY(-1px)',
-            boxShadow: theme.shadows[4],
+            boxShadow: theme.shadows[2], // Sombra suave en hover
           },
           '&.Mui-disabled': {
             bgcolor: alpha(theme.palette.primary.main, 0.7),
