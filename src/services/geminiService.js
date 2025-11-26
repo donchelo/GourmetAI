@@ -200,6 +200,7 @@ export const analyzeImage = async (imageBase64) => {
 
 /**
  * Construye el prompt dinámico basado en los parámetros
+ * Nueva filosofía: mantener ALIMENTOS idénticos, libertad total en presentación
  * @param {Object} parameters - Parámetros de generación
  * @param {string} ingredients - Ingredientes detectados
  * @returns {string} - Prompt completo
@@ -212,7 +213,6 @@ const buildPrompt = (parameters, ingredients) => {
     fondo,
     decoracionesExtra,
     anguloCamara,
-    // Nuevos parámetros
     tipoVajilla,
     colorVajilla,
     ambiente,
@@ -220,11 +220,16 @@ const buildPrompt = (parameters, ingredients) => {
     profundidadCampo,
     aspectRatio,
     efectoVapor,
-    efectoFrescura
+    efectoFrescura,
+    // Nuevos parámetros
+    direccionLuz,
+    props,
+    saturacion,
+    texturaFondo
   } = parameters;
 
   // ============================================
-  // MAPEOS ORIGINALES
+  // MAPEOS - Estilo
   // ============================================
   const estiloMap = {
     'rustico': 'estilo rústico y casero',
@@ -233,160 +238,204 @@ const buildPrompt = (parameters, ingredients) => {
     'moderno': 'estilo moderno y vanguardista'
   };
 
+  // Iluminación expandida
   const iluminacionMap = {
-    'natural': 'iluminación natural y suave',
+    'natural': 'iluminación natural suave',
     'calida': 'iluminación cálida y acogedora',
-    'estudio': 'iluminación de estudio profesional'
+    'estudio': 'iluminación de estudio profesional',
+    'dramatica': 'iluminación dramática con alto contraste',
+    'suave': 'iluminación suave y difusa'
   };
 
+  // Fondos expandidos
   const fondoMap = {
-    'madera': 'fondo de madera natural',
-    'marmol': 'fondo de mármol elegante',
-    'negro': 'fondo negro minimalista',
-    'blanco': 'fondo blanco limpio',
-    'original': 'mantener el fondo original'
+    'madera': 'superficie de madera',
+    'marmol': 'superficie de mármol',
+    'negro': 'fondo negro',
+    'blanco': 'fondo blanco',
+    'granito': 'superficie de granito',
+    'concreto': 'superficie de concreto pulido',
+    'tela': 'mantel o tela de lino',
+    'original': 'fondo neutro elegante'
   };
 
   const anguloMap = {
-    'cenital': 'vista cenital desde arriba (90 grados), perfecta para mostrar todos los elementos',
-    '75': 'vista casi cenital desde 75 grados, mostrando textura y profundidad',
-    '45': 'vista clásica en ángulo de 45 grados, el estándar de food photography',
-    '30': 'vista baja desde 30 grados, destacando altura y volumen del plato',
-    'lateral': 'vista lateral a nivel del plato (0 grados), ideal para mostrar capas',
-    'hero': 'hero shot frontal destacado, ángulo dramático que hace protagonista al plato',
-    'diagonal': 'vista diagonal desde una esquina, añade dinamismo y perspectiva',
-    'picado': 'vista en picado desde arriba con inclinación, combina cenital con perspectiva'
+    'cenital': 'vista cenital desde arriba (90 grados)',
+    '75': 'vista casi cenital desde 75 grados',
+    '45': 'vista clásica en ángulo de 45 grados',
+    '30': 'vista baja desde 30 grados',
+    'lateral': 'vista lateral a nivel del plato',
+    'hero': 'hero shot frontal dramático',
+    'diagonal': 'vista diagonal desde una esquina',
+    'picado': 'vista en picado desde arriba inclinado'
   };
 
   // ============================================
-  // NUEVOS MAPEOS - Categoría 1: Vajilla
+  // MAPEOS - Vajilla (ahora se aplica libremente)
   // ============================================
   const tipoVajillaMap = {
-    'original': '', // No agregar texto si es original
+    'original': 'plato elegante apropiado',
     'redondo': 'plato redondo de porcelana',
     'cuadrado': 'plato cuadrado minimalista',
     'rectangular': 'plato rectangular alargado',
     'bowl': 'bowl profundo elegante',
-    'pizarra': 'sobre pizarra negra natural',
-    'tabla-madera': 'sobre tabla de madera rústica'
+    'pizarra': 'pizarra negra natural',
+    'tabla-madera': 'tabla de madera rústica'
   };
 
   const colorVajillaMap = {
-    'original': '', // No agregar texto si es original
-    'blanco': 'vajilla blanca clásica',
-    'negro': 'vajilla negra mate',
-    'terracota': 'vajilla color terracota',
-    'crema': 'vajilla color crema'
+    'original': 'color neutro elegante',
+    'blanco': 'blanco clásico',
+    'negro': 'negro mate',
+    'terracota': 'terracota cálido',
+    'crema': 'crema suave'
   };
 
   // ============================================
-  // NUEVOS MAPEOS - Categoría 2: Ambiente
+  // MAPEOS - Ambiente
   // ============================================
   const ambienteMap = {
     'sin-preferencia': '',
     'restaurante': 'ambiente de restaurante elegante',
-    'cocina-casera': 'ambiente de cocina casera acogedora',
-    'terraza': 'ambiente de terraza exterior con luz natural',
+    'cocina-casera': 'ambiente acogedor casero',
+    'terraza': 'ambiente de terraza con luz natural',
     'buffet': 'ambiente de buffet profesional',
-    'estudio': 'ambiente de estudio fotográfico profesional'
+    'estudio': 'estudio fotográfico profesional'
   };
 
   const momentoDelDiaMap = {
     'sin-preferencia': '',
-    'desayuno': 'iluminación matutina de desayuno',
-    'brunch': 'luz brillante de media mañana estilo brunch',
-    'almuerzo': 'iluminación de mediodía',
-    'cena': 'iluminación íntima y cálida de cena romántica'
+    'desayuno': 'atmósfera brillante matutina',
+    'brunch': 'luz cálida de media mañana',
+    'almuerzo': 'luz natural de mediodía',
+    'cena': 'atmósfera íntima y cálida nocturna'
   };
 
   // ============================================
-  // NUEVOS MAPEOS - Categoría 3: Técnica Fotográfica
+  // MAPEOS - Técnica Fotográfica
   // ============================================
   const profundidadCampoMap = {
     'moderado': 'profundidad de campo moderada',
     'bokeh-fuerte': 'bokeh pronunciado con fondo muy difuso',
-    'todo-foco': 'todo el plato y entorno en foco nítido'
+    'todo-foco': 'todo en foco nítido'
   };
 
   const aspectRatioMap = {
     'original': '',
-    '1:1': 'formato cuadrado 1:1 (ideal para Instagram)',
-    '4:3': 'formato 4:3 estándar',
-    '16:9': 'formato panorámico 16:9 (ideal para banners)',
-    '4:5': 'formato vertical 4:5 (ideal para portrait)'
+    '1:1': 'formato cuadrado',
+    '4:3': 'formato 4:3',
+    '16:9': 'formato panorámico 16:9',
+    '4:5': 'formato vertical 4:5'
   };
 
   // ============================================
-  // NUEVOS MAPEOS - Categoría 4: Efectos Especiales
+  // NUEVOS MAPEOS
+  // ============================================
+  const direccionLuzMap = {
+    'natural': 'luz natural desde ventana',
+    'frontal': 'luz frontal directa',
+    'lateral': 'luz lateral que resalta texturas',
+    'backlight': 'retroiluminación que crea siluetas y resalta vapor',
+    'cenital': 'luz cenital desde arriba'
+  };
+
+  const propsMap = {
+    'ninguno': '',
+    'cubiertos': 'cubiertos elegantes al lado',
+    'servilleta': 'servilleta de tela doblada',
+    'copa': 'copa de vino a un lado',
+    'ingredientes': 'ingredientes crudos decorativos de fondo',
+    'hierbas': 'ramitas de hierbas frescas como decoración'
+  };
+
+  const saturacionMap = {
+    'normal': 'colores naturales y balanceados',
+    'bajo': 'colores suaves y desaturados',
+    'vibrante': 'colores vivos y saturados que resaltan'
+  };
+
+  const texturaFondoMap = {
+    'lisa': 'textura lisa y uniforme',
+    'rustica': 'textura rústica con vetas naturales',
+    'desgastada': 'textura vintage desgastada',
+    'pulida': 'textura pulida y brillante'
+  };
+
+  // ============================================
+  // MAPEOS - Efectos Especiales
   // ============================================
   const efectoVaporMap = {
     'sin-vapor': '',
-    'sutil': 'vapor suave y delicado saliendo del plato',
-    'intenso': 'vapor abundante que transmite calor y frescura del plato'
+    'sutil': 'vapor suave y delicado',
+    'intenso': 'vapor abundante visible'
   };
 
   const efectoFrescuraMap = {
     'sin-efecto': '',
-    'gotas': 'gotas de agua fresca en los ingredientes que transmiten frescura',
-    'escarcha': 'efecto de escarcha delicada (ideal para postres fríos)'
+    'gotas': 'gotas de agua fresca en los ingredientes',
+    'escarcha': 'efecto de escarcha delicada'
+  };
+
+  // Decoraciones expandidas
+  const decoracionesMap = {
+    'microgreens': 'microgreens frescos',
+    'salsas-decorativas': 'salsas artísticas decorativas',
+    'flores-comestibles': 'flores comestibles',
+    'especias': 'especias esparcidas artísticamente',
+    'drizzle': 'drizzle de aceite de oliva',
+    'citricos': 'ralladura de cítricos'
   };
 
   // ============================================
   // CONSTRUCCIÓN DEL PROMPT
   // ============================================
+  
+  // Nivel de transformación
   const intensidadText = intensidadGourmet <= 3 
-    ? 'sutilmente mejorado' 
+    ? 'mejora sutil manteniendo aspecto natural' 
     : intensidadGourmet <= 7 
-    ? 'moderadamente mejorado' 
-    : 'extremadamente mejorado con presentación gourmet profesional';
+    ? 'transformación moderada con presentación gourmet' 
+    : 'transformación completa con presentación de alta cocina profesional';
 
-  // Decoraciones extra (chips multi-select)
+  // Decoraciones extra
   let decoracionesText = '';
   if (decoracionesExtra && decoracionesExtra.length > 0) {
-    const decoraciones = decoracionesExtra.map(d => {
-      if (d === 'microgreens') return 'microgreens frescos';
-      if (d === 'salsas-decorativas') return 'salsas decorativas artísticas';
-      if (d === 'flores-comestibles') return 'flores comestibles';
-      return d;
-    }).join(', ');
-    decoracionesText = `Incluye decoración con: ${decoraciones}.`;
+    const decoraciones = decoracionesExtra
+      .map(d => decoracionesMap[d] || d)
+      .join(', ');
+    decoracionesText = decoraciones;
   }
 
-  // Construir secciones de vajilla
-  const vajillaText = tipoVajillaMap[tipoVajilla] || '';
-  const colorVajillaText = colorVajillaMap[colorVajilla] || '';
-  const vajillaCompleta = [vajillaText, colorVajillaText].filter(Boolean).join(', ');
-
-  // Construir sección de ambiente
+  // Construir secciones
+  const vajillaText = `${tipoVajillaMap[tipoVajilla] || 'plato elegante'} color ${colorVajillaMap[colorVajilla] || 'neutro'}`;
+  const fondoCompleto = `${fondoMap[fondo] || 'fondo elegante'}${texturaFondo && texturaFondoMap[texturaFondo] ? ` con ${texturaFondoMap[texturaFondo]}` : ''}`;
+  const iluminacionCompleta = `${iluminacionMap[iluminacion] || 'iluminación profesional'}${direccionLuz && direccionLuzMap[direccionLuz] ? `, ${direccionLuzMap[direccionLuz]}` : ''}`;
   const ambienteText = ambienteMap[ambiente] || '';
   const momentoText = momentoDelDiaMap[momentoDelDia] || '';
+  const propsText = propsMap[props] || '';
+  const saturacionText = saturacionMap[saturacion] || '';
+  const efectosArray = [efectoVaporMap[efectoVapor], efectoFrescuraMap[efectoFrescura]].filter(Boolean);
+  const efectosText = efectosArray.join(', ');
 
-  // Construir sección de técnica fotográfica
-  const profundidadText = profundidadCampoMap[profundidadCampo] || 'profundidad de campo moderada';
-  const aspectText = aspectRatioMap[aspectRatio] || '';
+  // ============================================
+  // PROMPT - NUEVA FILOSOFÍA: MANTENER ALIMENTOS, NO PLATO
+  // ============================================
+  const prompt = `Genera una fotografía gastronómica profesional gourmet basada en esta imagen de comida.
 
-  // Construir sección de efectos especiales
-  const vaporText = efectoVaporMap[efectoVapor] || '';
-  const frescuraText = efectoFrescuraMap[efectoFrescura] || '';
-  const efectosText = [vaporText, frescuraText].filter(Boolean).join('. ');
+REGLA FUNDAMENTAL:
+- Los ALIMENTOS e INGREDIENTES deben ser idénticos a la imagen original: ${ingredients}
+- Mantén la misma comida, los mismos ingredientes, porciones y disposición general de los alimentos
+- PUEDES cambiar libremente: plato, vajilla, fondo, iluminación, ángulo, decoración y presentación
 
-  // Construir prompt optimizado para mejorar la imagen original
-  const prompt = `Mejora profesionalmente esta fotografía de comida manteniendo el plato original exactamente como está.
+ESPECIFICACIONES DE LA IMAGEN:
+- Estilo: ${estiloMap[estiloPlato] || 'elegante'}, ${intensidadText}
+- Vajilla: ${vajillaText}
+- Fondo: ${fondoCompleto}
+- Iluminación: ${iluminacionCompleta}
+- Ángulo: ${anguloMap[anguloCamara] || 'ángulo profesional'}
+- Enfoque: ${profundidadCampoMap[profundidadCampo] || 'profundidad moderada'}${ambienteText ? `\n- Ambiente: ${ambienteText}` : ''}${momentoText ? `\n- Atmósfera: ${momentoText}` : ''}${saturacionText ? `\n- Colores: ${saturacionText}` : ''}${propsText ? `\n- Props: ${propsText}` : ''}${decoracionesText ? `\n- Decoración: ${decoracionesText}` : ''}${efectosText ? `\n- Efectos: ${efectosText}` : ''}${aspectRatioMap[aspectRatio] ? `\n- Formato: ${aspectRatioMap[aspectRatio]}` : ''}
 
-INSTRUCCIONES CRÍTICAS:
-- Mantén el mismo plato, los mismos ingredientes y la misma disposición
-- NO cambies los ingredientes: ${ingredients}
-- NO agregues ni quites ingredientes
-- Solo mejora: iluminación, presentación visual, estilo fotográfico y fondo
-
-MEJORAS A APLICAR:
-- Estilo fotográfico: ${estiloMap[estiloPlato] || 'elegante'}, ${intensidadText}
-- Iluminación: ${iluminacionMap[iluminacion] || 'natural y profesional'}
-- Fondo: ${fondoMap[fondo] || 'elegante'}
-- Ángulo de cámara: ${anguloMap[anguloCamara] || 'profesional'}
-- Técnica: ${profundidadText}${vajillaCompleta ? `\n- Vajilla: ${vajillaCompleta}` : ''}${ambienteText ? `\n- Ambiente: ${ambienteText}` : ''}${momentoText ? `\n- Momento del día: ${momentoText}` : ''}${aspectText ? `\n- Formato de imagen: ${aspectText}` : ''}${efectosText ? `\n- Efectos especiales: ${efectosText}` : ''}${decoracionesText ? `\n- ${decoracionesText}` : ''}
-
-RESULTADO ESPERADO: La misma comida de la imagen original, pero con calidad fotográfica profesional gourmet, mejor iluminación y presentación visual mejorada.`;
+RESULTADO: Fotografía gastronómica profesional de nivel revista, con los mismos alimentos de la imagen original pero con presentación gourmet transformada.`;
 
   return prompt;
 };

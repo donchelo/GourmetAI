@@ -7,24 +7,35 @@ export const ESTILOS_PLATO = [
   { value: 'moderno', label: 'Moderno' }
 ];
 
+// Iluminación expandida con nuevas opciones
 export const ILUMINACIONES = [
   { value: 'natural', label: 'Natural' },
   { value: 'calida', label: 'Cálida' },
-  { value: 'estudio', label: 'Estudio' }
+  { value: 'estudio', label: 'Estudio' },
+  { value: 'dramatica', label: 'Dramática' },
+  { value: 'suave', label: 'Suave/Difusa' }
 ];
 
+// Fondos expandidos con nuevas opciones
 export const FONDOS = [
   { value: 'madera', label: 'Madera' },
   { value: 'marmol', label: 'Mármol' },
   { value: 'negro', label: 'Negro' },
   { value: 'blanco', label: 'Blanco' },
-  { value: 'original', label: 'Mantener Original' }
+  { value: 'granito', label: 'Granito' },
+  { value: 'concreto', label: 'Concreto' },
+  { value: 'tela', label: 'Tela/Lino' },
+  { value: 'original', label: 'Elegante (auto)' }
 ];
 
+// Decoraciones extra expandidas
 export const DECORACIONES_EXTRA = [
   { value: 'microgreens', label: 'Microgreens' },
   { value: 'salsas-decorativas', label: 'Salsas Decorativas' },
-  { value: 'flores-comestibles', label: 'Flores Comestibles' }
+  { value: 'flores-comestibles', label: 'Flores Comestibles' },
+  { value: 'especias', label: 'Especias Esparcidas' },
+  { value: 'drizzle', label: 'Drizzle de Aceite' },
+  { value: 'citricos', label: 'Ralladura de Cítricos' }
 ];
 
 export const ANGULOS_CAMARA = [
@@ -43,11 +54,11 @@ export const INTENSIDAD_GOURMET_MAX = 10;
 export const INTENSIDAD_GOURMET_DEFAULT = 5;
 
 // ============================================
-// NUEVOS PARÁMETROS - Categoría 1: Vajilla y Presentación
+// Categoría 1: Vajilla y Presentación
 // ============================================
 
 export const TIPOS_VAJILLA = [
-  { value: 'original', label: 'Mantener Original' },
+  { value: 'original', label: 'Elegante (auto)' },
   { value: 'redondo', label: 'Plato Redondo' },
   { value: 'cuadrado', label: 'Plato Cuadrado' },
   { value: 'rectangular', label: 'Plato Rectangular' },
@@ -57,7 +68,7 @@ export const TIPOS_VAJILLA = [
 ];
 
 export const COLORES_VAJILLA = [
-  { value: 'original', label: 'Mantener Original' },
+  { value: 'original', label: 'Neutro (auto)' },
   { value: 'blanco', label: 'Blanco Clásico' },
   { value: 'negro', label: 'Negro Mate' },
   { value: 'terracota', label: 'Terracota' },
@@ -65,7 +76,7 @@ export const COLORES_VAJILLA = [
 ];
 
 // ============================================
-// NUEVOS PARÁMETROS - Categoría 2: Ambiente y Contexto
+// Categoría 2: Ambiente y Contexto
 // ============================================
 
 export const AMBIENTES = [
@@ -86,7 +97,7 @@ export const MOMENTOS_DIA = [
 ];
 
 // ============================================
-// NUEVOS PARÁMETROS - Categoría 3: Técnica Fotográfica
+// Categoría 3: Técnica Fotográfica
 // ============================================
 
 export const PROFUNDIDADES_CAMPO = [
@@ -103,8 +114,17 @@ export const ASPECT_RATIOS = [
   { value: '4:5', label: '4:5 (Portrait)' }
 ];
 
+// NUEVO: Dirección de luz
+export const DIRECCIONES_LUZ = [
+  { value: 'natural', label: 'Natural (ventana)' },
+  { value: 'frontal', label: 'Frontal' },
+  { value: 'lateral', label: 'Lateral (resalta texturas)' },
+  { value: 'backlight', label: 'Retroiluminación' },
+  { value: 'cenital', label: 'Cenital (desde arriba)' }
+];
+
 // ============================================
-// NUEVOS PARÁMETROS - Categoría 4: Efectos Especiales
+// Categoría 4: Efectos Especiales
 // ============================================
 
 export const EFECTOS_VAPOR = [
@@ -117,4 +137,33 @@ export const EFECTOS_FRESCURA = [
   { value: 'sin-efecto', label: 'Sin Efecto' },
   { value: 'gotas', label: 'Gotas de Agua' },
   { value: 'escarcha', label: 'Escarcha (Postres Fríos)' }
+];
+
+// NUEVO: Saturación de colores
+export const SATURACIONES = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'bajo', label: 'Desaturado (suave)' },
+  { value: 'vibrante', label: 'Vibrante (vivo)' }
+];
+
+// ============================================
+// Categoría 5: Props y Decoración de Escena
+// ============================================
+
+// NUEVO: Props/Accesorios
+export const PROPS = [
+  { value: 'ninguno', label: 'Sin props' },
+  { value: 'cubiertos', label: 'Cubiertos elegantes' },
+  { value: 'servilleta', label: 'Servilleta de tela' },
+  { value: 'copa', label: 'Copa de vino' },
+  { value: 'ingredientes', label: 'Ingredientes crudos de fondo' },
+  { value: 'hierbas', label: 'Hierbas frescas' }
+];
+
+// NUEVO: Textura de fondo
+export const TEXTURAS_FONDO = [
+  { value: 'lisa', label: 'Lisa' },
+  { value: 'rustica', label: 'Rústica' },
+  { value: 'desgastada', label: 'Vintage/Desgastada' },
+  { value: 'pulida', label: 'Pulida/Brillante' }
 ];

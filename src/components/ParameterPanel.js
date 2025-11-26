@@ -23,6 +23,9 @@ import TuneIcon from '@mui/icons-material/Tune';
 import CameraEnhanceIcon from '@mui/icons-material/CameraEnhance';
 import StyleIcon from '@mui/icons-material/Style';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import CasinoIcon from '@mui/icons-material/Casino';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import {
   ESTILOS_PLATO,
   ILUMINACIONES,
@@ -31,7 +34,6 @@ import {
   ANGULOS_CAMARA,
   INTENSIDAD_GOURMET_MIN,
   INTENSIDAD_GOURMET_MAX,
-  // Nuevos parámetros
   TIPOS_VAJILLA,
   COLORES_VAJILLA,
   AMBIENTES,
@@ -39,8 +41,14 @@ import {
   PROFUNDIDADES_CAMPO,
   ASPECT_RATIOS,
   EFECTOS_VAPOR,
-  EFECTOS_FRESCURA
+  EFECTOS_FRESCURA,
+  // Nuevos parámetros
+  DIRECCIONES_LUZ,
+  PROPS,
+  SATURACIONES,
+  TEXTURAS_FONDO
 } from '../constants/parameters';
+import { generateRandomParameters, getDefaultParameters } from '../utils/randomParameters';
 
 const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGenerating }) => {
   const theme = useTheme();
@@ -51,7 +59,6 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     fondo,
     decoracionesExtra,
     anguloCamara,
-    // Nuevos parámetros
     tipoVajilla,
     colorVajilla,
     ambiente,
@@ -59,7 +66,12 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     profundidadCampo,
     aspectRatio,
     efectoVapor,
-    efectoFrescura
+    efectoFrescura,
+    // Nuevos parámetros
+    direccionLuz,
+    props,
+    saturacion,
+    texturaFondo
   } = parameters;
 
   const handleDecoracionChange = (value) => {
@@ -68,6 +80,16 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       ? current.filter(d => d !== value)
       : [...current, value];
     onParameterChange({ decoracionesExtra: updated });
+  };
+
+  const handleRandomize = () => {
+    const randomParams = generateRandomParameters();
+    onParameterChange(randomParams);
+  };
+
+  const handleReset = () => {
+    const defaultParams = getDefaultParameters();
+    onParameterChange(defaultParams);
   };
 
   const accordionStyle = {
@@ -99,7 +121,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       </Box>
 
       {/* Intensidad Gourmet - Always Visible */}
-      <Box sx={{ mb: 4, px: 1 }}>
+      <Box sx={{ mb: 2, px: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="subtitle2" color="text.secondary">
             Nivel de Transformación
@@ -134,6 +156,45 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             },
           }}
         />
+      </Box>
+
+      {/* Botones de Aleatorio y Restablecer */}
+      <Box sx={{ 
+        display: 'flex', 
+        gap: 1, 
+        mb: 3,
+        mt: 2 
+      }}>
+        <Button
+          variant="outlined"
+          startIcon={<CasinoIcon />}
+          onClick={handleRandomize}
+          disabled={isGenerating}
+          sx={{ 
+            flex: 1,
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Aleatorio
+        </Button>
+        
+        <Button
+          variant="outlined"
+          color="secondary"
+          startIcon={<RestartAltIcon />}
+          onClick={handleReset}
+          disabled={isGenerating}
+          sx={{ 
+            flex: 1,
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Restablecer
+        </Button>
       </Box>
 
       {/* Sección 1: Estilo & Ambiente */}
@@ -175,7 +236,21 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          {/* Nuevos: Vajilla */}
+          {/* Nuevo: Textura de Fondo */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Textura de Fondo</InputLabel>
+            <Select
+              value={texturaFondo || 'lisa'}
+              label="Textura de Fondo"
+              onChange={(e) => onParameterChange({ texturaFondo: e.target.value })}
+              disabled={isGenerating}
+            >
+              {TEXTURAS_FONDO.map((t) => (
+                <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Tipo de Vajilla</InputLabel>
             <Select
@@ -204,7 +279,6 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          {/* Nuevo: Ambiente */}
           <FormControl fullWidth>
             <InputLabel>Ambiente</InputLabel>
             <Select
@@ -246,6 +320,21 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
+          {/* Nuevo: Dirección de Luz */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Dirección de Luz</InputLabel>
+            <Select
+              value={direccionLuz || 'natural'}
+              label="Dirección de Luz"
+              onChange={(e) => onParameterChange({ direccionLuz: e.target.value })}
+              disabled={isGenerating}
+            >
+              {DIRECCIONES_LUZ.map((dl) => (
+                <MenuItem key={dl.value} value={dl.value}>{dl.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Ángulo de Cámara</InputLabel>
             <Select
@@ -260,7 +349,6 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          {/* Nuevo: Profundidad de Campo */}
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Profundidad de Campo</InputLabel>
             <Select
@@ -275,7 +363,6 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          {/* Nuevo: Aspect Ratio */}
           <FormControl fullWidth>
             <InputLabel>Relación de Aspecto</InputLabel>
             <Select
@@ -292,7 +379,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         </AccordionDetails>
       </Accordion>
 
-      {/* Sección 3: Efectos Especiales (Nueva) */}
+      {/* Sección 3: Efectos Especiales */}
       <Accordion sx={accordionStyle}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -313,6 +400,21 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             >
               {MOMENTOS_DIA.map((m) => (
                 <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Nuevo: Saturación */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Saturación de Colores</InputLabel>
+            <Select
+              value={saturacion || 'normal'}
+              label="Saturación de Colores"
+              onChange={(e) => onParameterChange({ saturacion: e.target.value })}
+              disabled={isGenerating}
+            >
+              {SATURACIONES.map((s) => (
+                <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -347,31 +449,56 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         </AccordionDetails>
       </Accordion>
 
-      {/* Sección 4: Detalles Extra */}
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5 }}>
-          Decoración Extra
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {DECORACIONES_EXTRA.map((decoracion) => {
-            const isSelected = (decoracionesExtra || []).includes(decoracion.value);
-            return (
-              <Chip
-                key={decoracion.value}
-                label={decoracion.label}
-                onClick={() => !isGenerating && handleDecoracionChange(decoracion.value)}
-                color={isSelected ? "primary" : "default"}
-                variant={isSelected ? "filled" : "outlined"}
-                clickable={!isGenerating}
-                sx={{ 
-                  borderRadius: '8px',
-                  border: isSelected ? 'none' : `1px solid ${theme.palette.divider}`,
-                }}
-              />
-            );
-          })}
-        </Box>
-      </Box>
+      {/* Sección 4: Props & Decoración */}
+      <Accordion sx={accordionStyle}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ p: 0.5, borderRadius: 1, bgcolor: alpha(theme.palette.success.main, 0.1), color: 'success.main' }}>
+              <TableRestaurantIcon fontSize="small" />
+            </Box>
+            <Typography variant="subtitle1" fontWeight="600">Props & Decoración</Typography>
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails sx={{ px: 0, pb: 2 }}>
+          {/* Nuevo: Props/Accesorios */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Accesorios</InputLabel>
+            <Select
+              value={props || 'ninguno'}
+              label="Accesorios"
+              onChange={(e) => onParameterChange({ props: e.target.value })}
+              disabled={isGenerating}
+            >
+              {PROPS.map((p) => (
+                <MenuItem key={p.value} value={p.value}>{p.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5, mt: 1 }}>
+            Decoración Extra
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {DECORACIONES_EXTRA.map((decoracion) => {
+              const isSelected = (decoracionesExtra || []).includes(decoracion.value);
+              return (
+                <Chip
+                  key={decoracion.value}
+                  label={decoracion.label}
+                  onClick={() => !isGenerating && handleDecoracionChange(decoracion.value)}
+                  color={isSelected ? "primary" : "default"}
+                  variant={isSelected ? "filled" : "outlined"}
+                  clickable={!isGenerating}
+                  sx={{ 
+                    borderRadius: '8px',
+                    border: isSelected ? 'none' : `1px solid ${theme.palette.divider}`,
+                  }}
+                />
+              );
+            })}
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
       <Button
         variant="contained"
