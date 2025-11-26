@@ -77,7 +77,7 @@ const History = forwardRef(({ onLoadGeneration }, ref) => {
     );
   }
 
-  if (history.length === 0) {
+  if (!history || history.length === 0) {
     return null;
   }
 

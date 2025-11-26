@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const FormData = require('form-data');
 const fs = require('fs');
@@ -10,12 +13,44 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Variable para almacenar la URL de ngrok (se puede actualizar dinámicamente)
 let ngrokUrl = process.env.NGROK_URL || process.env.REACT_APP_PROXY_URL || null;
 
-// Middleware
-app.use(cors());
+// === Seguridad ===
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false // Desactivar para permitir imágenes base64
+}));
+app.use(compression());
+
+// Rate limiting - 100 requests por minuto por IP
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isProduction ? 30 : 100,
+  message: { error: 'Demasiadas solicitudes. Por favor, espera un momento.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use('/api/', limiter);
+
+// CORS configurado
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permitir requests sin origin (como mobile apps o Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else if (!isProduction) {
+      callback(null, true); // Permisivo en desarrollo
+    } else {
+      callback(new Error('CORS no permitido'));
+    }
+  },
+  credentials: true
+}));
+
 // Aumentar límite de tamaño del body para manejar imágenes grandes en base64
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -276,9 +311,9 @@ app.post('/api/save-to-airtable', async (req, res) => {
   try {
     console.log('📝 Recibida solicitud para guardar en Airtable');
     const generationData = req.body;
-    const apiKey = process.env.REACT_APP_AIRTABLE_API_KEY;
-    const baseId = process.env.REACT_APP_AIRTABLE_BASE_ID;
-    const tableName = process.env.REACT_APP_AIRTABLE_TABLE_NAME || 'Generaciones';
+    const apiKey = process.env.AIRTABLE_API_KEY || process.env.REACT_APP_AIRTABLE_API_KEY;
+    const baseId = process.env.AIRTABLE_BASE_ID || process.env.REACT_APP_AIRTABLE_BASE_ID;
+    const tableName = process.env.AIRTABLE_TABLE_NAME || process.env.REACT_APP_AIRTABLE_TABLE_NAME || 'Generaciones';
 
     if (!apiKey || !baseId) {
       return res.status(500).json({ error: 'Configuración de Airtable incompleta en el servidor' });
@@ -530,9 +565,46 @@ app.post('/api/save-to-airtable', async (req, res) => {
   }
 });
 
+// Endpoint para obtener historial de Airtable (protege las API keys del cliente)
+app.get('/api/history', async (req, res) => {
+  try {
+    const apiKey = process.env.AIRTABLE_API_KEY || process.env.REACT_APP_AIRTABLE_API_KEY;
+    const baseId = process.env.AIRTABLE_BASE_ID || process.env.REACT_APP_AIRTABLE_BASE_ID;
+    const tableName = process.env.AIRTABLE_TABLE_NAME || process.env.REACT_APP_AIRTABLE_TABLE_NAME || 'Generaciones';
+    const maxRecords = parseInt(req.query.maxRecords) || 20;
+
+    if (!apiKey || !baseId) {
+      return res.json({ success: true, records: [], message: 'Airtable no configurado' });
+    }
+
+    const url = `https://api.airtable.com/v0/${baseId}/${tableName}`;
+    const response = await axios.get(url, {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      params: { maxRecords },
+      timeout: 30000
+    });
+
+    const records = response.data.records || [];
+    // Ordenar por fecha de creación descendente
+    records.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+
+    return res.json({ success: true, records });
+  } catch (error) {
+    console.error('❌ Error obteniendo historial:', error.message);
+    return res.json({ success: true, records: [], error: error.message });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Servidor funcionando correctamente' });
+  const hasGemini = !!(process.env.REACT_APP_GEMINI_API_KEY);
+  const hasAirtable = !!(process.env.AIRTABLE_API_KEY || process.env.REACT_APP_AIRTABLE_API_KEY);
+  res.json({ 
+    status: 'ok', 
+    message: 'Servidor funcionando correctamente',
+    env: process.env.NODE_ENV || 'development',
+    services: { gemini: hasGemini, airtable: hasAirtable }
+  });
 });
 
 // Manejo de rutas no encontradas
@@ -542,7 +614,7 @@ app.use((req, res) => {
     error: 'Endpoint no encontrado',
     path: req.path,
     method: req.method,
-    availableEndpoints: ['/api/generate-image', '/api/save-to-airtable', '/api/health']
+    availableEndpoints: ['/api/generate-image', '/api/save-to-airtable', '/api/history', '/api/health']
   });
 });
 

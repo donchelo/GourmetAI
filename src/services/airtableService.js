@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { CONFIG } from '../utils/config';
-import { formatParameters, generateParametersSummary, classifyIngredients } from '../utils/airtableHelpers';
 
 /**
  * Comprime una imagen base64 reduciendo su calidad y tamaño de forma agresiva
@@ -179,87 +178,25 @@ export const saveGeneration = async (generationData) => {
 };
 
 /**
- * Obtiene el historial de generaciones desde Airtable
+ * Obtiene el historial de generaciones desde el servidor (protege API keys)
  * @param {number} maxRecords - Número máximo de registros a obtener
  * @returns {Promise<Array>} - Array de generaciones
  */
 export const getHistory = async (maxRecords = 20) => {
   try {
-    const apiKey = process.env.REACT_APP_AIRTABLE_API_KEY;
-    const baseId = process.env.REACT_APP_AIRTABLE_BASE_ID;
-    const tableName = process.env.REACT_APP_AIRTABLE_TABLE_NAME || 'Generaciones';
+    // Usar el endpoint del servidor que maneja Airtable de forma segura
+    const response = await axios.get('/api/history', {
+      params: { maxRecords },
+      timeout: CONFIG.API_TIMEOUT
+    });
 
-    if (!apiKey || !baseId) {
-      // Si no está configurado, retornar array vacío silenciosamente
-      return [];
+    if (response.data.success) {
+      return response.data.records || [];
     }
-
-    const url = `https://api.airtable.com/v0/${baseId}/${tableName}`;
-
-    // Intentar obtener registros sin sort primero (más seguro)
-    // Airtable puede tener diferentes nombres de campos según la configuración
-    try {
-      const response = await axios.get(
-        url,
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`
-          },
-          params: {
-            maxRecords
-          },
-          timeout: CONFIG.API_TIMEOUT
-        }
-      );
-
-      const records = response.data.records || [];
-      
-      // Intentar ordenar manualmente si existe algún campo de fecha
-      // Buscar campos comunes de fecha: timestamp, createdTime, fecha, date, etc.
-      if (records.length > 0) {
-        const firstRecord = records[0];
-        const dateFields = ['timestamp', 'createdTime', 'fecha', 'date', 'Fecha', 'Timestamp'];
-        
-        // Buscar el primer campo de fecha que exista
-        let dateField = null;
-        for (const field of dateFields) {
-          if (firstRecord.fields[field]) {
-            dateField = field;
-            break;
-          }
-        }
-        
-        // Si encontramos un campo de fecha, ordenar por él
-        if (dateField) {
-          return records.sort((a, b) => {
-            const dateA = new Date(a.fields[dateField]);
-            const dateB = new Date(b.fields[dateField]);
-            // Si alguna fecha es inválida, ponerla al final
-            if (isNaN(dateA.getTime())) return 1;
-            if (isNaN(dateB.getTime())) return -1;
-            return dateB - dateA; // Descendente (más reciente primero)
-          });
-        }
-        
-        // Si no hay campo de fecha, intentar ordenar por createdTime (campo automático de Airtable)
-        // o simplemente retornar en el orden que vienen
-        return records.sort((a, b) => {
-          // Airtable siempre incluye createdTime en los registros
-          const dateA = new Date(a.createdTime);
-          const dateB = new Date(b.createdTime);
-          return dateB - dateA; // Descendente
-        });
-      }
-      
-      return records;
-    } catch (error) {
-      // Si hay un error, retornar array vacío
-      throw error;
-    }
+    return [];
   } catch (error) {
-    // Si hay un error, retornar array vacío en lugar de lanzar error
-    // Esto permite que la app funcione sin Airtable
-    console.warn('No se pudo cargar el historial de Airtable:', error.message);
+    // Si hay un error, retornar array vacío silenciosamente
+    console.warn('No se pudo cargar el historial:', error.message);
     return [];
   }
 };

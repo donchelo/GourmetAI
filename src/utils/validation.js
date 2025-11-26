@@ -108,24 +108,14 @@ export const validateParameters = (parameters) => {
  */
 export const validateEnvironment = () => {
   const required = ['REACT_APP_GEMINI_API_KEY'];
-  const optional = [
-    'REACT_APP_AIRTABLE_API_KEY',
-    'REACT_APP_AIRTABLE_BASE_ID'
-  ];
 
   const missing = required.filter(
     key => !process.env[key] || process.env[key].trim() === ''
   );
 
-  const missingOptional = optional.filter(
-    key => !process.env[key] || process.env[key].trim() === ''
-  );
-
   return {
     valid: missing.length === 0,
-    missing,
-    missingOptional,
-    hasAirtable: missingOptional.length === 0
+    missing
   };
 };
 

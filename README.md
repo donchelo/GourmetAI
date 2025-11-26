@@ -4,12 +4,14 @@ Aplicación web que transforma fotografías de platos de comida en versiones vis
 
 ## Características
 
-- Carga de imágenes desde galería o cámara
-- Identificación automática de ingredientes vía Gemini 3
-- Panel de parámetros ajustables para personalización
-- Generación de imágenes gourmet mejoradas
-- Historial de generaciones en Airtable (opcional)
-- Descarga de imágenes con metadata
+- 🖼️ Carga de imágenes desde galería o cámara
+- 🔍 Identificación automática de ingredientes vía Gemini 3
+- 🎛️ Panel de parámetros ajustables para personalización
+- ✨ Generación de imágenes gourmet mejoradas
+- 📜 Historial de generaciones en Airtable (opcional)
+- 💾 Descarga de imágenes con metadata
+- 🔒 Seguridad: Helmet, Rate Limiting, CORS configurado
+- 🗜️ Compresión de respuestas para mejor rendimiento
 
 ## Requisitos Previos
 
@@ -28,17 +30,23 @@ npm install
 ```
 
 3. Configura las variables de entorno:
-   - Crea un archivo `.env` en la raíz del proyecto:
+   - Copia el archivo `env.example.txt` a `.env` y configura tus valores:
 ```env
-REACT_APP_GEMINI_API_KEY=tu_api_key_de_gemini_aqui
-REACT_APP_AIRTABLE_API_KEY=tu_api_key_de_airtable_aqui
-REACT_APP_AIRTABLE_BASE_ID=tu_base_id_de_airtable_aqui
-REACT_APP_AIRTABLE_TABLE_NAME=Generaciones
-REACT_APP_PROXY_URL=http://localhost:3001
+# API de Gemini (Requerido)
+REACT_APP_GEMINI_API_KEY=tu_api_key_de_gemini
+
+# Airtable - Historial (Opcional - configurar en servidor)
+AIRTABLE_API_KEY=tu_api_key_airtable
+AIRTABLE_BASE_ID=tu_base_id_airtable
+AIRTABLE_TABLE_NAME=Generaciones
+
+# Servidor
 PORT=3001
+NODE_ENV=development
+ALLOWED_ORIGINS=http://localhost:3000
 ```
 
-**Nota**: El servidor proxy (`server/index.js`) usa las mismas variables de entorno del archivo `.env`.
+**Nota**: Las API keys de Airtable ahora se configuran solo en el servidor para mayor seguridad.
 
 ## Configuración de Airtable (Opcional)
 
@@ -116,10 +124,19 @@ GourmetAI/
 
 ## Arquitectura
 
-La aplicación usa un **servidor proxy** (`server/index.js`) para evitar problemas de CORS:
+La aplicación usa un **servidor proxy** (`server/index.js`) para evitar problemas de CORS y proteger API keys:
 - **Frontend (React)**: Se comunica con el servidor proxy
-- **Backend Proxy (Express)**: Llama a la API de Gemini desde el servidor
+- **Backend Proxy (Express)**: Maneja APIs de Gemini y Airtable de forma segura
 - **API de Gemini**: Genera las imágenes gourmet
+
+### Endpoints del Servidor
+
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/generate-image` | POST | Genera imagen gourmet |
+| `/api/save-to-airtable` | POST | Guarda generación en historial |
+| `/api/history` | GET | Obtiene historial de generaciones |
+| `/api/health` | GET | Health check del servidor |
 
 ## Tecnologías Utilizadas
 
