@@ -8,7 +8,6 @@ import {
   DialogContent,
   IconButton,
   Alert,
-  Skeleton,
   useTheme,
   alpha,
   CircularProgress,
@@ -91,28 +90,22 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
   const [startTime, setStartTime] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isLight = theme.palette.mode === 'light';
 
   // Función para calcular progreso basado en tiempo transcurrido
-  // Tiempo estimado: 120 segundos (2 minutos)
   const calculateProgress = (elapsedSeconds) => {
-    const totalEstimatedSeconds = 120; // 2 minutos
-    const progressRatio = Math.min(elapsedSeconds / totalEstimatedSeconds, 0.95); // Máximo 95%
+    const totalEstimatedSeconds = 120;
+    const progressRatio = Math.min(elapsedSeconds / totalEstimatedSeconds, 0.95);
     
-    // Curva de progreso más realista:
-    // - Inicio rápido (0-30%): primeros 20 segundos
-    // - Medio más lento (30-70%): siguientes 60 segundos  
-    // - Final acelerado (70-95%): últimos 40 segundos
-    
-    if (progressRatio <= 0.167) { // Primeros 20 segundos (0-30%)
-      return progressRatio * 1.8; // Acelera rápido al inicio
-    } else if (progressRatio <= 0.667) { // Siguientes 60 segundos (30-70%)
-      return 0.3 + (progressRatio - 0.167) * 0.8; // Progreso más lento
-    } else { // Últimos 40 segundos (70-95%)
-      return 0.7 + (progressRatio - 0.667) * 0.75; // Acelera hacia el final
+    if (progressRatio <= 0.167) {
+      return progressRatio * 1.8;
+    } else if (progressRatio <= 0.667) {
+      return 0.3 + (progressRatio - 0.167) * 0.8;
+    } else {
+      return 0.7 + (progressRatio - 0.667) * 0.75;
     }
   };
 
-  // Completar progreso al 100% cuando termine la carga
   useEffect(() => {
     if (!isLoading && startTime !== null) {
       setProgress(100);
@@ -125,40 +118,34 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
     }
   }, [isLoading, startTime]);
 
-  // Ciclar entre mensajes de carga y simular progreso basado en tiempo
   useEffect(() => {
     if (!isLoading) {
       return;
     }
 
-    // Inicializar tiempo de inicio cuando comienza la carga
     if (startTime === null) {
       setStartTime(Date.now());
       setProgress(0);
     }
 
-    // Cambiar mensaje cada 3 segundos
-    // Cuando llegue al final, cicla entre los últimos 8 mensajes para dar variedad
     const lastMessagesStart = LOADING_MESSAGES.length - 8;
     const messageInterval = setInterval(() => {
       setLoadingMessageIndex(prev => {
         if (prev < LOADING_MESSAGES.length - 1) {
           return prev + 1;
         } else {
-          // Ciclar entre los últimos 8 mensajes cuando llegue al final
           return lastMessagesStart;
         }
       });
     }, 3000);
 
-    // Actualizar progreso basado en tiempo transcurrido (cada segundo)
     const progressInterval = setInterval(() => {
       if (startTime !== null) {
         const elapsedSeconds = (Date.now() - startTime) / 1000;
         const calculatedProgress = calculateProgress(elapsedSeconds);
-        setProgress(Math.min(calculatedProgress * 100, 95)); // Máximo 95% hasta que termine
+        setProgress(Math.min(calculatedProgress * 100, 95));
       }
-    }, 1000); // Actualizar cada segundo para mayor precisión
+    }, 1000);
 
     return () => {
       clearInterval(messageInterval);
@@ -174,7 +161,6 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
   const handleDownload = async (imageUrl, index = 0) => {
     const filename = `gourmet_variante_${index + 1}`;
     
-    // Si tenemos metadata, descargar con metadata
     if (parameters && seed && ingredients) {
       try {
         const metadata = createMetadata(parameters, seed, ingredients);
@@ -184,14 +170,20 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
         await downloadImage(imageUrl, `${filename}.png`);
       }
     } else {
-      // Descarga simple sin metadata
       await downloadImage(imageUrl, `${filename}.png`);
     }
   };
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+      <Alert 
+        severity="error" 
+        sx={{ 
+          mb: 2, 
+          borderRadius: 3,
+          border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+        }}
+      >
         {error}
       </Alert>
     );
@@ -204,10 +196,12 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
       <Paper
         elevation={0}
         sx={{
-          p: 4,
+          p: { xs: 3, md: 5 },
           borderRadius: 4,
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+          background: isLight
+            ? `linear-gradient(145deg, ${alpha(theme.palette.secondary.main, 0.03)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`
+            : `linear-gradient(145deg, ${alpha(theme.palette.secondary.main, 0.06)} 0%, ${theme.palette.background.paper} 100%)`,
+          border: `1px solid ${theme.palette.divider}`,
           minHeight: '100%',
           height: '100%',
           display: 'flex',
@@ -215,56 +209,54 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        {/* Fondo animado con ondas */}
+        {/* Fondo decorativo sutil */}
         <Box
           sx={{
             position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            opacity: 0.1,
-            background: `
-              radial-gradient(circle at 20% 80%, ${theme.palette.primary.main} 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, ${theme.palette.secondary.main} 0%, transparent 50%)
-            `,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '120%',
+            height: '120%',
+            opacity: 0.03,
+            background: `radial-gradient(circle, ${theme.palette.secondary.main} 0%, transparent 70%)`,
             animation: 'pulse 4s ease-in-out infinite',
             '@keyframes pulse': {
-              '0%, 100%': { opacity: 0.1, transform: 'scale(1)' },
-              '50%': { opacity: 0.2, transform: 'scale(1.05)' }
-            }
+              '0%, 100%': { opacity: 0.03, transform: 'translate(-50%, -50%) scale(1)' },
+              '50%': { opacity: 0.06, transform: 'translate(-50%, -50%) scale(1.1)' },
+            },
           }}
         />
 
-        {/* Indicador principal con spinner */}
+        {/* Indicador principal */}
         <Box
           sx={{
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            mb: 4
+            mb: 4,
           }}
         >
           <CircularProgress
-            size={100}
-            thickness={2}
+            size={90}
+            thickness={1.5}
             sx={{
-              color: alpha(theme.palette.primary.main, 0.2),
-              position: 'absolute'
+              color: alpha(theme.palette.secondary.main, 0.15),
+              position: 'absolute',
             }}
             variant="determinate"
             value={100}
           />
           <CircularProgress
-            size={100}
-            thickness={2}
+            size={90}
+            thickness={1.5}
             sx={{
-              color: theme.palette.primary.main,
-              animationDuration: '1.5s'
+              color: 'secondary.main',
+              animationDuration: '2s',
             }}
           />
           <Box
@@ -273,12 +265,12 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '2.5rem',
-              animation: 'bounce 1s ease-in-out infinite',
-              '@keyframes bounce': {
+              fontSize: '2rem',
+              animation: 'float 2s ease-in-out infinite',
+              '@keyframes float': {
                 '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-5px)' }
-              }
+                '50%': { transform: 'translateY(-6px)' },
+              },
             }}
           >
             {currentMessage.icon}
@@ -288,70 +280,88 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
         {/* Mensaje de estado */}
         <Typography
           variant="h6"
-          fontWeight="600"
-          color="text.primary"
           sx={{
             mb: 1,
             textAlign: 'center',
-            animation: 'fadeIn 0.5s ease-in',
+            fontWeight: 400,
+            color: 'text.primary',
+            animation: 'fadeIn 0.4s ease-out',
             '@keyframes fadeIn': {
-              '0%': { opacity: 0, transform: 'translateY(10px)' },
-              '100%': { opacity: 1, transform: 'translateY(0)' }
-            }
+              '0%': { opacity: 0, transform: 'translateY(8px)' },
+              '100%': { opacity: 1, transform: 'translateY(0)' },
+            },
           }}
-          key={loadingMessageIndex} // Key para forzar re-render y animación
+          key={loadingMessageIndex}
         >
           {currentMessage.text}
         </Typography>
 
         <Typography
-          variant="body2"
+          variant="caption"
           color="text.secondary"
-          sx={{ mb: 3, textAlign: 'center' }}
+          sx={{ 
+            mb: 4, 
+            textAlign: 'center',
+            letterSpacing: '0.05em',
+          }}
         >
           Tiempo estimado: ~2 minutos
         </Typography>
 
-        {/* Barra de progreso */}
-        <Box sx={{ width: '80%', maxWidth: 300 }}>
+        {/* Barra de progreso elegante */}
+        <Box sx={{ width: '70%', maxWidth: 280 }}>
           <LinearProgress
             variant="determinate"
             value={progress}
             sx={{
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
               '& .MuiLinearProgress-bar': {
-                borderRadius: 4,
-                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              }
+                borderRadius: 2,
+                backgroundColor: 'secondary.main',
+              },
             }}
           />
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ display: 'block', textAlign: 'center', mt: 1 }}
+            sx={{ 
+              display: 'block', 
+              textAlign: 'center', 
+              mt: 1.5,
+              fontWeight: 500,
+            }}
           >
-            {Math.round(progress)}% completado
+            {Math.round(progress)}%
           </Typography>
         </Box>
 
-        {/* Tips mientras espera */}
+        {/* Tip sutil */}
         <Box
           sx={{
-            mt: 4,
-            p: 2,
-            borderRadius: 2,
-            backgroundColor: alpha(theme.palette.info.main, 0.08),
-            maxWidth: 350
+            mt: 5,
+            p: 2.5,
+            borderRadius: 3,
+            backgroundColor: alpha(theme.palette.background.paper, 0.6),
+            border: `1px solid ${theme.palette.divider}`,
+            maxWidth: 320,
           }}
         >
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'flex-start', 
+              gap: 1.5,
+              lineHeight: 1.6,
+            }}
           >
-            💡 <strong>Tip:</strong> Cuanto mayor sea el nivel de transformación, más dramático será el resultado gourmet.
+            <span style={{ fontSize: '1rem' }}>💡</span>
+            <span>
+              <strong style={{ fontWeight: 600 }}>Tip:</strong> Cuanto mayor sea el nivel de transformación, más dramático será el resultado gourmet.
+            </span>
           </Typography>
         </Box>
       </Paper>
@@ -363,44 +373,89 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
       <Paper
         elevation={0}
         sx={{
-          p: 8,
+          p: { xs: 6, md: 8 },
           textAlign: 'center',
-          backgroundColor: alpha(theme.palette.text.primary, 0.03),
+          backgroundColor: 'transparent',
           minHeight: '100%',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           borderRadius: 4,
-          border: `2px dashed ${theme.palette.divider}`
+          border: `2px dashed ${alpha(theme.palette.divider, 0.5)}`,
         }}
       >
-        <Box sx={{ maxWidth: 400 }}>
-          <Typography variant="h5" fontWeight="600" color="text.secondary" gutterBottom>
+        <Box sx={{ maxWidth: 360 }}>
+          {/* Icono decorativo */}
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              bgcolor: alpha(theme.palette.text.secondary, 0.06),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 3,
+            }}
+          >
+            <Typography sx={{ fontSize: '2rem', opacity: 0.6 }}>🍽️</Typography>
+          </Box>
+          
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontWeight: 300,
+              color: 'text.secondary',
+              mb: 1.5,
+              letterSpacing: '-0.01em',
+            }}
+          >
             Tu Lienzo Culinario
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Las imágenes generadas por nuestra IA aparecerán aquí con calidad de estudio.
+          <Typography 
+            variant="body2" 
+            color="text.secondary"
+            sx={{ lineHeight: 1.7 }}
+          >
+            Las imágenes generadas por nuestra IA aparecerán aquí con calidad de estudio profesional.
           </Typography>
         </Box>
       </Paper>
     );
   }
 
-  // Solo mostrar la primera imagen (única imagen generada)
   const imageUrl = images[0];
 
   return (
     <>
-      <Box sx={{ animation: 'fadeIn 0.5s ease-in', height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-           <Typography variant="h6" fontWeight="700">
-             Resultado Gourmet
-           </Typography>
-        </Box>
+      <Box 
+        sx={{ 
+          animation: 'fadeIn 0.5s ease-out', 
+          height: '100%', 
+          display: 'flex', 
+          flexDirection: 'column',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0, transform: 'translateY(8px)' },
+            '100%': { opacity: 1, transform: 'translateY(0)' },
+          },
+        }}
+      >
+        {/* Etiqueta elegante */}
+        <Typography
+          variant="overline"
+          sx={{
+            mb: 2,
+            color: 'text.secondary',
+            letterSpacing: '0.1em',
+          }}
+        >
+          Resultado Gourmet
+        </Typography>
         
         <Paper
-          elevation={4}
+          elevation={0}
           sx={{
             position: 'relative',
             overflow: 'hidden',
@@ -409,96 +464,109 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
             width: '100%',
             flex: 1,
             minHeight: 0,
-            bgcolor: 'background.paper',
+            bgcolor: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)',
+            border: `1px solid ${theme.palette.divider}`,
             display: 'flex',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              boxShadow: theme.shadows[8],
+            },
             '&:hover .overlay': {
-              opacity: 1
+              opacity: 1,
             },
             '&:hover img': {
-               transform: 'scale(1.03)'
+              transform: 'scale(1.02)',
             },
             [theme.breakpoints.down('sm')]: {
               '& .overlay': {
-                opacity: 1
+                opacity: 1,
               },
-              aspectRatio: '1'
-            }
+              aspectRatio: '1',
+            },
           }}
           onClick={() => handleImageClick(imageUrl)}
         >
-            <img
-              src={imageUrl}
-              alt="Imagen gourmet generada"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                transition: 'transform 0.5s ease'
-              }}
-            />
-            
-            <Box
-              className="overlay"
-              sx={{
-                position: 'absolute',
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.3) 100%)',
-                opacity: 0,
-                transition: 'opacity 0.3s ease',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                p: { xs: 2, sm: 3 }
-              }}
-            >
-               <Box sx={{ alignSelf: 'flex-end' }}>
-                 <IconButton 
-                   sx={{ 
-                     color: 'white', 
-                     bgcolor: 'rgba(255,255,255,0.2)',
-                     '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
-                     padding: { xs: 1, sm: 1.5 }
-                   }}
-                 >
-                    <ZoomInIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
-                 </IconButton>
-               </Box>
-               
-               <Button
-                variant="contained"
-                size={isMobile ? "medium" : "large"}
-                startIcon={<DownloadIcon />}
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  await handleDownload(imageUrl, 0);
-                }}
+          <img
+            src={imageUrl}
+            alt="Imagen gourmet generada"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              transition: 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
+            }}
+          />
+          
+          <Box
+            className="overlay"
+            sx={{
+              position: 'absolute',
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.3) 100%)',
+              opacity: 0,
+              transition: 'opacity 0.3s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              p: { xs: 2, sm: 3 },
+            }}
+          >
+            <Box sx={{ alignSelf: 'flex-end' }}>
+              <IconButton 
                 sx={{ 
-                   bgcolor: 'white', 
-                   color: 'black', 
-                   fontWeight: 'bold',
-                   alignSelf: 'center',
-                   minWidth: { xs: 'auto', sm: '200px' },
-                   px: { xs: 2, sm: 3 },
-                   py: { xs: 1, sm: 1.5 },
-                   fontSize: { xs: '0.875rem', sm: '1rem' },
-                   '&:hover': { bgcolor: '#f5f5f5' },
-                   '& .MuiButton-startIcon': {
-                     marginRight: { xs: 0.5, sm: 1 }
-                   }
+                  color: 'white', 
+                  bgcolor: 'rgba(255,255,255,0.15)',
+                  backdropFilter: 'blur(8px)',
+                  '&:hover': { 
+                    bgcolor: 'rgba(255,255,255,0.25)',
+                    transform: 'scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease',
+                  padding: { xs: 1, sm: 1.5 },
                 }}
               >
-                {isMobile ? 'Descargar' : 'Descargar Obra'}
-              </Button>
+                <ZoomInIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
+              </IconButton>
             </Box>
+            
+            <Button
+              variant="contained"
+              size={isMobile ? "medium" : "large"}
+              startIcon={<DownloadIcon />}
+              onClick={async (e) => {
+                e.stopPropagation();
+                await handleDownload(imageUrl, 0);
+              }}
+              sx={{ 
+                bgcolor: 'rgba(255,255,255,0.95)', 
+                color: 'text.primary', 
+                fontWeight: 500,
+                alignSelf: 'center',
+                minWidth: { xs: 'auto', sm: '180px' },
+                px: { xs: 3, sm: 4 },
+                py: { xs: 1, sm: 1.5 },
+                borderRadius: 'full',
+                letterSpacing: '0.02em',
+                '&:hover': { 
+                  bgcolor: 'white',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                },
+                transition: 'all 0.25s ease',
+              }}
+            >
+              {isMobile ? 'Descargar' : 'Descargar'}
+            </Button>
+          </Box>
         </Paper>
         
-        {/* Botón de descarga adicional para móviles (fuera del overlay) */}
+        {/* Botón móvil adicional */}
         {isMobile && (
           <Button
-            variant="contained"
+            variant="outlined"
             fullWidth
             size="large"
             startIcon={<DownloadIcon />}
@@ -507,13 +575,15 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
             }}
             sx={{ 
               mt: 2,
-              bgcolor: theme.palette.primary.main,
-              color: 'white',
-              fontWeight: 'bold',
               py: 1.5,
+              borderRadius: 3,
+              borderColor: 'secondary.main',
+              color: 'secondary.main',
+              fontWeight: 500,
               '&:hover': { 
-                bgcolor: theme.palette.primary.dark 
-              }
+                borderColor: 'secondary.dark',
+                backgroundColor: alpha(theme.palette.secondary.main, 0.04),
+              },
             }}
           >
             Descargar Imagen
@@ -531,8 +601,8 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
           sx: { 
             bgcolor: 'transparent', 
             boxShadow: 'none',
-            overflow: 'hidden'
-          }
+            overflow: 'hidden',
+          },
         }}
       >
         <DialogContent sx={{ p: 0, position: 'relative', display: 'flex', justifyContent: 'center' }}>
@@ -544,8 +614,13 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
               top: 16,
               color: 'white',
               bgcolor: 'rgba(0,0,0,0.5)',
-              '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
-              zIndex: 10
+              backdropFilter: 'blur(8px)',
+              '&:hover': { 
+                bgcolor: 'rgba(0,0,0,0.7)',
+                transform: 'scale(1.1)',
+              },
+              transition: 'all 0.2s ease',
+              zIndex: 10,
             }}
           >
             <CloseIcon />
@@ -557,8 +632,8 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
               style={{
                 maxWidth: '100%',
                 maxHeight: '90vh',
-                borderRadius: '8px',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
+                borderRadius: '16px',
+                boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
               }}
             />
           )}

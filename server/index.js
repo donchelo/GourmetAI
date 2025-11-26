@@ -18,6 +18,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 // Variable para almacenar la URL de ngrok (se puede actualizar dinámicamente)
 let ngrokUrl = process.env.NGROK_URL || process.env.REACT_APP_PROXY_URL || null;
 
+// Confiar en el proxy (necesario para rate-limit cuando se usa detrás de un proxy/ngrok)
+app.set('trust proxy', 1);
+
 // === Seguridad ===
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -31,7 +34,9 @@ const limiter = rateLimit({
   max: isProduction ? 30 : 100,
   message: { error: 'Demasiadas solicitudes. Por favor, espera un momento.' },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  // Validar que no hay problemas con X-Forwarded-For
+  validate: { xForwardedForHeader: false }
 });
 app.use('/api/', limiter);
 

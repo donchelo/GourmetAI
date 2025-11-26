@@ -7,76 +7,191 @@ import { useColorMode } from '../context/ThemeContext';
 const Layout = ({ children }) => {
   const theme = useTheme();
   const { toggleColorMode, mode } = useColorMode();
+  const isLight = mode === 'light';
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box 
+      sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        minHeight: '100vh', 
+        bgcolor: 'background.default',
+        transition: 'background-color 0.3s ease',
+      }}
+    >
+      {/* Header elegante con efecto glassmorphism */}
       <AppBar 
         position="sticky" 
+        elevation={0}
         sx={{ 
-          backgroundColor: alpha(theme.palette.background.paper, 0.8),
-          backdropFilter: 'blur(12px)',
-          boxShadow: theme.shadows[1],
+          backgroundColor: alpha(theme.palette.background.paper, isLight ? 0.85 : 0.9),
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
           color: 'text.primary',
-          borderBottom: `1px solid ${theme.palette.divider}`
+          borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Toolbar>
-          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 1.5 }}>
+        <Toolbar 
+          sx={{ 
+            minHeight: { xs: '64px', md: '80px' },
+            px: { xs: 2, md: 4 },
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 2 }}>
+            {/* Logo */}
             <Box 
               component="img"
               src="/images/logo.png"
               alt="GourmetAI Logo"
               sx={{ 
-                height: 40,
+                height: { xs: 36, md: 44 },
                 width: 'auto',
                 objectFit: 'contain',
-                filter: mode === 'dark' ? 'invert(1)' : 'none',
-                transition: 'filter 0.3s ease'
+                filter: mode === 'dark' ? 'invert(1) brightness(0.9)' : 'none',
+                transition: 'filter 0.3s ease',
               }}
             />
-            <Typography 
-              variant="h5" 
-              component="div" 
-              sx={{ 
-                fontWeight: 700, 
-                letterSpacing: '-0.02em',
-                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              GourmetAI
-            </Typography>
+            
+            {/* Nombre de la marca */}
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography 
+                variant="h4" 
+                component="div" 
+                sx={{ 
+                  fontWeight: 300,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1,
+                  color: 'text.primary',
+                  fontSize: { xs: '1.5rem', md: '1.875rem' },
+                }}
+              >
+                Gourmet
+                <Box 
+                  component="span" 
+                  sx={{ 
+                    fontWeight: 500,
+                    color: 'secondary.main',
+                  }}
+                >
+                  AI
+                </Box>
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  fontSize: '0.625rem',
+                  mt: 0.25,
+                  display: { xs: 'none', sm: 'block' },
+                }}
+              >
+                Transformación culinaria
+              </Typography>
+            </Box>
           </Box>
           
+          {/* Toggle de tema */}
           <IconButton 
             onClick={toggleColorMode} 
-            color="inherit"
+            size="medium"
             sx={{ 
               borderRadius: '12px',
-              border: `1px solid ${theme.palette.divider}`,
-              ml: 1
+              border: `1.5px solid ${theme.palette.divider}`,
+              p: 1.25,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.06),
+                borderColor: theme.palette.text.secondary,
+                transform: 'scale(1.05)',
+              },
             }}
           >
-            {mode === 'dark' ? <Brightness7Icon color="warning" /> : <Brightness4Icon color="primary" />}
+            {mode === 'dark' ? (
+              <Brightness7Icon 
+                sx={{ 
+                  fontSize: 22,
+                  color: 'warning.main',
+                }} 
+              />
+            ) : (
+              <Brightness4Icon 
+                sx={{ 
+                  fontSize: 22,
+                  color: 'text.secondary',
+                }} 
+              />
+            )}
           </IconButton>
         </Toolbar>
       </AppBar>
-      <Container maxWidth="xl" sx={{ flexGrow: 1, py: 4, px: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column' }}>
+
+      {/* Contenido principal */}
+      <Container 
+        maxWidth="xl" 
+        sx={{ 
+          flexGrow: 1, 
+          py: { xs: 3, md: 5 }, 
+          px: { xs: 2, sm: 3, md: 4 }, 
+          display: 'flex', 
+          flexDirection: 'column',
+        }}
+      >
         {children}
       </Container>
+
+      {/* Footer elegante y minimalista */}
       <Box 
         component="footer" 
         sx={{ 
-          py: 3, 
+          py: { xs: 3, md: 4 }, 
+          px: { xs: 2, md: 4 },
           textAlign: 'center',
           color: 'text.secondary',
           borderTop: `1px solid ${theme.palette.divider}`,
-          mt: 'auto'
+          mt: 'auto',
+          backgroundColor: alpha(theme.palette.background.paper, 0.5),
         }}
       >
-        <Typography variant="body2">
-          © {new Date().getFullYear()} GourmetAI • Potenciado por Inteligencia Artificial
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            fontWeight: 400,
+            letterSpacing: '0.02em',
+          }}
+        >
+          © {new Date().getFullYear()}{' '}
+          <Box 
+            component="span" 
+            sx={{ 
+              fontFamily: "'Cormorant Garamond', serif",
+              fontWeight: 500,
+              fontSize: '1.05em',
+            }}
+          >
+            GourmetAI
+          </Box>
+          {' '}
+          <Box 
+            component="span" 
+            sx={{ 
+              mx: 1, 
+              opacity: 0.4,
+              display: { xs: 'none', sm: 'inline' },
+            }}
+          >
+            •
+          </Box>
+          <Box 
+            component="span"
+            sx={{ 
+              display: { xs: 'block', sm: 'inline' },
+              mt: { xs: 0.5, sm: 0 },
+            }}
+          >
+            Potenciado por Inteligencia Artificial
+          </Box>
         </Typography>
       </Box>
     </Box>

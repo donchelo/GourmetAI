@@ -1,20 +1,342 @@
-* {
+/**
+ * Design System Marquet - Global Styles
+ * Estilos globales refinados para GourmetAI
+ */
+
+/* Reset básico */
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+/* Variables CSS del Design System */
+:root {
+  /* Colores base */
+  --color-warm-white: #FDFCFA;
+  --color-cream: #F8F6F3;
+  --color-ivory: #F3F0EB;
+  --color-sand: #E8E4DD;
+  --color-taupe: #D4CFC6;
+  --color-stone: #B8B2A7;
+  --color-warm-gray: #8F8882;
+  --color-charcoal: #5A5651;
+  --color-espresso: #3D3A36;
+  --color-rich-black: #1A1918;
+  
+  /* Acentos */
+  --color-olive: #7A7A5E;
+  --color-sage: #A3A78E;
+  --color-champagne: #E8DED1;
+  
+  /* Tipografía */
+  --font-heading: 'Cormorant Garamond', 'Georgia', 'Times New Roman', serif;
+  --font-body: 'DM Sans', 'Helvetica Neue', 'Arial', sans-serif;
+  
+  /* Espaciado */
+  --spacing-unit: 8px;
+  
+  /* Transiciones */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  
+  /* Sombras */
+  --shadow-sm: 0 2px 4px rgba(26, 25, 24, 0.06);
+  --shadow-md: 0 4px 8px rgba(26, 25, 24, 0.08);
+  --shadow-lg: 0 8px 16px rgba(26, 25, 24, 0.1);
+  
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+/* Estilos del documento */
+html {
+  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
+body {
+  font-family: var(--font-body);
+  line-height: 1.5;
+  color: var(--color-espresso);
+  background-color: var(--color-cream);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Selección de texto elegante */
+::selection {
+  background-color: rgba(61, 58, 54, 0.15);
+  color: var(--color-espresso);
+}
+
+::-moz-selection {
+  background-color: rgba(61, 58, 54, 0.15);
+  color: var(--color-espresso);
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-sand);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-stone);
+  border-radius: 10px;
+  border: 2px solid var(--color-sand);
+  transition: background-color var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-warm-gray);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-stone) var(--color-sand);
+}
+
+/* Tipografía base */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin-bottom: 1em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-olive);
+}
+
+/* Imágenes responsivas */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Código */
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875em;
+  background-color: var(--color-sand);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-sm);
 }
 
+/* Focus states accesibles */
+:focus-visible {
+  outline: 2px solid var(--color-olive);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-olive);
+  outline-offset: 2px;
+}
+
+/* Transiciones suaves para el tema */
+body,
+.MuiPaper-root,
+.MuiButton-root,
+.MuiCard-root {
+  transition: 
+    background-color var(--transition-normal),
+    color var(--transition-normal),
+    border-color var(--transition-normal);
+}
+
+/* Animaciones sutiles */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Utilidades de espaciado */
+.mt-auto { margin-top: auto; }
+.mb-auto { margin-bottom: auto; }
+.ml-auto { margin-left: auto; }
+.mr-auto { margin-right: auto; }
+
+/* Contenedor elegante */
+.elegant-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Sección con fondo sutil */
+.section-subtle {
+  background-color: var(--color-ivory);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+}
+
+/* Texto decorativo */
+.text-elegant {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.text-uppercase-elegant {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Línea decorativa */
+.divider-elegant {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--color-taupe) 0%,
+    var(--color-stone) 50%,
+    var(--color-taupe) 100%
+  );
+  margin: 24px 0;
+}
+
+/* Glassmorphism sutil */
+.glass-effect {
+  background: rgba(253, 252, 250, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(232, 228, 221, 0.5);
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] {
+  --color-background: var(--color-rich-black);
+  --color-surface: #242220;
+  --color-text-primary: var(--color-ivory);
+  --color-text-secondary: var(--color-stone);
+}
+
+[data-theme="dark"] body {
+  background-color: var(--color-rich-black);
+  color: var(--color-ivory);
+}
+
+[data-theme="dark"] ::selection {
+  background-color: rgba(248, 246, 243, 0.2);
+  color: var(--color-ivory);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background-color: var(--color-rich-black);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background-color: var(--color-charcoal);
+  border-color: var(--color-rich-black);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-warm-gray);
+}
+
+[data-theme="dark"] .glass-effect {
+  background: rgba(26, 25, 24, 0.8);
+  border-color: rgba(248, 246, 243, 0.08);
+}
+
+[data-theme="dark"] code {
+  background-color: rgba(248, 246, 243, 0.08);
+}
+
+/* Print styles */
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Reducir movimiento para usuarios que lo prefieren */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  html {
+    scroll-behavior: auto;
+  }
+}

@@ -42,7 +42,6 @@ import {
   ASPECT_RATIOS,
   EFECTOS_VAPOR,
   EFECTOS_FRESCURA,
-  // Nuevos parámetros
   DIRECCIONES_LUZ,
   PROPS,
   SATURACIONES,
@@ -52,6 +51,8 @@ import { generateRandomParameters, getDefaultParameters } from '../utils/randomP
 
 const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGenerating }) => {
   const theme = useTheme();
+  const isLight = theme.palette.mode === 'light';
+  
   const {
     intensidadGourmet,
     estiloPlato,
@@ -67,7 +68,6 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     aspectRatio,
     efectoVapor,
     efectoFrescura,
-    // Nuevos parámetros
     direccionLuz,
     props,
     saturacion,
@@ -83,19 +83,16 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
   };
 
   const handlePropsChange = (value) => {
-    // Si es 'ninguno', limpiar todos los props
     if (value === 'ninguno') {
       onParameterChange({ props: [] });
       return;
     }
     
     const current = props || [];
-    // Si ya está seleccionado, quitarlo
     if (current.includes(value)) {
       const updated = current.filter(p => p !== value);
       onParameterChange({ props: updated });
     } else {
-      // Agregar el nuevo prop (filtrar 'ninguno' si existe)
       const updated = [...current.filter(p => p !== 'ninguno'), value];
       onParameterChange({ props: updated });
     }
@@ -111,41 +108,94 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     onParameterChange(defaultParams);
   };
 
+  // Estilos de acordeón elegantes
   const accordionStyle = {
     background: 'transparent',
     boxShadow: 'none',
+    border: 'none',
     '&:before': { display: 'none' },
     '&.Mui-expanded': { margin: 0 },
   };
 
   const summaryStyle = {
     px: 0,
+    minHeight: 52,
     '& .MuiAccordionSummary-content': { margin: '12px 0' },
+    '&.Mui-expanded': { minHeight: 52 },
   };
+
+  // Estilo de sección con icono
+  const SectionIcon = ({ icon: Icon, color }) => (
+    <Box 
+      sx={{ 
+        p: 0.75, 
+        borderRadius: 2, 
+        bgcolor: alpha(theme.palette[color].main, isLight ? 0.08 : 0.12),
+        color: `${color}.main`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Icon sx={{ fontSize: 18 }} />
+    </Box>
+  );
 
   return (
     <Paper 
-      elevation={2} 
+      elevation={0} 
       sx={{ 
-        p: 3, 
+        p: { xs: 2.5, md: 3 }, 
         borderRadius: 4, 
-        border: `1px solid ${theme.palette.divider}` 
+        border: `1px solid ${theme.palette.divider}`,
+        backgroundColor: 'background.paper',
       }}
     >
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <TuneIcon color="primary" />
-        <Typography variant="h6" fontWeight="600">
+      {/* Header */}
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box 
+          sx={{ 
+            p: 1, 
+            borderRadius: 2, 
+            bgcolor: alpha(theme.palette.primary.main, isLight ? 0.08 : 0.12),
+            color: 'primary.main',
+            display: 'flex',
+          }}
+        >
+          <TuneIcon sx={{ fontSize: 20 }} />
+        </Box>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 400,
+            letterSpacing: '-0.01em',
+          }}
+        >
           Personalización
         </Typography>
       </Box>
 
-      {/* Intensidad Gourmet - Always Visible */}
-      <Box sx={{ mb: 2, px: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="subtitle2" color="text.secondary">
+      {/* Intensidad Gourmet - Siempre visible */}
+      <Box sx={{ mb: 3, px: 0.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 2 }}>
+          <Typography 
+            variant="subtitle2" 
+            sx={{ 
+              color: 'text.secondary',
+              fontWeight: 500,
+              letterSpacing: '0.02em',
+            }}
+          >
             Nivel de Transformación
           </Typography>
-          <Typography variant="subtitle2" color="primary.main" fontWeight="600">
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              color: 'secondary.main', 
+              fontWeight: 500,
+              fontFamily: "'Cormorant Garamond', serif",
+            }}
+          >
             {intensidadGourmet}/10
           </Typography>
         </Box>
@@ -162,28 +212,21 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
           onChange={(e, value) => onParameterChange({ intensidadGourmet: value })}
           disabled={isGenerating}
           sx={{
-            height: 8,
-            '& .MuiSlider-track': { border: 'none' },
-            '& .MuiSlider-thumb': {
-              height: 24,
-              width: 24,
-              backgroundColor: '#fff',
-              border: '2px solid currentColor',
-              '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
-                boxShadow: 'inherit',
-              },
+            color: 'secondary.main',
+            '& .MuiSlider-mark': {
+              backgroundColor: 'transparent',
+            },
+            '& .MuiSlider-markLabel': {
+              fontSize: '0.7rem',
+              color: 'text.secondary',
+              fontWeight: 500,
             },
           }}
         />
       </Box>
 
       {/* Botones de Aleatorio y Restablecer */}
-      <Box sx={{ 
-        display: 'flex', 
-        gap: 1, 
-        mb: 3,
-        mt: 2 
-      }}>
+      <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
         <Button
           variant="outlined"
           startIcon={<CasinoIcon />}
@@ -191,9 +234,14 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
           disabled={isGenerating}
           sx={{ 
             flex: 1,
-            borderRadius: 2,
-            textTransform: 'none',
-            fontWeight: 500
+            py: 1.25,
+            borderColor: theme.palette.divider,
+            color: 'text.secondary',
+            '&:hover': {
+              borderColor: 'secondary.main',
+              color: 'secondary.main',
+              backgroundColor: alpha(theme.palette.secondary.main, 0.04),
+            },
           }}
         >
           Aleatorio
@@ -201,33 +249,47 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         
         <Button
           variant="outlined"
-          color="secondary"
           startIcon={<RestartAltIcon />}
           onClick={handleReset}
           disabled={isGenerating}
           sx={{ 
             flex: 1,
-            borderRadius: 2,
-            textTransform: 'none',
-            fontWeight: 500
+            py: 1.25,
+            borderColor: theme.palette.divider,
+            color: 'text.secondary',
+            '&:hover': {
+              borderColor: 'text.primary',
+              color: 'text.primary',
+              backgroundColor: alpha(theme.palette.text.primary, 0.04),
+            },
           }}
         >
           Restablecer
         </Button>
       </Box>
 
+      {/* Divisor sutil */}
+      <Box 
+        sx={{ 
+          height: 1, 
+          bgcolor: theme.palette.divider, 
+          mb: 2,
+          opacity: 0.5,
+        }} 
+      />
+
       {/* Sección 1: Estilo & Ambiente */}
       <Accordion defaultExpanded sx={accordionStyle}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ p: 0.5, borderRadius: 1, bgcolor: alpha(theme.palette.secondary.main, 0.1), color: 'secondary.main' }}>
-              <StyleIcon fontSize="small" />
-            </Box>
-            <Typography variant="subtitle1" fontWeight="600">Estilo & Ambiente</Typography>
+            <SectionIcon icon={StyleIcon} color="secondary" />
+            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+              Estilo & Ambiente
+            </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails sx={{ px: 0, pb: 2 }}>
-          <FormControl fullWidth sx={{ mb: 2 }}>
+        <AccordionDetails sx={{ px: 0, pb: 2, pt: 0.5 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Estilo de Plato</InputLabel>
             <Select
               value={estiloPlato}
@@ -241,7 +303,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Fondo</InputLabel>
             <Select
               value={fondo}
@@ -255,8 +317,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          {/* Nuevo: Textura de Fondo */}
-          <FormControl fullWidth sx={{ mb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Textura de Fondo</InputLabel>
             <Select
               value={texturaFondo || 'lisa'}
@@ -270,7 +331,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Tipo de Vajilla</InputLabel>
             <Select
               value={tipoVajilla || 'original'}
@@ -284,7 +345,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Color de Vajilla</InputLabel>
             <Select
               value={colorVajilla || 'original'}
@@ -318,14 +379,14 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       <Accordion sx={accordionStyle}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-             <Box sx={{ p: 0.5, borderRadius: 1, bgcolor: alpha(theme.palette.info.main, 0.1), color: 'info.main' }}>
-              <CameraEnhanceIcon fontSize="small" />
-            </Box>
-            <Typography variant="subtitle1" fontWeight="600">Cámara & Iluminación</Typography>
+            <SectionIcon icon={CameraEnhanceIcon} color="info" />
+            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+              Cámara & Iluminación
+            </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails sx={{ px: 0, pb: 2 }}>
-          <FormControl fullWidth sx={{ mb: 2 }}>
+        <AccordionDetails sx={{ px: 0, pb: 2, pt: 0.5 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Iluminación</InputLabel>
             <Select
               value={iluminacion}
@@ -339,8 +400,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          {/* Nuevo: Dirección de Luz */}
-          <FormControl fullWidth sx={{ mb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Dirección de Luz</InputLabel>
             <Select
               value={direccionLuz || 'natural'}
@@ -354,7 +414,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Ángulo de Cámara</InputLabel>
             <Select
               value={anguloCamara}
@@ -368,7 +428,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Profundidad de Campo</InputLabel>
             <Select
               value={profundidadCampo || 'moderado'}
@@ -402,14 +462,14 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       <Accordion sx={accordionStyle}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ p: 0.5, borderRadius: 1, bgcolor: alpha(theme.palette.warning.main, 0.1), color: 'warning.main' }}>
-              <AutoAwesomeIcon fontSize="small" />
-            </Box>
-            <Typography variant="subtitle1" fontWeight="600">Efectos Especiales</Typography>
+            <SectionIcon icon={AutoAwesomeIcon} color="warning" />
+            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+              Efectos Especiales
+            </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails sx={{ px: 0, pb: 2 }}>
-          <FormControl fullWidth sx={{ mb: 2 }}>
+        <AccordionDetails sx={{ px: 0, pb: 2, pt: 0.5 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Momento del Día</InputLabel>
             <Select
               value={momentoDelDia || 'sin-preferencia'}
@@ -423,8 +483,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          {/* Nuevo: Saturación */}
-          <FormControl fullWidth sx={{ mb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Saturación de Colores</InputLabel>
             <Select
               value={saturacion || 'normal'}
@@ -438,7 +497,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
             </Select>
           </FormControl>
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2.5 }}>
             <InputLabel>Efecto de Vapor</InputLabel>
             <Select
               value={efectoVapor || 'sin-vapor'}
@@ -472,18 +531,28 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       <Accordion sx={accordionStyle}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ p: 0.5, borderRadius: 1, bgcolor: alpha(theme.palette.success.main, 0.1), color: 'success.main' }}>
-              <TableRestaurantIcon fontSize="small" />
-            </Box>
-            <Typography variant="subtitle1" fontWeight="600">Props & Decoración</Typography>
+            <SectionIcon icon={TableRestaurantIcon} color="success" />
+            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+              Props & Decoración
+            </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails sx={{ px: 0, pb: 2 }}>
-          {/* Props/Accesorios - Ahora selección múltiple */}
-          <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5 }}>
+        <AccordionDetails sx={{ px: 0, pb: 2, pt: 0.5 }}>
+          {/* Props/Accesorios */}
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              display: 'block',
+              mb: 1.5,
+              color: 'text.secondary',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
             Accesorios
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
             {PROPS.map((prop) => {
               const isSelected = prop.value === 'ninguno' 
                 ? (!props || props.length === 0)
@@ -493,19 +562,30 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
                   key={prop.value}
                   label={prop.label}
                   onClick={() => !isGenerating && handlePropsChange(prop.value)}
-                  color={isSelected ? "primary" : "default"}
+                  color={isSelected ? "secondary" : "default"}
                   variant={isSelected ? "filled" : "outlined"}
                   clickable={!isGenerating}
+                  size="small"
                   sx={{ 
-                    borderRadius: '8px',
-                    border: isSelected ? 'none' : `1px solid ${theme.palette.divider}`,
+                    borderColor: isSelected ? 'secondary.main' : theme.palette.divider,
+                    fontWeight: isSelected ? 500 : 400,
                   }}
                 />
               );
             })}
           </Box>
 
-          <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5, mt: 1 }}>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              display: 'block',
+              mb: 1.5,
+              color: 'text.secondary',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
             Decoración Extra
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -516,12 +596,13 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
                   key={decoracion.value}
                   label={decoracion.label}
                   onClick={() => !isGenerating && handleDecoracionChange(decoracion.value)}
-                  color={isSelected ? "primary" : "default"}
+                  color={isSelected ? "secondary" : "default"}
                   variant={isSelected ? "filled" : "outlined"}
                   clickable={!isGenerating}
+                  size="small"
                   sx={{ 
-                    borderRadius: '8px',
-                    border: isSelected ? 'none' : `1px solid ${theme.palette.divider}`,
+                    borderColor: isSelected ? 'secondary.main' : theme.palette.divider,
+                    fontWeight: isSelected ? 500 : 400,
                   }}
                 />
               );
@@ -530,6 +611,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         </AccordionDetails>
       </Accordion>
 
+      {/* Botón de Generar */}
       <Button
         variant="contained"
         fullWidth
@@ -539,17 +621,24 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         startIcon={isGenerating ? <CircularProgress size={20} color="inherit" /> : <AutoFixHighIcon />}
         sx={{ 
           mt: 4, 
-          py: 1.5,
-          background: isGenerating 
-            ? `linear-gradient(45deg, ${alpha(theme.palette.primary.main, 0.7)}, ${alpha(theme.palette.primary.dark, 0.7)})`
-            : `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-          fontSize: '1.1rem',
+          py: 1.75,
+          borderRadius: 3,
+          bgcolor: 'primary.main',
+          fontSize: '1rem',
+          fontWeight: 500,
+          letterSpacing: '0.02em',
           position: 'relative',
           overflow: 'hidden',
-          '&.Mui-disabled': {
-            color: 'white',
-            opacity: 0.9
+          '&:hover': {
+            bgcolor: 'primary.dark',
+            transform: 'translateY(-1px)',
+            boxShadow: theme.shadows[4],
           },
+          '&.Mui-disabled': {
+            bgcolor: alpha(theme.palette.primary.main, 0.7),
+            color: 'white',
+          },
+          transition: 'all 0.25s ease',
           ...(isGenerating && {
             '&::before': {
               content: '""',
@@ -558,14 +647,14 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
               left: '-100%',
               width: '200%',
               height: '100%',
-              background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.2)}, transparent)`,
+              background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.15)}, transparent)`,
               animation: 'shimmer 2s infinite',
             },
             '@keyframes shimmer': {
               '0%': { transform: 'translateX(-50%)' },
-              '100%': { transform: 'translateX(50%)' }
-            }
-          })
+              '100%': { transform: 'translateX(50%)' },
+            },
+          }),
         }}
       >
         {isGenerating ? 'Generando tu obra maestra...' : 'Generar Gourmet'}

@@ -17,6 +17,7 @@ const History = forwardRef(({ onLoadGeneration }, ref) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
+  const isLight = theme.palette.mode === 'light';
 
   useEffect(() => {
     loadHistory();
@@ -35,7 +36,6 @@ const History = forwardRef(({ onLoadGeneration }, ref) => {
     }
   };
 
-  // Exponer método para refrescar desde el componente padre
   useImperativeHandle(ref, () => ({
     refresh: loadHistory
   }));
@@ -66,14 +66,25 @@ const History = forwardRef(({ onLoadGeneration }, ref) => {
 
   if (loading) {
     return (
-      <Paper elevation={0} sx={{ p: 2, bgcolor: 'transparent' }}>
-        <Skeleton variant="text" width={200} height={32} sx={{ mb: 2 }} />
-        <Box sx={{ display: 'flex', gap: 2, overflow: 'hidden' }}>
+      <Box sx={{ mt: 6, mb: 4 }}>
+        <Skeleton 
+          variant="text" 
+          width={180} 
+          height={28} 
+          sx={{ mb: 2.5, borderRadius: 1 }} 
+        />
+        <Box sx={{ display: 'flex', gap: 2.5, overflow: 'hidden' }}>
           {[1, 2, 3, 4, 5].map((item) => (
-             <Skeleton key={item} variant="rectangular" width={160} height={160} sx={{ borderRadius: 3 }} />
+            <Skeleton 
+              key={item} 
+              variant="rectangular" 
+              width={150} 
+              height={150} 
+              sx={{ borderRadius: 3, flexShrink: 0 }} 
+            />
           ))}
         </Box>
-      </Paper>
+      </Box>
     );
   }
 
@@ -83,31 +94,59 @@ const History = forwardRef(({ onLoadGeneration }, ref) => {
 
   return (
     <Box sx={{ mt: 6, mb: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <HistoryIcon color="action" />
-        <Typography variant="h6" fontWeight="600">
+      {/* Header elegante */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+        <Box 
+          sx={{ 
+            p: 0.75, 
+            borderRadius: 2, 
+            bgcolor: alpha(theme.palette.text.secondary, isLight ? 0.06 : 0.1),
+            color: 'text.secondary',
+            display: 'flex',
+          }}
+        >
+          <HistoryIcon sx={{ fontSize: 18 }} />
+        </Box>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 400,
+            letterSpacing: '-0.01em',
+            color: 'text.primary',
+          }}
+        >
           Inspiración Reciente
         </Typography>
       </Box>
       
       <Box sx={{ position: 'relative' }}>
+        {/* Botón izquierdo */}
         <IconButton
           onClick={() => handleScroll('left')}
           sx={{
             position: 'absolute',
-            left: -20,
+            left: -16,
             top: '50%',
             transform: 'translateY(-50%)',
             zIndex: 2,
-            bgcolor: theme.palette.background.paper,
-            boxShadow: theme.shadows[3],
-            '&:hover': { bgcolor: theme.palette.background.default },
-            display: { xs: 'none', md: 'flex' }
+            bgcolor: 'background.paper',
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: theme.shadows[2],
+            width: 36,
+            height: 36,
+            '&:hover': { 
+              bgcolor: 'background.paper',
+              borderColor: 'text.secondary',
+              transform: 'translateY(-50%) scale(1.05)',
+            },
+            transition: 'all 0.2s ease',
+            display: { xs: 'none', md: 'flex' },
           }}
         >
-          <ArrowBackIosIcon fontSize="small" />
+          <ArrowBackIosIcon sx={{ fontSize: 14, ml: 0.5 }} />
         </IconButton>
 
+        {/* Contenedor de historial */}
         <Box
           id="history-container"
           sx={{
@@ -116,10 +155,10 @@ const History = forwardRef(({ onLoadGeneration }, ref) => {
             overflowX: 'auto',
             scrollBehavior: 'smooth',
             py: 2,
-            px: 1,
+            px: 0.5,
             '&::-webkit-scrollbar': { display: 'none' },
             scrollbarWidth: 'none',
-            maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)'
+            maskImage: 'linear-gradient(to right, transparent, black 3%, black 97%, transparent)',
           }}
         >
           {history.map((record) => {
@@ -129,22 +168,39 @@ const History = forwardRef(({ onLoadGeneration }, ref) => {
             return (
               <Paper
                 key={record.id}
-                elevation={2}
+                elevation={0}
                 onClick={() => handleImageClick(record)}
                 sx={{
-                  minWidth: 160,
-                  width: 160,
-                  height: 160,
+                  minWidth: 140,
+                  width: 140,
+                  height: 140,
                   borderRadius: 3,
                   overflow: 'hidden',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  border: '2px solid transparent',
+                  transition: 'all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)',
+                  border: `1px solid ${theme.palette.divider}`,
+                  flexShrink: 0,
+                  position: 'relative',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
+                    transform: 'translateY(-6px)',
                     boxShadow: theme.shadows[8],
-                    borderColor: theme.palette.primary.main
-                  }
+                    borderColor: 'secondary.main',
+                    '& img': {
+                      transform: 'scale(1.08)',
+                    },
+                    '&::after': {
+                      opacity: 1,
+                    },
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.4) 100%)',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                    pointerEvents: 'none',
+                  },
                 }}
               >
                 <img
@@ -153,7 +209,8 @@ const History = forwardRef(({ onLoadGeneration }, ref) => {
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover'
+                    objectFit: 'cover',
+                    transition: 'transform 0.4s ease',
                   }}
                 />
               </Paper>
@@ -161,21 +218,30 @@ const History = forwardRef(({ onLoadGeneration }, ref) => {
           })}
         </Box>
 
+        {/* Botón derecho */}
         <IconButton
           onClick={() => handleScroll('right')}
           sx={{
             position: 'absolute',
-            right: -20,
+            right: -16,
             top: '50%',
             transform: 'translateY(-50%)',
             zIndex: 2,
-            bgcolor: theme.palette.background.paper,
-            boxShadow: theme.shadows[3],
-            '&:hover': { bgcolor: theme.palette.background.default },
-            display: { xs: 'none', md: 'flex' }
+            bgcolor: 'background.paper',
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: theme.shadows[2],
+            width: 36,
+            height: 36,
+            '&:hover': { 
+              bgcolor: 'background.paper',
+              borderColor: 'text.secondary',
+              transform: 'translateY(-50%) scale(1.05)',
+            },
+            transition: 'all 0.2s ease',
+            display: { xs: 'none', md: 'flex' },
           }}
         >
-          <ArrowForwardIosIcon fontSize="small" />
+          <ArrowForwardIosIcon sx={{ fontSize: 14 }} />
         </IconButton>
       </Box>
     </Box>
