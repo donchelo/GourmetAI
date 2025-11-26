@@ -412,7 +412,17 @@ const buildPrompt = (parameters, ingredients) => {
   const iluminacionCompleta = `${iluminacionMap[iluminacion] || 'iluminación profesional'}${direccionLuz && direccionLuzMap[direccionLuz] ? `, ${direccionLuzMap[direccionLuz]}` : ''}`;
   const ambienteText = ambienteMap[ambiente] || '';
   const momentoText = momentoDelDiaMap[momentoDelDia] || '';
-  const propsText = propsMap[props] || '';
+  
+  // Props ahora es un array para selección múltiple
+  let propsText = '';
+  if (props && Array.isArray(props) && props.length > 0) {
+    const propsArray = props
+      .filter(p => p !== 'ninguno')
+      .map(p => propsMap[p] || p)
+      .filter(Boolean);
+    propsText = propsArray.join(', ');
+  }
+  
   const saturacionText = saturacionMap[saturacion] || '';
   const efectosArray = [efectoVaporMap[efectoVapor], efectoFrescuraMap[efectoFrescura]].filter(Boolean);
   const efectosText = efectosArray.join(', ');

@@ -82,6 +82,25 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     onParameterChange({ decoracionesExtra: updated });
   };
 
+  const handlePropsChange = (value) => {
+    // Si es 'ninguno', limpiar todos los props
+    if (value === 'ninguno') {
+      onParameterChange({ props: [] });
+      return;
+    }
+    
+    const current = props || [];
+    // Si ya está seleccionado, quitarlo
+    if (current.includes(value)) {
+      const updated = current.filter(p => p !== value);
+      onParameterChange({ props: updated });
+    } else {
+      // Agregar el nuevo prop (filtrar 'ninguno' si existe)
+      const updated = [...current.filter(p => p !== 'ninguno'), value];
+      onParameterChange({ props: updated });
+    }
+  };
+
   const handleRandomize = () => {
     const randomParams = generateRandomParameters();
     onParameterChange(randomParams);
@@ -460,20 +479,31 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
           </Box>
         </AccordionSummary>
         <AccordionDetails sx={{ px: 0, pb: 2 }}>
-          {/* Nuevo: Props/Accesorios */}
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Accesorios</InputLabel>
-            <Select
-              value={props || 'ninguno'}
-              label="Accesorios"
-              onChange={(e) => onParameterChange({ props: e.target.value })}
-              disabled={isGenerating}
-            >
-              {PROPS.map((p) => (
-                <MenuItem key={p.value} value={p.value}>{p.label}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {/* Props/Accesorios - Ahora selección múltiple */}
+          <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5 }}>
+            Accesorios
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+            {PROPS.map((prop) => {
+              const isSelected = prop.value === 'ninguno' 
+                ? (!props || props.length === 0)
+                : (props || []).includes(prop.value);
+              return (
+                <Chip
+                  key={prop.value}
+                  label={prop.label}
+                  onClick={() => !isGenerating && handlePropsChange(prop.value)}
+                  color={isSelected ? "primary" : "default"}
+                  variant={isSelected ? "filled" : "outlined"}
+                  clickable={!isGenerating}
+                  sx={{ 
+                    borderRadius: '8px',
+                    border: isSelected ? 'none' : `1px solid ${theme.palette.divider}`,
+                  }}
+                />
+              );
+            })}
+          </Box>
 
           <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5, mt: 1 }}>
             Decoración Extra

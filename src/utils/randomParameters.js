@@ -87,7 +87,7 @@ export const generateRandomParameters = () => {
     saturacion: randomFrom(SATURACIONES),
     
     // Props y Decoración
-    props: randomFrom(PROPS),
+    props: randomMultipleFrom(PROPS.filter(p => p.value !== 'ninguno'), 0, 3),
     decoracionesExtra: randomMultipleFrom(DECORACIONES_EXTRA, 0, 2)
   };
 };
@@ -123,7 +123,7 @@ export const getDefaultParameters = () => {
     saturacion: 'normal',
     
     // Props y Decoración
-    props: 'ninguno',
+    props: [],
     decoracionesExtra: []
   };
 };

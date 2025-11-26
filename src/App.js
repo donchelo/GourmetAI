@@ -48,7 +48,9 @@ function AppContent() {
     aspectRatio: ASPECT_RATIOS[0].value,
     // Nuevos parámetros - Categoría 4: Efectos Especiales
     efectoVapor: EFECTOS_VAPOR[0].value,
-    efectoFrescura: EFECTOS_FRESCURA[0].value
+    efectoFrescura: EFECTOS_FRESCURA[0].value,
+    // Props ahora es un array para selección múltiple
+    props: []
   });
 
   const {
@@ -94,7 +96,25 @@ function AppContent() {
 
   const handleLoadGeneration = (generationData) => {
     setSelectedImage(generationData.imagenOriginal);
-    setParameters(generationData.parametros);
+    
+    // Normalizar parámetros para compatibilidad con datos antiguos
+    const normalizedParams = { ...generationData.parametros };
+    
+    // Si props es un string (datos antiguos), convertirlo a array
+    if (normalizedParams.props && typeof normalizedParams.props === 'string') {
+      if (normalizedParams.props === 'ninguno' || normalizedParams.props === '') {
+        normalizedParams.props = [];
+      } else {
+        normalizedParams.props = [normalizedParams.props];
+      }
+    }
+    
+    // Asegurar que props sea un array
+    if (!Array.isArray(normalizedParams.props)) {
+      normalizedParams.props = [];
+    }
+    
+    setParameters(normalizedParams);
   };
 
   return (
