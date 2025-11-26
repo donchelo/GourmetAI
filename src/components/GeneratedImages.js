@@ -22,15 +22,65 @@ import { downloadImage } from '../utils/imageUtils';
 import { downloadImageWithMetadata, createMetadata } from '../utils/metadataUtils';
 
 const LOADING_MESSAGES = [
+  // Fase 1: Análisis inicial
   { text: 'Analizando tu imagen...', icon: '🔍' },
-  { text: 'Detectando ingredientes...', icon: '🥗' },
+  { text: 'Detectando ingredientes con ojo de chef...', icon: '🥗' },
+  { text: 'Escaneando texturas y colores...', icon: '🎨' },
+  
+  // Fase 2: Preparación culinaria
   { text: 'Preparando la transformación gourmet...', icon: '👨‍🍳' },
+  { text: 'Consultando con chefs de tres estrellas Michelin...', icon: '⭐' },
+  { text: 'Seleccionando la vajilla perfecta...', icon: '🍽️' },
   { text: 'Aplicando técnicas culinarias de élite...', icon: '✨' },
+  
+  // Fase 3: Fotografía profesional
   { text: 'Ajustando iluminación profesional...', icon: '💡' },
-  { text: 'Emplatando con precisión artística...', icon: '🍽️' },
-  { text: 'Añadiendo toques finales de chef...', icon: '🎨' },
+  { text: 'Configurando ángulos cinematográficos...', icon: '🎬' },
+  { text: 'Calibrando la profundidad de campo...', icon: '📷' },
+  { text: 'Buscando la luz dorada perfecta...', icon: '🌅' },
+  
+  // Fase 4: Emplatado artístico
+  { text: 'Emplatando con precisión artística...', icon: '🎯' },
+  { text: 'Colocando cada elemento como un artista...', icon: '🖌️' },
+  { text: 'Aplicando la regla de los tercios...', icon: '📐' },
+  { text: 'Creando balance visual en el plato...', icon: '⚖️' },
+  
+  // Fase 5: Toques mágicos
+  { text: 'Añadiendo toques finales de chef...', icon: '👨‍🍳' },
+  { text: 'Espolvoreando un poco de magia culinaria...', icon: '🪄' },
+  { text: 'Susurrando secretos de cocina ancestral...', icon: '🔮' },
+  { text: 'Invocando el espíritu de Auguste Escoffier...', icon: '👻' },
+  
+  // Fase 6: Detalles gourmet
+  { text: 'Perfeccionando microdetalles gourmet...', icon: '🔬' },
+  { text: 'Ajustando sombras y reflejos...', icon: '🌓' },
+  { text: 'Realzando colores naturales...', icon: '🌈' },
+  { text: 'Añadiendo ese brillo irresistible...', icon: '✨' },
+  
+  // Fase 7: Mensajes de espera creativos
+  { text: 'La perfección toma su tiempo...', icon: '⏳' },
+  { text: 'Los mejores platos se cocinan despacio...', icon: '🍲' },
+  { text: 'Como un buen vino, esto mejora con paciencia...', icon: '🍷' },
+  { text: 'Dejando reposar los sabores visuales...', icon: '😌' },
+  
+  // Fase 8: Fotografía final
   { text: 'Capturando la esencia gourmet...', icon: '📸' },
+  { text: 'Enfocando el momento perfecto...', icon: '🎯' },
+  { text: 'Componiendo la toma de revista...', icon: '📰' },
+  { text: 'Creando una imagen digna de portada...', icon: '🏆' },
+  
+  // Fase 9: Frases inspiradoras
+  { text: '"La cocina es el arte de transformar"...', icon: '💭' },
+  { text: '"Primero comemos con los ojos"...', icon: '👁️' },
+  { text: '"Cada plato cuenta una historia"...', icon: '📖' },
+  { text: '"La presentación es poesía visual"...', icon: '✍️' },
+  
+  // Fase 10: Mensajes finales
+  { text: 'Dando los últimos retoques maestros...', icon: '🎨' },
+  { text: 'Verificando que todo esté perfecto...', icon: '✅' },
+  { text: 'Preparando tu obra maestra...', icon: '🖼️' },
   { text: 'Casi listo... Un poco más de magia...', icon: '🪄' },
+  { text: '¡Tu plato gourmet está casi listo!', icon: '🎉' },
 ];
 
 const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredients }) => {
@@ -88,10 +138,17 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
     }
 
     // Cambiar mensaje cada 3 segundos
+    // Cuando llegue al final, cicla entre los últimos 8 mensajes para dar variedad
+    const lastMessagesStart = LOADING_MESSAGES.length - 8;
     const messageInterval = setInterval(() => {
-      setLoadingMessageIndex(prev => 
-        prev < LOADING_MESSAGES.length - 1 ? prev + 1 : prev
-      );
+      setLoadingMessageIndex(prev => {
+        if (prev < LOADING_MESSAGES.length - 1) {
+          return prev + 1;
+        } else {
+          // Ciclar entre los últimos 8 mensajes cuando llegue al final
+          return lastMessagesStart;
+        }
+      });
     }, 3000);
 
     // Actualizar progreso basado en tiempo transcurrido (cada segundo)
