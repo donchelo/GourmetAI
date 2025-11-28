@@ -1,11 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box, Grid } from '@mui/material';
 import Layout from './components/Layout';
 import ImageUploader from './components/ImageUploader';
 import ParameterPanel from './components/ParameterPanel';
 import GeneratedImages from './components/GeneratedImages';
-import History from './components/History';
 import Hero from './components/Hero';
 import useImageGeneration from './hooks/useImageGeneration';
 import { validateParameters } from './utils/validation';
@@ -28,7 +27,6 @@ import {
 
 function AppContent() {
   const [selectedImage, setSelectedImage] = useState(null);
-  const historyRef = useRef(null);
   const [parameters, setParameters] = useState({
     intensidadGourmet: INTENSIDAD_GOURMET_DEFAULT,
     estiloPlato: ESTILOS_PLATO[0].value,
@@ -75,30 +73,9 @@ function AppContent() {
 
     try {
       await generate(selectedImage, parameters);
-      if (historyRef.current) {
-        setTimeout(() => {
-          historyRef.current?.refresh();
-        }, 1000);
-      }
     } catch (err) {
       console.error('Error en generación:', err);
     }
-  };
-
-  const handleLoadGeneration = (generationData) => {
-    setSelectedImage(generationData.imagenOriginal);
-    const normalizedParams = { ...generationData.parametros };
-    if (normalizedParams.props && typeof normalizedParams.props === 'string') {
-      if (normalizedParams.props === 'ninguno' || normalizedParams.props === '') {
-        normalizedParams.props = [];
-      } else {
-        normalizedParams.props = [normalizedParams.props];
-      }
-    }
-    if (!Array.isArray(normalizedParams.props)) {
-      normalizedParams.props = [];
-    }
-    setParameters(normalizedParams);
   };
 
   return (
@@ -135,10 +112,6 @@ function AppContent() {
             </Box>
           </Grid>
         </Grid>
-
-        <Box sx={{ mt: 4 }}>
-          <History ref={historyRef} onLoadGeneration={handleLoadGeneration} />
-        </Box>
       </Layout>
     </>
   );

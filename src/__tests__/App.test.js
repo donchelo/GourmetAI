@@ -8,11 +8,6 @@ jest.mock('../services/geminiService', () => ({
   generateGourmetVariants: jest.fn()
 }));
 
-jest.mock('../services/airtableService', () => ({
-  saveGeneration: jest.fn(),
-  getHistory: jest.fn().mockResolvedValue([])
-}));
-
 import App from '../App';
 
 describe('App Component', () => {

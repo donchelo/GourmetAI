@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { analyzeImage, generateGourmetVariants } from '../services/geminiService';
-import { saveGeneration } from '../services/airtableService';
 
 const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -33,23 +32,9 @@ const useImageGeneration = () => {
 
       setGeneratedImages(variants);
       setLastParameters(parameters);
-
-      // Paso 3: Guardar en Airtable (opcional, no bloquear si falla)
+      
       const seed = Date.now();
       setLastSeed(seed);
-      
-      try {
-        await saveGeneration({
-          imagenOriginal: imageBase64,
-          imagenesGeneradas: variants,
-          parametros: parameters,
-          semilla: seed,
-          ingredientesDetectados: detectedIngredients
-        });
-      } catch (airtableError) {
-        console.warn('No se pudo guardar en historial:', airtableError);
-        // No lanzar error, solo loguear
-      }
 
       return { variants, ingredients: detectedIngredients, seed };
     } catch (err) {
