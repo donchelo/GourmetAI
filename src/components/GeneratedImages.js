@@ -12,7 +12,6 @@ import {
   alpha,
   CircularProgress,
   LinearProgress,
-  useMediaQuery,
   Fade
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';

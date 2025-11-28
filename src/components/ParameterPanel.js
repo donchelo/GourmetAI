@@ -40,8 +40,7 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     fondo,
     decoracionesExtra,
     anguloCamara,
-    ambiente,
-    props
+    ambiente
   } = parameters;
 
   const handleDecoracionChange = (value) => {
