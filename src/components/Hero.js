@@ -3,13 +3,37 @@ import { Box, Typography, useTheme, IconButton, Fade, Container } from '@mui/mat
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
-// Define images for the slider
-const SLIDE_IMAGES = [
-  'slide-1.png',
-  'slide-2.jpg',
-  'slide-3.png',
-  'slide-4.jpg',
-].map(filename => `/images/home/slides/${filename}`);
+// Define content for the slider
+const SLIDES = [
+  {
+    image: 'slide-1.png',
+    title: "Diseña Platos Increíbles",
+    subtitle: "Visualiza tus ideas culinarias en segundos."
+  },
+  {
+    image: 'slide-2.png',
+    title: "Crea Cartas Inteligentes",
+    subtitle: "Menús que atraen y venden más."
+  },
+  {
+    image: 'slide-3.png',
+    title: "Fotografía de Estudio con IA",
+    subtitle: "Resultados profesionales sin cámara."
+  },
+  {
+    image: 'slide-4.png',
+    title: "Revoluciona tu Cocina",
+    subtitle: "La herramienta creativa para chefs modernos."
+  },
+  {
+    image: 'slide-5.png',
+    title: "Inspiración Ilimitada",
+    subtitle: "Explora nuevas combinaciones y sabores."
+  }
+].map(slide => ({
+  ...slide,
+  image: `/images/home/slides/${slide.image}`
+}));
 
 const Hero = () => {
   const theme = useTheme();
@@ -17,17 +41,17 @@ const Hero = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % SLIDE_IMAGES.length);
+      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     }, 4000);
     return () => clearInterval(timer);
   }, []);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % SLIDE_IMAGES.length);
+    setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev === 0 ? SLIDE_IMAGES.length - 1 : prev - 1));
+    setCurrentSlide((prev) => (prev === 0 ? SLIDES.length - 1 : prev - 1));
   };
 
   return (
@@ -105,9 +129,9 @@ const Hero = () => {
           }}
         >
           {/* Slides */}
-          {SLIDE_IMAGES.map((img, index) => (
+          {SLIDES.map((slide, index) => (
             <Fade
-              key={img}
+              key={slide.image}
               in={currentSlide === index}
               timeout={1000}
               mountOnEnter={false}
@@ -124,7 +148,7 @@ const Hero = () => {
                 }}
               >
                 <img
-                  src={img}
+                  src={slide.image}
                   alt={`Slide ${index + 1}`}
                   style={{
                     width: '100%',
@@ -133,7 +157,7 @@ const Hero = () => {
                     display: 'block'
                   }}
                   onError={(e) => {
-                    console.error('Error loading image:', img);
+                    console.error('Error loading image:', slide.image);
                     // Si falla la carga, intentamos no mostrar nada o un fallback si tuviéramos
                     // Por ahora dejamos que el fade haga su trabajo, o el fondo negro
                   }}
@@ -180,16 +204,10 @@ const Hero = () => {
                     fontSize: { xs: '2rem', md: '3rem' }
                   }}
                 >
-                  {currentSlide === 0 ? "Diseña Platos Increíbles" : 
-                   currentSlide === 1 ? "Crea Cartas Inteligentes" : 
-                   currentSlide === 2 ? "Fotografía de Estudio con IA" : 
-                   "Revoluciona tu Cocina"}
+                  {SLIDES[currentSlide].title}
                 </Typography>
                 <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, fontSize: { xs: '1rem', md: '1.25rem' } }}>
-                  {currentSlide === 0 ? "Visualiza tus ideas culinarias en segundos." : 
-                   currentSlide === 1 ? "Menús que atraen y venden más." : 
-                   currentSlide === 2 ? "Resultados profesionales sin cámara." : 
-                   "La herramienta creativa para chefs modernos."}
+                  {SLIDES[currentSlide].subtitle}
                 </Typography>
               </Box>
             </Fade>
@@ -244,7 +262,7 @@ const Hero = () => {
               zIndex: 3
             }}
           >
-            {SLIDE_IMAGES.map((_, index) => (
+            {SLIDES.map((_, index) => (
               <Box
                 key={index}
                 onClick={() => setCurrentSlide(index)}
