@@ -10,7 +10,7 @@ const FormData = require('form-data');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.SERVER_PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Confiar en el proxy (necesario para rate-limit cuando se usa detrás de un proxy/ngrok)
