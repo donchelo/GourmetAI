@@ -13,7 +13,7 @@ export const createMetadata = (parameters, seed, ingredients) => {
     seed,
     ingredients,
     timestamp: new Date().toISOString(),
-    app: 'GourmetAI',
+    app: 'VisualFeast',
     version: '1.0.0'
   };
 };

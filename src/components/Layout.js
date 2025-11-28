@@ -65,7 +65,7 @@ const Layout = ({ children }) => {
                   cursor: 'pointer',
                 }}
               >
-                FoodFest
+                VisualFeast
                 <Box component="span" sx={{ color: theme.palette.secondary.main, fontSize: '2rem', lineHeight: 0 }}>.</Box>
               </Typography>
             </Box>
@@ -122,10 +122,10 @@ const Layout = ({ children }) => {
         <Container maxWidth="lg">
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
             <Typography variant="h6" sx={{ fontFamily: theme.typography.h1.fontFamily, fontWeight: 700 }}>
-              FoodFest.
+              VisualFeast.
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              © {new Date().getFullYear()} GourmetAI Experience. All rights reserved.
+              © {new Date().getFullYear()} VisualFeast Experience. All rights reserved.
             </Typography>
           </Box>
         </Container>

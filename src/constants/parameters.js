@@ -114,6 +114,19 @@ export const ASPECT_RATIOS = [
   { value: '4:5', label: '4:5 (Portrait)' }
 ];
 
+export const IMAGE_SIZES = [
+  { value: '1K', label: '1K (Estándar)' },
+  { value: '2K', label: '2K (Alta Calidad)' },
+  { value: '4K', label: '4K (Ultra HD)' }
+];
+
+export const NUMBER_OF_IMAGES = [
+  { value: 1, label: '1 Imagen' },
+  { value: 2, label: '2 Imágenes' },
+  { value: 3, label: '3 Imágenes' },
+  { value: 4, label: '4 Imágenes' }
+];
+
 // NUEVO: Dirección de luz
 export const DIRECCIONES_LUZ = [
   { value: 'natural', label: 'Natural (ventana)' },
@@ -166,4 +179,44 @@ export const TEXTURAS_FONDO = [
   { value: 'rustica', label: 'Rústica' },
   { value: 'desgastada', label: 'Vintage/Desgastada' },
   { value: 'pulida', label: 'Pulida/Brillante' }
+];
+
+// ============================================
+// NUEVO: Parámetros Culinarios
+// ============================================
+
+export const TIPOS_COCINA = [
+  { value: 'sin-preferencia', label: 'Sin Preferencia' },
+  { value: 'italiana', label: 'Italiana' },
+  { value: 'francesa', label: 'Francesa' },
+  { value: 'mexicana', label: 'Mexicana' },
+  { value: 'japonesa', label: 'Japonesa' },
+  { value: 'china', label: 'China' },
+  { value: 'española', label: 'Española' },
+  { value: 'peruana', label: 'Peruana' },
+  { value: 'india', label: 'India' },
+  { value: 'mediterranea', label: 'Mediterránea' },
+  { value: 'fusion', label: 'Fusión' }
+];
+
+export const CATEGORIAS_PLATO = [
+  { value: 'sin-preferencia', label: 'Sin Preferencia' },
+  { value: 'entrada', label: 'Entrada / Aperitivo' },
+  { value: 'plato-fuerte', label: 'Plato Fuerte' },
+  { value: 'postre', label: 'Postre' },
+  { value: 'desayuno', label: 'Desayuno' },
+  { value: 'bebida', label: 'Bebida / Coctel' },
+  { value: 'ensalada', label: 'Ensalada' },
+  { value: 'sopa', label: 'Sopa / Crema' }
+];
+
+export const TECNICAS_COCCION = [
+  { value: 'sin-preferencia', label: 'Sin Preferencia' },
+  { value: 'parrilla', label: 'A la Parrilla / Grill' },
+  { value: 'horno', label: 'Al Horno' },
+  { value: 'sarten', label: 'Salteado / Sartén' },
+  { value: 'frito', label: 'Frito' },
+  { value: 'crudo', label: 'Crudo / Fresco' },
+  { value: 'vapor', label: 'Al Vapor' },
+  { value: 'sous-vide', label: 'Sous-vide' }
 ];

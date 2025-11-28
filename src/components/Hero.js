@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, useTheme, IconButton, Fade } from '@mui/material';
+import { Box, Typography, useTheme, IconButton, Fade, Container } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
-// Define images with manual path encoding to be safe
+// Define images for the slider
 const SLIDE_IMAGES = [
   'slide-1.png',
-  'slide-2.png',
+  'slide-2.jpg',
   'slide-3.png',
-  'slide-4.png',
-  'slide-5.png',
-].map(filename => `/images/home/slides/${filename}`); 
+  'slide-4.jpg',
+].map(filename => `/images/home/slides/${filename}`);
 
 const Hero = () => {
   const theme = useTheme();
@@ -32,9 +31,46 @@ const Hero = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', mb: 6 }}>
-      {/* Header Title Section */}
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
+    <Box
+      sx={{
+        width: '100%',
+        height: { xs: 'auto', md: '85vh' }, // Altura suficiente para mostrar el fondo
+        minHeight: '600px',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundImage: `url('/images/home/home.jpeg')`, // Imagen de fondo principal
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        mb: 6,
+        py: 4,
+        overflow: 'hidden', // Evitar scroll si la imagen es muy grande
+        '&::before': { // Overlay oscuro para mejorar contraste
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          zIndex: 1
+        }
+      }}
+    >
+      {/* Título flotante superior */}
+      <Box 
+        sx={{ 
+          position: 'absolute', 
+          top: { xs: 20, md: 40 }, 
+          left: { xs: 20, md: 60 }, 
+          zIndex: 2,
+          color: 'white',
+          textAlign: 'left',
+          width: 'auto'
+        }}
+      >
         <Typography 
           variant="h6" 
           component="h1" 
@@ -44,50 +80,49 @@ const Hero = () => {
             textTransform: 'uppercase',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
             gap: 1,
-            fontSize: { xs: '1rem', md: '1.25rem' }
+            fontSize: { xs: '0.9rem', md: '1.1rem' }
           }}
         >
-          FOOD MENU <span style={{ fontWeight: 400, textTransform: 'none', fontSize: '0.9em', color: theme.palette.text.secondary }}>from</span> 
-          <Box component="span" sx={{ borderBottom: `2px solid ${theme.palette.text.primary}` }}>
-            FoodFest 1.0
+          VISUAL FEAST <span style={{ fontWeight: 400, textTransform: 'none', fontSize: '0.9em', opacity: 0.8 }}>|</span> 
+          <Box component="span" sx={{ borderBottom: '2px solid white' }}>
+            Design the Taste
           </Box>
         </Typography>
       </Box>
 
-      {/* Hero Slider Container */}
-      <Box 
-        sx={{ 
-          position: 'relative',
-          width: '100%',
-          // Maintain aspect ratio
-          aspectRatio: { xs: '4/3', md: '16/9', lg: '21/9' },
-          borderRadius: { xs: 0, md: 4 }, 
-          overflow: 'hidden',
-          boxShadow: theme.shadows[4],
-          bgcolor: '#f0f0f0', // Neutral background while loading
-        }}
-      >
-        {/* Slides */}
-        {SLIDE_IMAGES.map((img, index) => (
-          <Fade 
-            key={img} 
-            in={currentSlide === index} 
-            timeout={1000}
-            mountOnEnter={false}
-            unmountOnExit={false}
-          >
-             <Box 
-               sx={{ 
-                 position: 'absolute',
-                 top: 0, 
-                 left: 0, 
-                 width: '100%', 
-                 height: '100%',
-                 zIndex: currentSlide === index ? 1 : 0,
-               }}
-             >
+      {/* Contenedor del Slider Centrado */}
+      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2, mt: 4 }}>
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            aspectRatio: '16/9',
+            borderRadius: { xs: 2, md: 4 },
+            overflow: 'hidden',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.5)', // Sombra fuerte para efecto flotante
+            bgcolor: '#000',
+          }}
+        >
+          {/* Slides */}
+          {SLIDE_IMAGES.map((img, index) => (
+            <Fade
+              key={img}
+              in={currentSlide === index}
+              timeout={1000}
+              mountOnEnter={false}
+              unmountOnExit={false}
+            >
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: currentSlide === index ? 1 : 0,
+                }}
+              >
                 <img
                   src={img}
                   alt={`Slide ${index + 1}`}
@@ -99,94 +134,135 @@ const Hero = () => {
                   }}
                   onError={(e) => {
                     console.error('Error loading image:', img);
-                    e.target.style.display = 'none'; // Hide broken images
+                    // Si falla la carga, intentamos no mostrar nada o un fallback si tuviéramos
+                    // Por ahora dejamos que el fade haga su trabajo, o el fondo negro
                   }}
                 />
-             </Box>
-          </Fade>
-        ))}
-
-        {/* Overlay Gradient */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.2) 100%)',
-            pointerEvents: 'none',
-            zIndex: 2,
-          }}
-        />
-
-        {/* Navigation Arrows */}
-        <IconButton
-          onClick={prevSlide}
-          sx={{
-            position: 'absolute',
-            left: { xs: 10, md: 20 },
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'white',
-            bgcolor: 'rgba(0,0,0,0.3)',
-            backdropFilter: 'blur(4px)',
-            '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' },
-            display: { xs: 'none', md: 'flex' },
-            zIndex: 3,
-          }}
-        >
-          <ArrowBackIosNewIcon />
-        </IconButton>
-        
-        <IconButton
-          onClick={nextSlide}
-          sx={{
-            position: 'absolute',
-            right: { xs: 10, md: 20 },
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'white',
-            bgcolor: 'rgba(0,0,0,0.3)',
-            backdropFilter: 'blur(4px)',
-            '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' },
-            display: { xs: 'none', md: 'flex' },
-            zIndex: 3,
-          }}
-        >
-          <ArrowForwardIosIcon />
-        </IconButton>
-
-        {/* Slide Indicators */}
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 20,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            gap: 1.5,
-            zIndex: 3,
-          }}
-        >
-          {SLIDE_IMAGES.map((_, index) => (
-            <Box
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              sx={{
-                width: currentSlide === index ? 32 : 8,
-                height: 4,
-                borderRadius: 2,
-                bgcolor: 'white',
-                opacity: currentSlide === index ? 1 : 0.5,
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-              }}
-            />
+              </Box>
+            </Fade>
           ))}
+
+          {/* Overlay Gradient en el slider */}
+           <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%)',
+              pointerEvents: 'none',
+              zIndex: 2,
+            }}
+          />
+
+          {/* Textos del Slider */}
+          <Box 
+            sx={{ 
+              position: 'absolute', 
+              bottom: {xs: 40, md: 60}, 
+              left: {xs: 20, md: 40}, 
+              zIndex: 3, 
+              color: 'white', 
+              maxWidth: '600px', 
+              textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+              pointerEvents: 'none'
+            }}
+          >
+            <Fade in={true} key={currentSlide} timeout={800}>
+              <Box>
+                <Typography 
+                  variant="h3" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    mb: 1, 
+                    fontFamily: 'Cormorant Garamond',
+                    fontSize: { xs: '2rem', md: '3rem' }
+                  }}
+                >
+                  {currentSlide === 0 ? "Diseña Platos Increíbles" : 
+                   currentSlide === 1 ? "Crea Cartas Inteligentes" : 
+                   currentSlide === 2 ? "Fotografía de Estudio con IA" : 
+                   "Revoluciona tu Cocina"}
+                </Typography>
+                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                  {currentSlide === 0 ? "Visualiza tus ideas culinarias en segundos." : 
+                   currentSlide === 1 ? "Menús que atraen y venden más." : 
+                   currentSlide === 2 ? "Resultados profesionales sin cámara." : 
+                   "La herramienta creativa para chefs modernos."}
+                </Typography>
+              </Box>
+            </Fade>
+          </Box>
+
+          {/* Flechas de Navegación */}
+          <IconButton
+            onClick={prevSlide}
+            sx={{
+              position: 'absolute',
+              left: 20,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'white',
+              bgcolor: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(5px)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
+              zIndex: 3,
+              display: { xs: 'none', md: 'flex' }
+            }}
+          >
+            <ArrowBackIosNewIcon />
+          </IconButton>
+
+          <IconButton
+            onClick={nextSlide}
+            sx={{
+              position: 'absolute',
+              right: 20,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'white',
+              bgcolor: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(5px)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
+              zIndex: 3,
+              display: { xs: 'none', md: 'flex' }
+            }}
+          >
+            <ArrowForwardIosIcon />
+          </IconButton>
+
+          {/* Indicadores */}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 20,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              gap: 1,
+              zIndex: 3
+            }}
+          >
+            {SLIDE_IMAGES.map((_, index) => (
+              <Box
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                sx={{
+                  width: currentSlide === index ? 32 : 8,
+                  height: 4,
+                  borderRadius: 2,
+                  bgcolor: 'white',
+                  opacity: currentSlide === index ? 1 : 0.5,
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                }}
+              />
+            ))}
+          </Box>
         </Box>
-      </Box>
+      </Container>
     </Box>
   );
 };

@@ -24,6 +24,9 @@ import {
   FONDOS,
   DECORACIONES_EXTRA,
   ANGULOS_CAMARA,
+  ASPECT_RATIOS,
+  IMAGE_SIZES,
+  NUMBER_OF_IMAGES,
   INTENSIDAD_GOURMET_MIN,
   INTENSIDAD_GOURMET_MAX,
   AMBIENTES
@@ -40,7 +43,10 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     fondo,
     decoracionesExtra,
     anguloCamara,
-    ambiente
+    ambiente,
+    aspectRatio,
+    imageSize,
+    numberOfImages
   } = parameters;
 
   const handleDecoracionChange = (value) => {
@@ -167,6 +173,50 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       </Box>
 
       <Accordion defaultExpanded sx={accordionStyle}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
+          <Typography variant="subtitle1" fontWeight="600" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Formato & Salida
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ px: 0 }}>
+           <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Formato</InputLabel>
+            <Select
+              value={aspectRatio || 'original'}
+              label="Formato"
+              onChange={(e) => onParameterChange({ aspectRatio: e.target.value })}
+            >
+              {ASPECT_RATIOS.map((a) => <MenuItem key={a.value} value={a.value}>{a.label}</MenuItem>)}
+            </Select>
+          </FormControl>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Tamaño</InputLabel>
+              <Select
+                value={imageSize || '1K'}
+                label="Tamaño"
+                onChange={(e) => onParameterChange({ imageSize: e.target.value })}
+              >
+                {IMAGE_SIZES.map((s) => <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>)}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Cantidad</InputLabel>
+              <Select
+                value={numberOfImages || 1}
+                label="Cantidad"
+                onChange={(e) => onParameterChange({ numberOfImages: e.target.value })}
+              >
+                {NUMBER_OF_IMAGES.map((n) => <MenuItem key={n.value} value={n.value}>{n.label}</MenuItem>)}
+              </Select>
+            </FormControl>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion sx={accordionStyle}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
           <Typography variant="subtitle1" fontWeight="600" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Estilo & Ambiente

@@ -17,8 +17,8 @@ describe('Componentes', () => {
           <div>Test content</div>
         </Layout>
       );
-      // Puede haber múltiples "GourmetAI"
-      expect(screen.getAllByText(/GourmetAI/i).length).toBeGreaterThan(0);
+      // Puede haber múltiples "VisualFeast"
+      expect(screen.getAllByText(/VisualFeast/i).length).toBeGreaterThan(0);
     });
 
     it('debe renderizar el contenido children', () => {

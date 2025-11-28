@@ -26,8 +26,8 @@ describe('App Component', () => {
     await act(async () => {
       jest.runAllTimers();
     });
-    // Puede haber múltiples "GourmetAI" (header, footer, etc)
-    expect(screen.getAllByText(/GourmetAI/i).length).toBeGreaterThan(0);
+    // Puede haber múltiples "VisualFeast" (header, footer, etc)
+    expect(screen.getAllByText(/VisualFeast/i).length).toBeGreaterThan(0);
   });
 
   it('debe mostrar el panel de carga de imagen', async () => {

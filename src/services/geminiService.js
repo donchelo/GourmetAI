@@ -195,10 +195,11 @@ export const analyzeImage = async (imageBase64) => {
  * Construye el prompt dinámico basado en los parámetros
  * Nueva filosofía: mantener ALIMENTOS idénticos, libertad total en presentación
  * @param {Object} parameters - Parámetros de generación
- * @param {string} ingredients - Ingredientes detectados
+ * @param {string} input - Ingredientes o idea/concepto
+ * @param {boolean} isFromScratch - Si es generación desde cero (true) o desde imagen (false)
  * @returns {string} - Prompt completo
  */
-const buildPrompt = (parameters, ingredients) => {
+const buildPrompt = (parameters, input, isFromScratch = false) => {
   const {
     intensidadGourmet,
     estiloPlato,
@@ -218,7 +219,9 @@ const buildPrompt = (parameters, ingredients) => {
     direccionLuz,
     props,
     saturacion,
-    texturaFondo
+    texturaFondo,
+    imageSize,
+    numberOfImages
   } = parameters;
 
   // ============================================
@@ -421,12 +424,27 @@ const buildPrompt = (parameters, ingredients) => {
   const efectosText = efectosArray.join(', ');
 
   // ============================================
-  // PROMPT - NUEVA FILOSOFÍA: MANTENER ALIMENTOS, NO PLATO
+  // PROMPT - LÓGICA CONDICIONAL (DESDE CERO vs IMAGEN)
   // ============================================
-  const prompt = `Genera una fotografía gastronómica profesional gourmet basada en esta imagen de comida.
+  let prompt = '';
+
+  if (isFromScratch) {
+    prompt = `Genera una fotografía gastronómica profesional de alta resolución basada en la siguiente descripción: "${input}".
+
+ESPECIFICACIONES DE LA IMAGEN:
+- Estilo: ${estiloMap[estiloPlato] || 'elegante'}
+- Vajilla: ${vajillaText}
+- Fondo: ${fondoCompleto}
+- Iluminación: ${iluminacionCompleta}
+- Ángulo: ${anguloMap[anguloCamara] || 'ángulo profesional'}
+- Enfoque: ${profundidadCampoMap[profundidadCampo] || 'profundidad moderada'}${ambienteText ? `\n- Ambiente: ${ambienteText}` : ''}${momentoText ? `\n- Atmósfera: ${momentoText}` : ''}${saturacionText ? `\n- Colores: ${saturacionText}` : ''}${propsText ? `\n- Props: ${propsText}` : ''}${decoracionesText ? `\n- Decoración: ${decoracionesText}` : ''}${efectosText ? `\n- Efectos: ${efectosText}` : ''}${aspectRatioMap[aspectRatio] ? `\n- Formato: ${aspectRatioMap[aspectRatio]}` : ''}
+
+RESULTADO: Una imagen fotorrealista de calidad de revista culinaria. La comida debe verse deliciosa, fresca y perfectamente iluminada.`;
+  } else {
+    prompt = `Genera una fotografía gastronómica profesional gourmet basada en esta imagen de comida.
 
 REGLA FUNDAMENTAL:
-- Los ALIMENTOS e INGREDIENTES deben ser idénticos a la imagen original: ${ingredients}
+- Los ALIMENTOS e INGREDIENTES deben ser idénticos a la imagen original: ${input}
 - Mantén la misma comida, los mismos ingredientes, porciones y disposición general de los alimentos
 - PUEDES cambiar libremente: plato, vajilla, fondo, iluminación, ángulo, decoración y presentación
 
@@ -439,6 +457,7 @@ ESPECIFICACIONES DE LA IMAGEN:
 - Enfoque: ${profundidadCampoMap[profundidadCampo] || 'profundidad moderada'}${ambienteText ? `\n- Ambiente: ${ambienteText}` : ''}${momentoText ? `\n- Atmósfera: ${momentoText}` : ''}${saturacionText ? `\n- Colores: ${saturacionText}` : ''}${propsText ? `\n- Props: ${propsText}` : ''}${decoracionesText ? `\n- Decoración: ${decoracionesText}` : ''}${efectosText ? `\n- Efectos: ${efectosText}` : ''}${aspectRatioMap[aspectRatio] ? `\n- Formato: ${aspectRatioMap[aspectRatio]}` : ''}
 
 RESULTADO: Fotografía gastronómica profesional de nivel revista, con los mismos alimentos de la imagen original pero con presentación gourmet transformada.`;
+  }
 
   return prompt;
 };
@@ -462,7 +481,7 @@ export const generateGourmetVariants = async (imageBase64, parameters, ingredien
 
     // Construir prompt dinámico basado en los parámetros
     // El prompt ahora se enfoca en mejorar la imagen original
-    const prompt = buildPrompt(parameters, ingredients);
+    const prompt = buildPrompt(parameters, ingredients, false);
     
     // Usar SOLO Gemini 3 Pro Image según documentación oficial
     console.log('🎨 Mejorando imagen original con gemini-3-pro-image-preview (Gemini 3)...');
@@ -477,8 +496,39 @@ export const generateGourmetVariants = async (imageBase64, parameters, ingredien
     
     // Usar Gemini 3 Pro Image para edición conversacional
     // Según documentación: puede mejorar/editar imágenes existentes
+    const modelConfig = { 
+      model: 'gemini-3-pro-image-preview',
+      // No configuramos generationConfig aquí para parámetros de imagen específicos
+      // ya que la API v1beta maneja esto diferente o en el payload
+    };
+
+    // Si tenemos parámetros de output específicos como imageSize o aspect ratio para la CONFIGURACIÓN del modelo
+    // La documentación dice que se pasan en config al llamar a generateContent pero el SDK de Google
+    // maneja esto a veces en generationConfig.
+    
+    // Configuración de imagen según documentación de Gemini 3
+    // Nota: El SDK de JS puede requerir structure diferente.
+    // Usaremos el prompt para guiar al modelo si la config falla, pero intentamos pasar config.
+    
+    // Mapeo de tamaño 1K, 2K, 4K
+    // La doc dice: imageSize "1K", "2K" (Standard/Ultra) o "4K" (Gemini 3 Pro Image)
+    const imageSizeParam = parameters.imageSize || '1K';
+    const aspectRatioParam = parameters.aspectRatio === 'original' ? '1:1' : (parameters.aspectRatio || '1:1');
+    const numberOfImagesParam = Number(parameters.numberOfImages) || 1;
+    
+    const generationConfig = {
+       // Gemini 3 usa image_config dentro de generationConfig o tools dependiendo de la versión
+       // Intentamos pasar la estructura estándar de generationConfig para imágenes
+       imageConfig: {
+         imageSize: imageSizeParam,
+         aspectRatio: aspectRatioParam
+         // numberOfImages eliminado: causa error 400 Invalid JSON payload en API actual
+       }
+    };
+
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-3-pro-image-preview'
+      model: 'gemini-3-pro-image-preview',
+      generationConfig: generationConfig
     });
     
     // Preparar la imagen original para enviarla junto con el prompt
@@ -584,3 +634,104 @@ export const generateGourmetVariants = async (imageBase64, parameters, ingredien
   }
 };
 
+/**
+ * Genera una imagen desde cero basada en descripción de ingredientes/idea
+ * @param {string} input - Descripción de ingredientes o idea
+ * @param {Object} parameters - Parámetros de configuración
+ * @returns {Promise<Array>} - Array con 1 imagen generada en base64
+ */
+export const generateImageFromPrompt = async (input, parameters) => {
+  try {
+    const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('API Key de Gemini no configurada');
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const prompt = buildPrompt(parameters, input, true);
+    
+    // Configuración de imagen
+    const imageSizeParam = parameters.imageSize || '1K';
+    const aspectRatioParam = parameters.aspectRatio === 'original' ? '1:1' : (parameters.aspectRatio || '1:1');
+    const numberOfImagesParam = Number(parameters.numberOfImages) || 1;
+
+    const generationConfig = {
+       imageConfig: {
+         imageSize: imageSizeParam,
+         aspectRatio: aspectRatioParam
+         // numberOfImages eliminado: causa error 400 Invalid JSON payload en API actual
+       }
+    };
+    
+    console.log('🎨 Generando imagen desde cero...');
+    console.log('📝 Prompt:', prompt.substring(0, 150) + '...');
+
+    const availableModels = await listAvailableModels(apiKey);
+    
+    // Modelos candidatos para generación de imagen desde texto
+    // Imagen 3 es el ideal si está disponible vía API (imagen-3.0-generate-001)
+    // O fallback a gemini-pro si tiene capacidades (aunque suele ser texto)
+    // Asumiremos que si hay un modelo de imagen disponible, lo usamos
+    
+    let modelName = 'gemini-3-pro-image-preview'; // Default a intentar
+    
+    if (availableModels) {
+        if (availableModels.includes('imagen-3.0-generate-001')) {
+            modelName = 'imagen-3.0-generate-001';
+        } else if (availableModels.includes('gemini-3-pro-image-preview')) {
+            modelName = 'gemini-3-pro-image-preview';
+        }
+    }
+    
+    console.log(`Usando modelo: ${modelName}`);
+
+    const model = genAI.getGenerativeModel({ 
+        model: modelName,
+        generationConfig: generationConfig
+    });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    
+    let imageData = null;
+
+    // Lógica de extracción de imagen (similar a generateGourmetVariants)
+    if (response.candidates && response.candidates[0]) {
+      const parts = response.candidates[0].content?.parts || [];
+      const imagePart = parts.find(part => part.inlineData);
+      if (imagePart?.inlineData?.data) {
+        imageData = imagePart.inlineData.data;
+      }
+    }
+    
+    if (!imageData && result.response?.parts) {
+      const imagePart = result.response.parts.find(part => part.inlineData);
+      if (imagePart?.inlineData?.data) {
+        imageData = imagePart.inlineData.data;
+      }
+    }
+    
+    if (!imageData && response.text) {
+        // A veces devuelven URL o base64 en texto
+         const base64Match = response.text.match(/data:image\/[^;]+;base64,([^\s"']+)/);
+         if (base64Match) {
+             imageData = base64Match[1];
+         }
+    }
+
+    if (imageData) {
+      return [`data:image/png;base64,${imageData}`];
+    } else {
+        // Fallback simulación si el modelo devuelve solo texto describiendo la imagen (común en modelos de texto)
+        // En un caso real, esto debería fallar si no hay imagen.
+        console.warn('⚠️ El modelo devolvió solo texto, no imagen. Verificando respuesta...');
+        if (response.text) {
+            console.log('Respuesta texto:', response.text().substring(0,100));
+        }
+        throw new Error('El modelo seleccionado no generó una imagen visual. Asegúrate de tener acceso a un modelo de generación de imágenes (ej. Imagen 3 o Gemini 3 Vision/Image).');
+    }
+
+  } catch (error) {
+    console.error('❌ Error generando imagen desde cero:', error);
+    throw new Error(error.message || 'Error generando imagen desde cero.');
+  }
+};

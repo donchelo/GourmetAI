@@ -291,7 +291,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
         >
           <img
             src={imageUrl}
-            alt="Generated Gourmet"
+            alt="VisualFeast Generated Image"
             style={{
               width: '100%',
               height: '100%',

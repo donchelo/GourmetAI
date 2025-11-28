@@ -79,6 +79,8 @@ export const generateRandomParameters = () => {
     anguloCamara: randomFrom(ANGULOS_CAMARA),
     profundidadCampo: randomFrom(PROFUNDIDADES_CAMPO),
     aspectRatio: randomFrom(ASPECT_RATIOS),
+    imageSize: '1K',
+    numberOfImages: 1,
     
     // Efectos Especiales
     momentoDelDia: randomFrom(MOMENTOS_DIA),
@@ -115,6 +117,8 @@ export const getDefaultParameters = () => {
     anguloCamara: '45',
     profundidadCampo: 'moderado',
     aspectRatio: 'original',
+    imageSize: '1K',
+    numberOfImages: 1,
     
     // Efectos Especiales
     momentoDelDia: 'sin-preferencia',
