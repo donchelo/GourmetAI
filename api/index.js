@@ -160,34 +160,56 @@ app.post('/api/generate-recipe-claude', async (req, res) => {
     try {
         console.log('📝 Recibida solicitud de generación de receta con Claude');
         const { prompt } = req.body;
-        const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
+        
+        // Leer la API key - verificar tanto REACT_APP_ANTHROPIC_API_KEY como ANTHROPIC_API_KEY
+        const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
 
         if (!apiKey) {
             console.error('❌ API Key de Anthropic no configurada');
-            return res.status(500).json({ error: 'API Key de Anthropic no configurada en el servidor' });
+            console.error('Variables de entorno disponibles:', Object.keys(process.env).filter(k => k.includes('ANTHROPIC')));
+            return res.status(500).json({ error: 'API Key de Anthropic no configurada en el servidor. Verifica que REACT_APP_ANTHROPIC_API_KEY esté en tu archivo .env' });
+        }
+
+        // Validar formato básico de la API key (debe empezar con sk-ant-)
+        if (!apiKey.startsWith('sk-ant-')) {
+            console.error('❌ Formato de API Key inválido. Debe empezar con "sk-ant-"');
+            return res.status(500).json({ error: 'Formato de API Key inválido. La API key de Anthropic debe empezar con "sk-ant-"' });
         }
 
         if (!prompt) {
             return res.status(400).json({ error: 'Prompt es requerido' });
         }
 
+        console.log('✅ API Key encontrada, inicializando cliente de Anthropic...');
         const anthropic = new Anthropic({
             apiKey: apiKey,
         });
 
+        console.log('📤 Enviando solicitud a Claude...');
         const msg = await anthropic.messages.create({
-            model: "claude-3-5-sonnet-20240620", // Use a fast and intelligent model
+            model: "claude-haiku-4-5", // Fast and cost-efficient model
             max_tokens: 1024,
             messages: [{ role: "user", content: prompt }],
         });
 
         const text = msg.content[0].text;
+        console.log('✅ Receta generada exitosamente');
         
         return res.json({ success: true, recipe: text });
 
     } catch (error) {
         console.error('❌ Error generando receta con Claude:', error);
-        return res.status(500).json({ error: error.message || 'Error generando receta con Claude' });
+        
+        // Mensajes de error más específicos
+        let errorMessage = error.message || 'Error generando receta con Claude';
+        
+        if (error.status === 401 || error.message?.includes('authentication') || error.message?.includes('invalid x-api-key')) {
+            errorMessage = 'API Key de Anthropic inválida. Por favor, verifica que tu API key sea correcta y esté configurada en el archivo .env como REACT_APP_ANTHROPIC_API_KEY';
+        } else if (error.status === 429) {
+            errorMessage = 'Límite de solicitudes excedido. Por favor, intenta más tarde.';
+        }
+        
+        return res.status(500).json({ error: errorMessage });
     }
 });
 

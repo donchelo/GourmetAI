@@ -137,6 +137,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
           border: `1px solid ${theme.palette.divider}`,
           minHeight: '100%',
           height: '100%',
+          width: '100%', // Asegurar ancho completo
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -207,6 +208,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
           backgroundColor: 'background.default',
           minHeight: '100%',
           height: '100%',
+          width: '100%', // Asegurar ancho completo
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -242,6 +244,7 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
       <Box 
         sx={{ 
           height: '100%', 
+          width: '100%', // Asegurar ancho completo
           display: 'flex', 
           flexDirection: 'column',
         }}
@@ -275,15 +278,14 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
           elevation={0}
           sx={{
             position: 'relative',
-            overflow: 'hidden',
+            overflow: 'hidden', // Mantener hidden para el overlay
             borderRadius: 0,
             cursor: 'zoom-in',
             width: '100%',
-            flex: 1,
-            minHeight: 0,
+            maxWidth: '100%', // Asegurar que no exceda el ancho
             bgcolor: theme.palette.background.paper,
             border: `1px solid ${theme.palette.divider}`,
-            display: 'flex',
+            display: 'block', // Block para que la imagen ocupe todo el ancho
             transition: 'all 0.3s ease',
             '&:hover .overlay': { opacity: 1 },
           }}
@@ -294,9 +296,11 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
             alt="VisualFeast Generated Image"
             style={{
               width: '100%',
-              height: '100%',
-              objectFit: 'contain',
+              maxWidth: '100%', // Asegurar ancho completo
+              height: 'auto', // Altura automática para mantener proporción y mostrar imagen completa
+              objectFit: 'contain', // Mantener proporción sin recortes - muestra la imagen completa
               display: 'block',
+              minHeight: 0, // Permitir que se ajuste al contenido
             }}
           />
           

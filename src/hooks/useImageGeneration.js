@@ -11,6 +11,7 @@ const useImageGeneration = () => {
   const [recipe, setRecipe] = useState(null);
   const [lastSeed, setLastSeed] = useState(null);
   const [lastParameters, setLastParameters] = useState(null);
+  const [lastIdea, setLastIdea] = useState(null); // Guardar la idea original
 
   const generate = useCallback(async (imageBase64, parameters) => {
     setIsGenerating(true);
@@ -94,6 +95,7 @@ const useImageGeneration = () => {
       setGeneratedImages(variants);
       // setRecipe(generatedRecipe); // Receta se genera después bajo demanda
       setLastParameters(parameters);
+      setLastIdea(idea); // Guardar la idea original para la receta
       
       const seed = Date.now();
       setLastSeed(seed);
@@ -109,28 +111,65 @@ const useImageGeneration = () => {
   }, []);
 
   const fetchRecipe = useCallback(async () => {
-      if (!lastParameters || !generatedImages.length) return;
+      console.log('🔍 fetchRecipe called');
+      console.log('🔍 lastParameters:', lastParameters);
+      console.log('🔍 generatedImages.length:', generatedImages.length);
+      
+      if (!lastParameters || !generatedImages.length) {
+        console.warn('⚠️ No se puede generar receta: faltan parámetros o imágenes');
+        return;
+      }
       
       setIsRecipeGenerating(true);
+      setError(null); // Limpiar errores previos
+      
       try {
-        // Reconstruir el input básico (podríamos haberlo guardado en estado también, pero lastParameters ayuda)
-        // Simplificación: usaremos los parámetros guardados + ingredientes si están disponibles
+        // Reconstruir el input con la idea original si existe
         let input = '';
-        // Nota: 'idea' original se pierde si no la guardamos, pero para la receta podemos usar
-        // los ingredientes y parámetros que sí tenemos.
         
-        const getParamValue = (param) => Array.isArray(param) ? param.join(', ') : param;
+        if (lastIdea && lastIdea.trim()) {
+          input = lastIdea;
+        } else {
+          // Si no hay idea, construir descripción básica
+          const getParamValue = (param) => Array.isArray(param) ? param.join(', ') : param;
+          
+          if (lastParameters.cuisineType && lastParameters.cuisineType.length > 0) {
+            input += `Tipo de cocina: ${getParamValue(lastParameters.cuisineType)}. `;
+          }
+          if (lastParameters.dishCategory && lastParameters.dishCategory.length > 0) {
+            input += `Categoría de plato: ${getParamValue(lastParameters.dishCategory)}. `;
+          }
+          if (ingredients && ingredients.trim()) {
+            input += `Ingredientes: ${ingredients}. `;
+          }
+          
+          // Si aún no hay input, usar placeholder
+          if (!input.trim()) {
+            input = 'Plato gourmet personalizado';
+          }
+        }
         
-        if (lastParameters.cuisineType) input += `Cocina: ${getParamValue(lastParameters.cuisineType)}. `;
-        if (lastParameters.dishCategory) input += `Plato: ${getParamValue(lastParameters.dishCategory)}. `;
-        if (ingredients) input += `Ingredientes: ${ingredients}. `;
+        console.log('🔍 Input para receta:', input);
+        console.log('🔍 Llamando a generateRecipeClaude con TODOS los parámetros...');
         
-        // Usar el nuevo servicio de Claude
-        const generatedRecipe = await generateRecipeClaude(input, lastParameters);
-        setRecipe(generatedRecipe);
+        // Pasar TODOS los parámetros para que la receta coincida exactamente con la imagen
+        const generatedRecipe = await generateRecipeClaude(input, lastParameters, ingredients);
+        
+        console.log('🔍 Receta generada:', generatedRecipe ? 'Sí' : 'No');
+        console.log('🔍 Longitud de receta:', generatedRecipe?.length);
+        
+        if (generatedRecipe && generatedRecipe.trim().length > 0) {
+          setRecipe(generatedRecipe);
+          console.log('✅ Receta guardada en estado');
+        } else {
+          console.warn('⚠️ Receta vacía o inválida');
+          setRecipe(null);
+          setError('La receta generada está vacía. Por favor, intenta de nuevo.');
+        }
       } catch (err) {
-          console.error("Error fetching recipe:", err);
-          setError("No se pudo generar la receta.");
+          console.error("❌ Error fetching recipe:", err);
+          setError("No se pudo generar la receta: " + (err.message || 'Error desconocido'));
+          setRecipe(null);
       } finally {
           setIsRecipeGenerating(false);
       }
@@ -143,6 +182,7 @@ const useImageGeneration = () => {
     setRecipe(null);
     setLastSeed(null);
     setLastParameters(null);
+    setLastIdea(null);
   }, []);
 
   return {

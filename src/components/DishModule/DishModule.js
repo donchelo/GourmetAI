@@ -121,7 +121,31 @@ const DishModule = () => {
       </Grid>
 
       <Grid item xs={12} md={6}>
-        <Box sx={{ minHeight: '600px', height: { md: 'calc(100vh - 200px)' }, display: 'flex', flexDirection: 'column' }}>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            height: { md: 'calc(100vh - 120px)' },
+            minHeight: { xs: '700px', md: '900px' },
+            maxHeight: { md: 'calc(100vh - 120px)' },
+            overflowY: 'auto', // Permitir scroll en el contenedor principal si es necesario
+            overflowX: 'hidden',
+            // Scrollbar personalizado
+            '&::-webkit-scrollbar': {
+              width: '10px',
+            },
+            '&::-webkit-scrollbar-track': {
+              bgcolor: 'background.default',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              bgcolor: 'action.disabled',
+              borderRadius: '5px',
+              '&:hover': {
+                bgcolor: 'action.disabledBackground',
+              },
+            },
+          }}
+        >
           <DishPreview
             images={generatedImages}
             isLoading={isGenerating}
