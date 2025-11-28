@@ -78,6 +78,22 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
   // Iniciar cámara
   const startCamera = useCallback(async () => {
     try {
+      setError(null);
+      // Primero abrir el diálogo para que el video esté en el DOM
+      setIsCameraOpen(true);
+      
+      // Esperar a que el diálogo se monte completamente
+      await new Promise(resolve => {
+        const checkVideo = () => {
+          if (videoRef.current) {
+            resolve();
+          } else {
+            setTimeout(checkVideo, 50);
+          }
+        };
+        checkVideo();
+      });
+      
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'environment', // Cámara trasera en móviles
@@ -85,16 +101,22 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
           height: { ideal: 1080 }
         }
       });
-      setStream(mediaStream);
-      setIsCameraOpen(true);
-      setError(null);
       
-      // Establecer el stream en el video cuando el componente esté montado
+      setStream(mediaStream);
+      
+      // Asignar el stream al video después de que esté disponible
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        // Asegurar que el video se reproduzca
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.error('Error reproduciendo video:', playErr);
+        }
       }
     } catch (err) {
       console.error('Error accediendo a la cámara:', err);
+      setIsCameraOpen(false);
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
         setError('Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración del navegador.');
       } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
@@ -119,10 +141,20 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
 
   // Capturar foto
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current) {
+      setError('El video no está listo. Por favor, espera un momento.');
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
+    
+    // Verificar que el video tenga dimensiones válidas
+    if (!video.videoWidth || !video.videoHeight || video.videoWidth === 0 || video.videoHeight === 0) {
+      setError('El video no está listo. Por favor, espera un momento.');
+      return;
+    }
+
     const context = canvas.getContext('2d');
 
     // Ajustar dimensiones del canvas al video
@@ -145,16 +177,46 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
           console.error('Error procesando foto:', err);
           setError('Error al procesar la foto. Por favor, intenta de nuevo.');
         }
+      } else {
+        setError('Error al capturar la foto. Por favor, intenta de nuevo.');
       }
     }, 'image/jpeg', 0.95);
   }, [onImageSelect, stopCamera]);
 
-  // Actualizar video cuando el stream cambie
+  // Actualizar video cuando el stream cambie y el diálogo esté abierto
   useEffect(() => {
-    if (stream && videoRef.current) {
-      videoRef.current.srcObject = stream;
+    if (stream && videoRef.current && isCameraOpen) {
+      const video = videoRef.current;
+      video.srcObject = stream;
+      
+      // Intentar reproducir el video
+      const playVideo = async () => {
+        try {
+          await video.play();
+          console.log('Video reproduciéndose correctamente');
+        } catch (err) {
+          console.error('Error reproduciendo video:', err);
+          setError('Error al reproducir el video de la cámara. Por favor, intenta de nuevo.');
+        }
+      };
+      
+      playVideo();
+      
+      // Manejar cuando el video esté listo
+      const handleCanPlay = () => {
+        console.log('Video listo para reproducir');
+        video.play().catch(err => {
+          console.error('Error en play después de canplay:', err);
+        });
+      };
+      
+      video.addEventListener('canplay', handleCanPlay);
+      
+      return () => {
+        video.removeEventListener('canplay', handleCanPlay);
+      };
     }
-  }, [stream]);
+  }, [stream, isCameraOpen]);
 
   // Limpiar stream al desmontar
   useEffect(() => {
@@ -457,12 +519,56 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
               ref={videoRef}
               autoPlay
               playsInline
+              muted
               style={{
                 width: '100%',
+                height: 'auto',
                 maxHeight: '70vh',
+                minHeight: '400px',
                 objectFit: 'contain',
+                backgroundColor: 'black',
+              }}
+              onLoadedMetadata={() => {
+                if (videoRef.current) {
+                  videoRef.current.play().catch(err => {
+                    console.error('Error reproduciendo video:', err);
+                  });
+                }
+              }}
+              onCanPlay={() => {
+                if (videoRef.current) {
+                  videoRef.current.play().catch(err => {
+                    console.error('Error reproduciendo video:', err);
+                  });
+                }
               }}
             />
+            {!stream && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'rgba(0, 0, 0, 0.7)',
+                }}
+              >
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: 'white', 
+                    textAlign: 'center',
+                    p: 3
+                  }}
+                >
+                  Iniciando cámara...
+                </Typography>
+              </Box>
+            )}
             <canvas ref={canvasRef} style={{ display: 'none' }} />
           </Box>
         </DialogContent>
