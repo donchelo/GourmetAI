@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Anthropic = require('@anthropic-ai/sdk');
 const FormData = require('form-data');
 require('dotenv').config();
 
@@ -154,14 +155,51 @@ app.post('/api/generate-image', async (req, res) => {
   }
 });
 
+// Endpoint para generar recetas usando Claude (Anthropic)
+app.post('/api/generate-recipe-claude', async (req, res) => {
+    try {
+        console.log('📝 Recibida solicitud de generación de receta con Claude');
+        const { prompt } = req.body;
+        const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
+
+        if (!apiKey) {
+            console.error('❌ API Key de Anthropic no configurada');
+            return res.status(500).json({ error: 'API Key de Anthropic no configurada en el servidor' });
+        }
+
+        if (!prompt) {
+            return res.status(400).json({ error: 'Prompt es requerido' });
+        }
+
+        const anthropic = new Anthropic({
+            apiKey: apiKey,
+        });
+
+        const msg = await anthropic.messages.create({
+            model: "claude-3-5-sonnet-20240620", // Use a fast and intelligent model
+            max_tokens: 1024,
+            messages: [{ role: "user", content: prompt }],
+        });
+
+        const text = msg.content[0].text;
+        
+        return res.json({ success: true, recipe: text });
+
+    } catch (error) {
+        console.error('❌ Error generando receta con Claude:', error);
+        return res.status(500).json({ error: error.message || 'Error generando receta con Claude' });
+    }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   const hasGemini = !!(process.env.REACT_APP_GEMINI_API_KEY);
+  const hasClaude = !!(process.env.REACT_APP_ANTHROPIC_API_KEY);
   res.json({ 
     status: 'ok', 
     message: 'Servidor funcionando correctamente',
     env: process.env.NODE_ENV || 'development',
-    services: { gemini: hasGemini }
+    services: { gemini: hasGemini, claude: hasClaude }
   });
 });
 
@@ -172,7 +210,7 @@ app.use((req, res) => {
     error: 'Endpoint no encontrado',
     path: req.path,
     method: req.method,
-    availableEndpoints: ['/api/generate-image', '/api/health']
+    availableEndpoints: ['/api/generate-image', '/api/generate-recipe-claude', '/api/health']
   });
 });
 
@@ -185,7 +223,7 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🚀 Servidor proxy ejecutándose en http://localhost:${PORT}`);
     console.log(`📝 Endpoint de generación: http://localhost:${PORT}/api/generate-image`);
+    console.log(`📝 Endpoint de recetas: http://localhost:${PORT}/api/generate-recipe-claude`);
     console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
   });
 }
-

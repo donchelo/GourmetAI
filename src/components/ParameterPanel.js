@@ -33,7 +33,7 @@ import {
 } from '../constants/parameters';
 import { generateRandomParameters, getDefaultParameters } from '../utils/randomParameters';
 
-const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGenerating }) => {
+const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGenerating, hideHeaderControls = false }) => {
   const theme = useTheme();
   
   const {
@@ -107,6 +107,32 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         </Typography>
       </Box>
 
+      {!hideHeaderControls && (
+      <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+        <Button
+          variant="outlined"
+          startIcon={<CasinoIcon />}
+          onClick={handleRandomize}
+          disabled={isGenerating}
+          fullWidth
+          sx={{ borderRadius: 0, borderColor: theme.palette.divider, color: 'text.secondary' }}
+        >
+          Aleatorio
+        </Button>
+        
+        <Button
+          variant="outlined"
+          startIcon={<RestartAltIcon />}
+          onClick={handleReset}
+          disabled={isGenerating}
+          fullWidth
+          sx={{ borderRadius: 0, borderColor: theme.palette.divider, color: 'text.secondary' }}
+        >
+          Reset
+        </Button>
+      </Box>
+      )}
+
       <Box sx={{ mb: 5 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="subtitle2" sx={{ textTransform: 'uppercase', letterSpacing: '0.1em' }}>
@@ -148,30 +174,6 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
         />
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
-        <Button
-          variant="outlined"
-          startIcon={<CasinoIcon />}
-          onClick={handleRandomize}
-          disabled={isGenerating}
-          fullWidth
-          sx={{ borderRadius: 0, borderColor: theme.palette.divider, color: 'text.secondary' }}
-        >
-          Aleatorio
-        </Button>
-        
-        <Button
-          variant="outlined"
-          startIcon={<RestartAltIcon />}
-          onClick={handleReset}
-          disabled={isGenerating}
-          fullWidth
-          sx={{ borderRadius: 0, borderColor: theme.palette.divider, color: 'text.secondary' }}
-        >
-          Reset
-        </Button>
-      </Box>
-
       <Accordion defaultExpanded sx={accordionStyle}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
           <Typography variant="subtitle1" fontWeight="600" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -199,17 +201,6 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
                 onChange={(e) => onParameterChange({ imageSize: e.target.value })}
               >
                 {IMAGE_SIZES.map((s) => <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>)}
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Cantidad</InputLabel>
-              <Select
-                value={numberOfImages || 1}
-                label="Cantidad"
-                onChange={(e) => onParameterChange({ numberOfImages: e.target.value })}
-              >
-                {NUMBER_OF_IMAGES.map((n) => <MenuItem key={n.value} value={n.value}>{n.label}</MenuItem>)}
               </Select>
             </FormControl>
           </Box>

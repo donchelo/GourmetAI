@@ -221,7 +221,12 @@ const buildPrompt = (parameters, input, isFromScratch = false) => {
     saturacion,
     texturaFondo,
     imageSize,
-    numberOfImages
+    numberOfImages,
+    // Nuevos arrays de selección múltiple
+    cuisineType,
+    dishCategory,
+    cookingTechnique,
+    culinaryTags
   } = parameters;
 
   // ============================================
@@ -430,6 +435,12 @@ const buildPrompt = (parameters, input, isFromScratch = false) => {
 
   if (isFromScratch) {
     prompt = `Genera una fotografía gastronómica profesional de alta resolución basada en la siguiente descripción: "${input}".
+    
+    INFORMACIÓN CULINARIA ADICIONAL:
+    ${Array.isArray(cuisineType) && cuisineType.length ? `- Tipo de cocina: ${cuisineType.join(', ')}` : ''}
+    ${Array.isArray(dishCategory) && dishCategory.length ? `- Categoría: ${dishCategory.join(', ')}` : ''}
+    ${Array.isArray(cookingTechnique) && cookingTechnique.length ? `- Técnica: ${cookingTechnique.join(', ')}` : ''}
+    ${Array.isArray(culinaryTags) && culinaryTags.length ? `- Características: ${culinaryTags.join(', ')}` : ''}
 
 ESPECIFICACIONES DE LA IMAGEN:
 - Estilo: ${estiloMap[estiloPlato] || 'elegante'}
@@ -632,6 +643,67 @@ export const generateGourmetVariants = async (imageBase64, parameters, ingredien
     
     throw new Error(errorMsg || 'No se pudieron generar las variantes gourmet. Por favor, intenta de nuevo.');
   }
+};
+
+/**
+ * Genera una receta corta basada en la descripción del plato
+ * @param {string} input - Descripción o nombre del plato
+ * @param {Object} parameters - Parámetros
+ * @returns {Promise<string>} - Receta formateada
+ */
+export const generateRecipe = async (input, parameters) => {
+    try {
+        const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+        if (!apiKey) throw new Error('API Key no configurada');
+        
+        const genAI = new GoogleGenerativeAI(apiKey);
+        // Use gemini-1.5-pro or gemini-2.0-flash-exp which are more reliable for text generation
+        // Fallback to gemini-pro if newer models aren't available
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+        const prompt = `Crea una receta corta y sencilla (máximo 150 palabras) para este plato: "${input}".
+        
+        Contexto opcional:
+        ${parameters.cuisineType ? `- Cocina: ${Array.isArray(parameters.cuisineType) ? parameters.cuisineType.join(', ') : parameters.cuisineType}` : ''}
+        ${parameters.dishCategory ? `- Categoría: ${Array.isArray(parameters.dishCategory) ? parameters.dishCategory.join(', ') : parameters.dishCategory}` : ''}
+        
+        Formato requerido (usa Markdown simple):
+        ### [Nombre Creativo del Plato]
+        **Ingredientes:**
+        - [Ingrediente 1]
+        - [Ingrediente 2]...
+        
+        **Instrucciones:**
+        1. [Paso 1]
+        2. [Paso 2]...
+        
+        Manténlo breve y directo.`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return response.text();
+    } catch (error) {
+        console.error("Error generando receta:", error);
+        
+        // Retry logic for 404 or model not found with fallback model
+        if (error.message.includes('404') || error.message.includes('not found')) {
+            try {
+                console.log("Retrying recipe generation with gemini-pro...");
+                const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+                // Re-construct prompt (simplified)
+                const prompt = `Crea una receta corta y sencilla para: "${input}".`;
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                return response.text();
+            } catch (retryError) {
+                console.error("Error en reintento de receta:", retryError);
+            }
+        }
+        
+        return "No se pudo generar la receta en este momento. Intenta de nuevo más tarde.";
+    }
 };
 
 /**

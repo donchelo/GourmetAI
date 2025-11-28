@@ -1,14 +1,44 @@
-import React, { useState } from 'react';
-import { Box, TextField, Typography, Alert, Chip, Stack, FormControl, InputLabel, Select, MenuItem, Grid } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { 
+  Box, 
+  TextField, 
+  Typography, 
+  Alert, 
+  Chip, 
+  Stack, 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem, 
+  Grid,
+  Paper,
+  OutlinedInput,
+  Checkbox,
+  ListItemText,
+  Button,
+  useTheme
+} from '@mui/material';
+import CasinoIcon from '@mui/icons-material/Casino';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ParameterPanel from '../ParameterPanel';
 import { validateParameters } from '../../utils/validation';
-import { TIPOS_COCINA, CATEGORIAS_PLATO, TECNICAS_COCCION } from '../../constants/parameters';
+import { TIPOS_COCINA, CATEGORIAS_PLATO, TECNICAS_COCCION, TAGS_CULINARIOS } from '../../constants/parameters';
+import { generateRandomParameters, getDefaultParameters } from '../../utils/randomParameters';
 
 const FromScratch = ({ parameters, onParameterChange, onGenerate, isGenerating }) => {
   const [idea, setIdea] = useState('');
   const [ingredientsInput, setIngredientsInput] = useState('');
   const [ingredients, setIngredients] = useState([]);
   const [localError, setLocalError] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const theme = useTheme();
+
+  // Sync internal tags state with external parameters (for randomization)
+  useEffect(() => {
+    if (parameters.culinaryTags && Array.isArray(parameters.culinaryTags)) {
+      setSelectedTags(parameters.culinaryTags);
+    }
+  }, [parameters.culinaryTags]);
 
   const handleAddIngredient = (e) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -25,6 +55,36 @@ const FromScratch = ({ parameters, onParameterChange, onGenerate, isGenerating }
     setIngredients(ingredients.filter((ingredient) => ingredient !== ingredientToDelete));
   };
 
+  const handleTagChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    const newTags = typeof value === 'string' ? value.split(',') : value;
+    setSelectedTags(newTags);
+    onParameterChange({ culinaryTags: newTags });
+  };
+
+  // Helper for multi-select change on standard parameters
+  const handleMultiSelectChange = (paramName, event) => {
+    const { target: { value } } = event;
+    // On autofill we get a stringified value.
+    const newValue = typeof value === 'string' ? value.split(',') : value;
+    onParameterChange({ [paramName]: newValue });
+  };
+
+  const handleRandomize = () => {
+    const randomParams = generateRandomParameters();
+    onParameterChange(randomParams);
+  };
+
+  const handleReset = () => {
+    const defaultParams = getDefaultParameters();
+    onParameterChange(defaultParams);
+    setIdea('');
+    setIngredients([]);
+    setSelectedTags([]);
+  };
+
   const handleGenerate = async () => {
     setLocalError(null);
     if (!idea.trim() && ingredients.length === 0) {
@@ -39,8 +99,8 @@ const FromScratch = ({ parameters, onParameterChange, onGenerate, isGenerating }
     }
 
     try {
-      // Pass ingredients array and idea string
-      await onGenerate(ingredients, idea, parameters);
+      // Pass ingredients array, idea string, and ensure culinaryTags are in parameters
+      await onGenerate(ingredients, idea, { ...parameters, culinaryTags: selectedTags });
     } catch (err) {
       console.error('Error en generación:', err);
     }
@@ -52,22 +112,65 @@ const FromScratch = ({ parameters, onParameterChange, onGenerate, isGenerating }
         <Alert severity="error">{localError}</Alert>
       )}
 
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Contexto Culinario
+      {/* Global Controls */}
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<CasinoIcon />}
+          onClick={handleRandomize}
+          disabled={isGenerating}
+          fullWidth
+          sx={{ borderRadius: 0, borderColor: theme.palette.divider, color: 'text.secondary' }}
+        >
+          Aleatorio
+        </Button>
+        
+        <Button
+          variant="outlined"
+          startIcon={<RestartAltIcon />}
+          onClick={handleReset}
+          disabled={isGenerating}
+          fullWidth
+          sx={{ borderRadius: 0, borderColor: theme.palette.divider, color: 'text.secondary' }}
+        >
+          Reset
+        </Button>
+      </Box>
+
+      {/* Seccion 1: Contexto General */}
+      <Paper elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'primary.main', mb: 2 }}>
+          1. Contexto Culinario
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
             <FormControl fullWidth size="small">
               <InputLabel>Tipo de Cocina</InputLabel>
               <Select
-                value={parameters.cuisineType || TIPOS_COCINA[0].value}
+                multiple
+                value={parameters.cuisineType || []}
                 label="Tipo de Cocina"
-                onChange={(e) => onParameterChange({ cuisineType: e.target.value })}
+                onChange={(e) => handleMultiSelectChange('cuisineType', e)}
+                input={<OutlinedInput label="Tipo de Cocina" />}
+                renderValue={(selected) => {
+                   if (!selected || selected.length === 0) return <em>Sin preferencia</em>;
+                   // Handle both array and single string legacy state
+                   const selectedArray = Array.isArray(selected) ? selected : [selected];
+                   return (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selectedArray.map((value) => {
+                           if (value === 'sin-preferencia') return null;
+                           const option = TIPOS_COCINA.find(o => o.value === value);
+                           return <Chip key={value} label={option ? option.label : value} size="small" />;
+                        })}
+                    </Box>
+                   );
+                }}
               >
                 {TIPOS_COCINA.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
-                    {option.label}
+                    <Checkbox checked={(parameters.cuisineType || []).indexOf(option.value) > -1} />
+                    <ListItemText primary={option.label} />
                   </MenuItem>
                 ))}
               </Select>
@@ -77,13 +180,29 @@ const FromScratch = ({ parameters, onParameterChange, onGenerate, isGenerating }
             <FormControl fullWidth size="small">
               <InputLabel>Categoría</InputLabel>
               <Select
-                value={parameters.dishCategory || CATEGORIAS_PLATO[0].value}
+                multiple
+                value={parameters.dishCategory || []}
                 label="Categoría"
-                onChange={(e) => onParameterChange({ dishCategory: e.target.value })}
+                onChange={(e) => handleMultiSelectChange('dishCategory', e)}
+                input={<OutlinedInput label="Categoría" />}
+                renderValue={(selected) => {
+                   if (!selected || selected.length === 0) return <em>Sin preferencia</em>;
+                   const selectedArray = Array.isArray(selected) ? selected : [selected];
+                   return (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selectedArray.map((value) => {
+                           if (value === 'sin-preferencia') return null;
+                           const option = CATEGORIAS_PLATO.find(o => o.value === value);
+                           return <Chip key={value} label={option ? option.label : value} size="small" />;
+                        })}
+                    </Box>
+                   );
+                }}
               >
                 {CATEGORIAS_PLATO.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
-                    {option.label}
+                    <Checkbox checked={(parameters.dishCategory || []).indexOf(option.value) > -1} />
+                    <ListItemText primary={option.label} />
                   </MenuItem>
                 ))}
               </Select>
@@ -93,68 +212,125 @@ const FromScratch = ({ parameters, onParameterChange, onGenerate, isGenerating }
             <FormControl fullWidth size="small">
               <InputLabel>Técnica</InputLabel>
               <Select
-                value={parameters.cookingTechnique || TECNICAS_COCCION[0].value}
+                multiple
+                value={parameters.cookingTechnique || []}
                 label="Técnica"
-                onChange={(e) => onParameterChange({ cookingTechnique: e.target.value })}
+                onChange={(e) => handleMultiSelectChange('cookingTechnique', e)}
+                input={<OutlinedInput label="Técnica" />}
+                renderValue={(selected) => {
+                   if (!selected || selected.length === 0) return <em>Sin preferencia</em>;
+                   const selectedArray = Array.isArray(selected) ? selected : [selected];
+                   return (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selectedArray.map((value) => {
+                           if (value === 'sin-preferencia') return null;
+                           const option = TECNICAS_COCCION.find(o => o.value === value);
+                           return <Chip key={value} label={option ? option.label : value} size="small" />;
+                        })}
+                    </Box>
+                   );
+                }}
               >
                 {TECNICAS_COCCION.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
-                    {option.label}
+                     <Checkbox checked={(parameters.cookingTechnique || []).indexOf(option.value) > -1} />
+                     <ListItemText primary={option.label} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          {/* Nuevo campo Multi-Select para Tags */}
+          <Grid item xs={12}>
+             <FormControl fullWidth size="small">
+              <InputLabel>Etiquetas / Características</InputLabel>
+              <Select
+                multiple
+                value={selectedTags}
+                onChange={handleTagChange}
+                input={<OutlinedInput label="Etiquetas / Características" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => {
+                       const tag = TAGS_CULINARIOS.find(t => t.value === value);
+                       return <Chip key={value} label={tag ? tag.label : value} size="small" />;
+                    })}
+                  </Box>
+                )}
+              >
+                {TAGS_CULINARIOS.map((tag) => (
+                  <MenuItem key={tag.value} value={tag.value}>
+                    <Checkbox checked={selectedTags.indexOf(tag.value) > -1} />
+                    <ListItemText primary={tag.label} />
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Grid>
         </Grid>
-      </Box>
+      </Paper>
 
-      <Box>
-        <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Concepto / Idea
+      {/* Seccion 2: Definición del Plato */}
+      <Paper elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'primary.main', mb: 2 }}>
+          2. Definición del Plato
         </Typography>
-        <TextField
-          fullWidth
-          placeholder="Ej: Un postre elegante de chocolate con frambuesas..."
-          multiline
-          rows={3}
-          value={idea}
-          onChange={(e) => setIdea(e.target.value)}
-          variant="outlined"
-          sx={{ mb: 2 }}
-        />
-
-        <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Ingredientes Principales
-        </Typography>
-        <TextField
-          fullWidth
-          placeholder="Escribe y presiona Enter (ej: Salmon, Eneldo, Limón)"
-          value={ingredientsInput}
-          onChange={(e) => setIngredientsInput(e.target.value)}
-          onKeyDown={handleAddIngredient}
-          variant="outlined"
-          helperText="Presiona Enter o Coma para agregar"
-        />
-        <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', gap: 1 }} useFlexGap>
-          {ingredients.map((ingredient, index) => (
-            <Chip
-              key={index}
-              label={ingredient}
-              onDelete={() => handleDeleteIngredient(ingredient)}
+        
+        <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" gutterBottom>Ingredientes Clave</Typography>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Escribe un ingrediente y presiona Enter (ej: Trufa negra, Salmón)"
+              value={ingredientsInput}
+              onChange={(e) => setIngredientsInput(e.target.value)}
+              onKeyDown={handleAddIngredient}
+              variant="outlined"
+              helperText={ingredients.length === 0 ? "Agrega los ingredientes principales de tu plato" : ""}
             />
-          ))}
-        </Stack>
-      </Box>
+            <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', gap: 1 }} useFlexGap>
+              {ingredients.map((ingredient, index) => (
+                <Chip
+                  key={index}
+                  label={ingredient}
+                  onDelete={() => handleDeleteIngredient(ingredient)}
+                  color="secondary"
+                  variant="outlined"
+                />
+              ))}
+            </Stack>
+        </Box>
+
+        <Box>
+            <Typography variant="subtitle2" gutterBottom>Concepto Visual / Idea Creativa</Typography>
+            <TextField
+              fullWidth
+              placeholder="Describe cómo imaginas el plato. Ej: Un postre minimalista con texturas contrastantes, servido sobre una piedra volcánica..."
+              multiline
+              rows={3}
+              value={idea}
+              onChange={(e) => setIdea(e.target.value)}
+              variant="outlined"
+            />
+        </Box>
+      </Paper>
       
-      <ParameterPanel
-        parameters={parameters}
-        onParameterChange={onParameterChange}
-        onGenerate={handleGenerate}
-        isGenerating={isGenerating}
-      />
+      {/* Seccion 3: Estilo Visual (Parameter Panel existente) */}
+       <Paper elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'primary.main', mb: 1 }}>
+          3. Estilo Visual
+        </Typography>
+        <ParameterPanel
+            parameters={parameters}
+            onParameterChange={onParameterChange}
+            onGenerate={handleGenerate}
+            isGenerating={isGenerating}
+            hideHeaderControls={true}
+        />
+      </Paper>
     </Box>
   );
 };
 
 export default FromScratch;
-

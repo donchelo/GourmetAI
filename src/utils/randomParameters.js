@@ -20,7 +20,11 @@ import {
   TEXTURAS_FONDO,
   INTENSIDAD_GOURMET_MIN,
   INTENSIDAD_GOURMET_MAX,
-  INTENSIDAD_GOURMET_DEFAULT
+  INTENSIDAD_GOURMET_DEFAULT,
+  TIPOS_COCINA,
+  CATEGORIAS_PLATO,
+  TECNICAS_COCCION,
+  TAGS_CULINARIOS
 } from '../constants/parameters';
 
 /**
@@ -90,7 +94,14 @@ export const generateRandomParameters = () => {
     
     // Props y Decoración
     props: randomMultipleFrom(PROPS.filter(p => p.value !== 'ninguno'), 0, 3),
-    decoracionesExtra: randomMultipleFrom(DECORACIONES_EXTRA, 0, 2)
+    decoracionesExtra: randomMultipleFrom(DECORACIONES_EXTRA, 0, 2),
+
+    // Contexto Culinario (NUEVO)
+    // Seleccionamos 1 aleatorio para tipos principales, pero lo devolvemos como array ya que ahora son multi-select
+    cuisineType: [randomFrom(TIPOS_COCINA.filter(t => t.value !== 'sin-preferencia'))],
+    dishCategory: [randomFrom(CATEGORIAS_PLATO.filter(c => c.value !== 'sin-preferencia'))],
+    cookingTechnique: [randomFrom(TECNICAS_COCCION.filter(t => t.value !== 'sin-preferencia'))],
+    culinaryTags: randomMultipleFrom(TAGS_CULINARIOS, 0, 3)
   };
 };
 
@@ -128,7 +139,12 @@ export const getDefaultParameters = () => {
     
     // Props y Decoración
     props: [],
-    decoracionesExtra: []
+    decoracionesExtra: [],
+
+    // Contexto Culinario
+    cuisineType: [],
+    dishCategory: [],
+    cookingTechnique: [],
+    culinaryTags: []
   };
 };
-

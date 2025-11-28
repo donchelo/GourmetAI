@@ -65,7 +65,7 @@ const Hero = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundImage: `url('/images/home/home.jpeg')`, // Imagen de fondo principal
+        backgroundImage: `url('/images/home/home.jpg')`, // Imagen de fondo principal
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         mb: 6,

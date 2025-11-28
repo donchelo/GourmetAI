@@ -47,18 +47,22 @@ const DishModule = () => {
     efectoVapor: EFECTOS_VAPOR[0].value,
     efectoFrescura: EFECTOS_FRESCURA[0].value,
     props: [],
-    cuisineType: TIPOS_COCINA[0].value,
-    dishCategory: CATEGORIAS_PLATO[0].value,
-    cookingTechnique: TECNICAS_COCCION[0].value
+    cuisineType: [],
+    dishCategory: [],
+    cookingTechnique: [],
+    culinaryTags: []
   });
 
   const {
     generate,
     generateFromScratch,
+    fetchRecipe,
     isGenerating,
+    isRecipeGenerating,
     error,
     generatedImages,
     ingredients,
+    recipe,
     lastSeed,
     lastParameters
   } = useImageGeneration();
@@ -91,25 +95,25 @@ const DishModule = () => {
                     }
                 }}
             >
-                <Tab label="Desde Foto" />
-                <Tab label="Desde Cero" />
+                <Tab label="Crear Plato" />
+                <Tab label="Fotografía de Producto" />
             </Tabs>
             </Box>
 
             <TabPanel value={tabValue} index={0}>
-                <FromPhoto 
+                <FromScratch 
                     parameters={parameters}
                     onParameterChange={handleParameterChange}
-                    onGenerate={generate}
+                    onGenerate={generateFromScratch}
                     isGenerating={isGenerating}
                 />
             </TabPanel>
 
             <TabPanel value={tabValue} index={1}>
-                <FromScratch 
+                <FromPhoto 
                     parameters={parameters}
                     onParameterChange={handleParameterChange}
-                    onGenerate={generateFromScratch}
+                    onGenerate={generate}
                     isGenerating={isGenerating}
                 />
             </TabPanel>
@@ -125,6 +129,9 @@ const DishModule = () => {
             parameters={lastParameters}
             seed={lastSeed}
             ingredients={ingredients}
+            recipe={recipe}
+            onGenerateRecipe={fetchRecipe}
+            isRecipeLoading={isRecipeGenerating}
           />
         </Box>
       </Grid>
@@ -133,4 +140,3 @@ const DishModule = () => {
 };
 
 export default DishModule;
-

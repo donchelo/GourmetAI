@@ -196,7 +196,10 @@ export const TIPOS_COCINA = [
   { value: 'peruana', label: 'Peruana' },
   { value: 'india', label: 'India' },
   { value: 'mediterranea', label: 'Mediterránea' },
-  { value: 'fusion', label: 'Fusión' }
+  { value: 'fusion', label: 'Fusión' },
+  { value: 'americana', label: 'Americana' },
+  { value: 'arabe', label: 'Árabe' },
+  { value: 'tailandesa', label: 'Tailandesa' }
 ];
 
 export const CATEGORIAS_PLATO = [
@@ -207,7 +210,10 @@ export const CATEGORIAS_PLATO = [
   { value: 'desayuno', label: 'Desayuno' },
   { value: 'bebida', label: 'Bebida / Coctel' },
   { value: 'ensalada', label: 'Ensalada' },
-  { value: 'sopa', label: 'Sopa / Crema' }
+  { value: 'sopa', label: 'Sopa / Crema' },
+  { value: 'sandwich', label: 'Sándwich / Burger' },
+  { value: 'pasta', label: 'Pasta' },
+  { value: 'pizza', label: 'Pizza' }
 ];
 
 export const TECNICAS_COCCION = [
@@ -218,5 +224,22 @@ export const TECNICAS_COCCION = [
   { value: 'frito', label: 'Frito' },
   { value: 'crudo', label: 'Crudo / Fresco' },
   { value: 'vapor', label: 'Al Vapor' },
-  { value: 'sous-vide', label: 'Sous-vide' }
+  { value: 'sous-vide', label: 'Sous-vide' },
+  { value: 'ahumado', label: 'Ahumado' },
+  { value: 'estofado', label: 'Estofado' }
+];
+
+export const TAGS_CULINARIOS = [
+  { value: 'picante', label: 'Picante' },
+  { value: 'vegano', label: 'Vegano' },
+  { value: 'vegetariano', label: 'Vegetariano' },
+  { value: 'sin-gluten', label: 'Sin Gluten' },
+  { value: 'gourmet', label: 'Gourmet' },
+  { value: 'callejero', label: 'Street Food' },
+  { value: 'saludable', label: 'Saludable' },
+  { value: 'dulce', label: 'Dulce' },
+  { value: 'salado', label: 'Salado' },
+  { value: 'agridulce', label: 'Agridulce' },
+  { value: 'crujiente', label: 'Crujiente' },
+  { value: 'cremoso', label: 'Cremoso' }
 ];
