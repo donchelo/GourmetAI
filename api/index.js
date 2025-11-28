@@ -213,8 +213,8 @@ const uploadImageToTempStorage = async (base64Image, filename, apiKey) => {
     
     if (!currentNgrokUrl || currentNgrokUrl.includes('localhost')) {
       if (process.env.VERCEL) {
-        console.warn('⚠️ En entorno Vercel: La subida de imágenes a Airtable no está soportada actualmente (requiere almacenamiento persistente y URL pública).');
-        throw new Error('Subida de imágenes no disponible en Vercel (requiere almacenamiento externo).');
+        console.warn('⚠️ En entorno Vercel: La subida de imágenes a Airtable se omitirá (requiere almacenamiento persistente).');
+        return null; 
       }
       console.error('❌ ERROR: No se encontró URL de ngrok válida.');
       console.error('   Opciones para solucionarlo:');
