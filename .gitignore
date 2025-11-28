@@ -27,3 +27,7 @@ yarn-error.log*
 
 # Server logs
 server.log
+
+# Uploads
+server/public/uploads/*
+!server/public/uploads/.gitkeep

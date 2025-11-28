@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Box, Button, Typography, Paper, Alert, useTheme, alpha, IconButton } from '@mui/material';
+import { Box, Button, Typography, Paper, Alert, useTheme, alpha, IconButton, Fade } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
@@ -33,7 +33,6 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
     if (file) {
       handleFile(file);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDragOver = useCallback((e) => {
@@ -47,7 +46,6 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
     if (file) {
       handleFile(file);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFile = async (file) => {
@@ -62,8 +60,8 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
       onImageSelect(base64);
       setError(null);
     } catch (error) {
-      console.error('Error procesando imagen:', error);
-      setError('Error al procesar la imagen. Por favor, intenta con otra imagen.');
+      console.error('Error processing image:', error);
+      setError('Error processing image. Please try another file.');
     }
   };
 
@@ -79,8 +77,9 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
           severity="error" 
           sx={{ 
             mb: 3, 
-            borderRadius: 3,
-            border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+            borderRadius: 0,
+            border: `1px solid ${theme.palette.error.main}`,
+            backgroundColor: alpha(theme.palette.error.main, 0.05),
           }}
         >
           {error}
@@ -91,32 +90,23 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 4, md: 6 },
-            border: '2px dashed',
+            p: { xs: 4, md: 8 },
+            border: '1px dashed',
             borderColor: isDragActive 
               ? 'secondary.main' 
-              : isLight ? 'divider' : alpha(theme.palette.divider, 0.3),
+              : theme.palette.divider,
             backgroundColor: isDragActive 
-              ? alpha(theme.palette.secondary.main, 0.04) 
+              ? alpha(theme.palette.secondary.main, 0.02) 
               : 'transparent',
-            borderRadius: 4,
+            borderRadius: 0,
             cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)',
+            transition: 'all 0.3s ease',
             textAlign: 'center',
             position: 'relative',
-            overflow: 'hidden',
             '&:hover': {
-              borderColor: 'secondary.main',
-              backgroundColor: alpha(theme.palette.secondary.main, 0.02),
-              transform: 'translateY(-2px)',
+              borderColor: 'text.primary',
+              backgroundColor: alpha(theme.palette.text.primary, 0.01),
             },
-            '&::before': isDragActive ? {
-              content: '""',
-              position: 'absolute',
-              inset: 0,
-              background: `radial-gradient(circle at center, ${alpha(theme.palette.secondary.main, 0.08)} 0%, transparent 70%)`,
-              pointerEvents: 'none',
-            } : {},
           }}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
@@ -124,94 +114,64 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
           onDragOver={handleDragOver}
           onClick={() => document.getElementById('image-upload-input').click()}
         >
-          {/* Icono decorativo */}
           <Box 
             sx={{ 
-              width: { xs: 64, md: 80 }, 
-              height: { xs: 64, md: 80 }, 
-              borderRadius: '50%', 
-              bgcolor: alpha(theme.palette.secondary.main, isLight ? 0.08 : 0.12),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
               mb: 3,
-              transition: 'all 0.3s ease',
-              ...(isDragActive && {
-                transform: 'scale(1.1)',
-                bgcolor: alpha(theme.palette.secondary.main, 0.15),
-              }),
+              display: 'flex',
+              justifyContent: 'center',
+              opacity: 0.5,
             }}
           >
-            <CloudUploadIcon 
-              sx={{ 
-                fontSize: { xs: 28, md: 36 }, 
-                color: 'secondary.main',
-                transition: 'transform 0.3s ease',
-                ...(isDragActive && { transform: 'translateY(-4px)' }),
-              }} 
-            />
+            <CloudUploadIcon sx={{ fontSize: 48 }} />
           </Box>
           
-          {/* Título elegante */}
           <Typography 
             variant="h5" 
             sx={{ 
-              mb: 1.5,
+              mb: 2,
               fontWeight: 300,
-              color: 'text.primary',
-              letterSpacing: '-0.01em',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
             }}
           >
-            Sube tu plato
+            Upload Image
           </Typography>
           
-          {/* Subtítulo */}
           <Typography 
             variant="body2" 
             color="text.secondary" 
             sx={{ 
               mb: 4,
-              maxWidth: 280,
+              maxWidth: 300,
               mx: 'auto',
-              lineHeight: 1.6,
+              opacity: 0.7,
             }}
           >
-            Arrastra una imagen aquí o haz clic para explorar
-            <Box 
-              component="span" 
-              sx={{ 
-                display: 'block', 
-                mt: 0.5,
-                fontSize: '0.75rem',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                opacity: 0.7,
-              }}
-            >
+            Drag & drop or click to browse
+            <br />
+            <Box component="span" sx={{ fontSize: '0.7rem', mt: 1, display: 'inline-block', opacity: 0.5 }}>
               JPG, PNG, WEBP
             </Box>
           </Typography>
           
-          {/* Botón de acción */}
           <Button
             variant="outlined"
             startIcon={<PhotoCameraIcon />}
             sx={{ 
-              px: 4, 
-              py: 1.5, 
-              borderRadius: 'full',
-              borderColor: 'secondary.main',
-              color: 'secondary.main',
-              fontWeight: 500,
-              letterSpacing: '0.02em',
+              borderRadius: 0,
+              borderWidth: '1px',
+              px: 4,
+              py: 1.5,
+              borderColor: 'text.primary',
+              color: 'text.primary',
               '&:hover': {
-                borderColor: 'secondary.dark',
-                backgroundColor: alpha(theme.palette.secondary.main, 0.04),
-              },
+                borderWidth: '1px',
+                bgcolor: 'text.primary',
+                color: 'background.paper',
+              }
             }}
           >
-            Seleccionar Archivo
+            Select File
           </Button>
           
           <input
@@ -223,121 +183,99 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
           />
         </Paper>
       ) : (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 2,
-            position: 'relative',
-            borderRadius: 4,
-            overflow: 'hidden',
-            border: `1px solid ${theme.palette.divider}`,
-            backgroundColor: 'background.paper',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              boxShadow: theme.shadows[4],
-            },
-          }}
-        >
-          {/* Etiqueta elegante */}
-          <Typography
-            variant="overline"
+        <Fade in={true}>
+          <Paper
+            elevation={0}
             sx={{
-              display: 'block',
-              mb: 1.5,
-              color: 'text.secondary',
-              letterSpacing: '0.1em',
+              position: 'relative',
+              borderRadius: 0,
+              overflow: 'hidden',
+              border: `1px solid ${theme.palette.divider}`,
+              backgroundColor: 'background.paper',
             }}
           >
-            Imagen Original
-          </Typography>
-          
-          <Box 
-            sx={{ 
-              position: 'relative', 
-              borderRadius: 3, 
-              overflow: 'hidden', 
-              aspectRatio: '16/10',
-              backgroundColor: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)',
-            }}
-          >
-            <img
-              src={selectedImage}
-              alt="Imagen seleccionada"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                transition: 'transform 0.5s ease',
-              }}
-            />
-            
-            {/* Overlay con acciones */}
             <Box 
               sx={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.5) 100%)',
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                gap: 2,
-                opacity: 0,
-                transition: 'opacity 0.25s ease',
-                '&:hover': { opacity: 1 },
+                position: 'relative', 
+                borderRadius: 0, 
+                overflow: 'hidden', 
+                aspectRatio: '16/10',
+                bgcolor: 'background.default',
               }}
             >
-              <Button
-                variant="contained"
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  document.getElementById('image-change-input').click();
+              <img
+                src={selectedImage}
+                alt="Selected"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover', // Or contain depending on preference
                 }}
-                sx={{ 
-                  bgcolor: 'rgba(255,255,255,0.95)',
-                  color: 'text.primary',
-                  fontWeight: 500,
-                  px: 3,
-                  '&:hover': { 
-                    bgcolor: 'white',
-                    transform: 'scale(1.02)',
-                  },
-                }}
-              >
-                Cambiar
-              </Button>
+              />
               
-              <IconButton 
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  clearImage();
-                }}
+              <Box 
                 sx={{ 
-                  bgcolor: 'rgba(255,255,255,0.95)', 
-                  color: 'error.main',
-                  '&:hover': { 
-                    bgcolor: 'white',
-                    transform: 'scale(1.1)',
-                  },
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0, 
+                  right: 0, 
+                  bottom: 0, 
+                  background: 'rgba(0,0,0,0.4)',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  gap: 2,
+                  opacity: 0,
+                  transition: 'opacity 0.25s ease',
+                  '&:hover': { opacity: 1 },
                 }}
               >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document.getElementById('image-change-input').click();
+                  }}
+                  sx={{ 
+                    bgcolor: 'white',
+                    color: 'black',
+                    borderRadius: 0,
+                    fontWeight: 600,
+                    '&:hover': { bgcolor: '#f0f0f0' },
+                  }}
+                >
+                  Change
+                </Button>
+                
+                <IconButton 
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearImage();
+                  }}
+                  sx={{ 
+                    bgcolor: 'white', 
+                    color: 'black',
+                    borderRadius: 0,
+                    p: 1,
+                    '&:hover': { bgcolor: '#f0f0f0' },
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
             </Box>
-          </Box>
-          
-          <input
-            id="image-change-input"
-            type="file"
-            hidden
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            onChange={handleFileInput}
-          />
-        </Paper>
+            
+            <input
+              id="image-change-input"
+              type="file"
+              hidden
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              onChange={handleFileInput}
+            />
+          </Paper>
+        </Fade>
       )}
     </Box>
   );

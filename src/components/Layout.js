@@ -1,13 +1,32 @@
-import React from 'react';
-import { Box, Container, Typography, AppBar, Toolbar, IconButton, useTheme, alpha } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Container, Typography, AppBar, Toolbar, IconButton, useTheme, alpha, Slide, useScrollTrigger } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useColorMode } from '../context/ThemeContext';
 
+function HideOnScroll(props) {
+  const { children } = props;
+  const trigger = useScrollTrigger();
+
+  return (
+    <Slide appear={false} direction="down" in={!trigger}>
+      {children}
+    </Slide>
+  );
+}
+
 const Layout = ({ children }) => {
   const theme = useTheme();
   const { toggleColorMode, mode } = useColorMode();
-  const isLight = mode === 'light';
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <Box 
@@ -16,169 +35,100 @@ const Layout = ({ children }) => {
         flexDirection: 'column', 
         minHeight: '100vh', 
         bgcolor: 'background.default',
-        transition: 'background-color 0.3s ease',
+        color: 'text.primary',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
-      {/* Header elegante con efecto glassmorphism */}
-      <AppBar 
-        position="sticky" 
-        elevation={0}
-        sx={{ 
-          backgroundColor: alpha(theme.palette.background.paper, 0.8), // Más transparencia
-          backdropFilter: 'blur(12px)', // Menos blur para más nitidez
-          WebkitBackdropFilter: 'blur(12px)',
-          color: 'text.primary',
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`, // Borde más sutil
-        }}
-      >
-        <Toolbar 
+      <HideOnScroll>
+        <AppBar 
+          position="fixed" 
+          elevation={scrolled ? 1 : 0}
           sx={{ 
-            minHeight: { xs: '60px', md: '70px' }, // Altura reducida
-            px: { xs: 2, md: 4 },
+            backgroundColor: scrolled ? alpha(theme.palette.background.paper, 0.9) : 'transparent',
+            backdropFilter: scrolled ? 'blur(10px)' : 'none',
+            color: scrolled ? 'text.primary' : (mode === 'dark' ? 'text.primary' : 'black'), // Adjust text color based on bg
+            transition: 'all 0.3s ease',
+            borderBottom: scrolled ? `1px solid ${alpha(theme.palette.divider, 0.5)}` : 'none',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 1.5 }}>
-            {/* Logo */}
-            <Box 
-              component="img"
-              src="/images/logo.png"
-              alt="GourmetAI Logo"
-              sx={{ 
-                height: { xs: 32, md: 40 },
-                width: 'auto',
-                objectFit: 'contain',
-                filter: mode === 'dark' ? 'invert(1) brightness(0.9)' : 'none',
-                transition: 'filter 0.3s ease',
-              }}
-            />
-            
-            {/* Nombre de la marca - Minimalista */}
-            <Typography 
-              variant="h5" 
-              component="div" 
-              sx={{ 
-                fontFamily: "'Cormorant Garamond', serif",
-                fontWeight: 400,
-                letterSpacing: '-0.02em',
-                lineHeight: 1,
-                color: 'text.primary',
-                fontSize: { xs: '1.5rem', md: '1.75rem' },
-              }}
-            >
-              Gourmet
-              <Box 
-                component="span" 
+          <Toolbar sx={{ justifyContent: 'space-between', minHeight: { xs: 64, md: 80 } }}>
+            {/* Logo / Brand */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+               <Typography 
+                variant="h5" 
+                component="div" 
                 sx={{ 
-                  fontStyle: 'italic',
-                  fontWeight: 500,
-                  color: 'secondary.main',
+                  fontFamily: theme.typography.h1.fontFamily,
+                  fontWeight: 700,
+                  letterSpacing: '-0.02em',
+                  fontSize: { xs: '1.5rem', md: '1.8rem' },
+                  cursor: 'pointer',
                 }}
               >
-                AI
-              </Box>
-            </Typography>
-          </Box>
-          
-          {/* Toggle de tema - Más minimalista */}
-          <IconButton 
-            onClick={toggleColorMode} 
-            size="medium"
-            sx={{ 
-              borderRadius: '8px', // Menos redondeado
-              border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-              p: 1,
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.text.primary, 0.04),
-                borderColor: theme.palette.text.secondary,
-              },
-            }}
-          >
-            {mode === 'dark' ? (
-              <Brightness7Icon 
-                sx={{ 
-                  fontSize: 22,
-                  color: 'warning.main',
-                }} 
-              />
-            ) : (
-              <Brightness4Icon 
-                sx={{ 
-                  fontSize: 22,
-                  color: 'text.secondary',
-                }} 
-              />
-            )}
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+                FoodFest
+                <Box component="span" sx={{ color: theme.palette.secondary.main, fontSize: '2rem', lineHeight: 0 }}>.</Box>
+              </Typography>
+            </Box>
 
-      {/* Contenido principal */}
-      <Container 
-        maxWidth="xl" 
+            {/* Navigation Actions */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <IconButton 
+                onClick={toggleColorMode} 
+                size="large"
+                edge="end"
+                color="inherit"
+                sx={{
+                  border: `1px solid ${alpha(theme.palette.text.primary, 0.2)}`,
+                  borderRadius: '50%',
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.text.primary, 0.05),
+                    borderColor: theme.palette.text.primary,
+                  }
+                }}
+              >
+                {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+              </IconButton>
+            </Box>
+          </Toolbar>
+        </AppBar>
+      </HideOnScroll>
+
+      {/* Main Content */}
+      <Box 
+        component="main" 
         sx={{ 
           flexGrow: 1, 
-          py: { xs: 3, md: 5 }, 
-          px: { xs: 2, sm: 3, md: 4 }, 
+          pt: { xs: 10, md: 12 }, // Padding top to account for fixed header
           display: 'flex', 
           flexDirection: 'column',
         }}
       >
-        {children}
-      </Container>
+        <Container maxWidth="xl" sx={{ flexGrow: 1 }}>
+          {children}
+        </Container>
+      </Box>
 
-      {/* Footer elegante y minimalista */}
+      {/* Footer */}
       <Box 
         component="footer" 
         sx={{ 
-          py: { xs: 3, md: 4 }, 
-          px: { xs: 2, md: 4 },
-          textAlign: 'center',
-          color: 'text.secondary',
-          borderTop: `1px solid ${theme.palette.divider}`,
+          py: 6, 
+          px: 2,
           mt: 'auto',
-          backgroundColor: alpha(theme.palette.background.paper, 0.5),
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
         }}
       >
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            fontWeight: 400,
-            letterSpacing: '0.02em',
-          }}
-        >
-          © {new Date().getFullYear()}{' '}
-          <Box 
-            component="span" 
-            sx={{ 
-              fontFamily: "'Cormorant Garamond', serif",
-              fontWeight: 500,
-              fontSize: '1.05em',
-            }}
-          >
-            GourmetAI
+        <Container maxWidth="lg">
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h6" sx={{ fontFamily: theme.typography.h1.fontFamily, fontWeight: 700 }}>
+              FoodFest.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              © {new Date().getFullYear()} GourmetAI Experience. All rights reserved.
+            </Typography>
           </Box>
-          {' '}
-          <Box 
-            component="span" 
-            sx={{ 
-              mx: 1, 
-              opacity: 0.4,
-              display: { xs: 'none', sm: 'inline' },
-            }}
-          >
-            •
-          </Box>
-          <Box 
-            component="span"
-            sx={{ 
-              display: { xs: 'block', sm: 'inline' },
-              mt: { xs: 0.5, sm: 0 },
-            }}
-          >
-            Potenciado por Inteligencia Artificial
-          </Box>
-        </Typography>
+        </Container>
       </Box>
     </Box>
   );

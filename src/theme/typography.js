@@ -1,35 +1,16 @@
 /**
- * Design System Marquet - Typography
- * Inspirado en la elegancia y sofisticación de Marquet NYC
- * 
- * Fuentes:
- * - Títulos: Cormorant Garamond (serif elegante)
- * - Body: DM Sans (sans-serif limpia y moderna)
+ * Design System - Typography
+ * Bold, editorial, and clean.
  */
 
-// Fuentes del sistema
+// System Fonts
 export const fontFamilies = {
-  heading: "'Cormorant Garamond', 'Georgia', 'Times New Roman', serif",
-  body: "'DM Sans', 'Helvetica Neue', 'Arial', sans-serif",
-  mono: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+  heading: "'Playfair Display', 'Georgia', serif", // More editorial/fashion vibe
+  body: "'Inter', 'system-ui', '-apple-system', sans-serif", // Clean modern sans
+  mono: "'JetBrains Mono', monospace",
 };
 
-// Escala de tamaños de fuente (en rem)
-export const fontSizes = {
-  xs: '0.75rem',     // 12px
-  sm: '0.875rem',    // 14px
-  base: '1rem',      // 16px
-  md: '1.125rem',    // 18px
-  lg: '1.25rem',     // 20px
-  xl: '1.5rem',      // 24px
-  '2xl': '1.875rem', // 30px
-  '3xl': '2.25rem',  // 36px
-  '4xl': '3rem',     // 48px
-  '5xl': '3.75rem',  // 60px
-  '6xl': '4.5rem',   // 72px
-};
-
-// Pesos de fuente
+// Font Weights
 export const fontWeights = {
   light: 300,
   regular: 400,
@@ -38,134 +19,103 @@ export const fontWeights = {
   bold: 700,
 };
 
-// Altura de línea
-export const lineHeights = {
-  tight: 1.1,
-  snug: 1.25,
-  normal: 1.5,
-  relaxed: 1.625,
-  loose: 2,
-};
-
-// Letter spacing
-export const letterSpacings = {
-  tighter: '-0.05em',
-  tight: '-0.025em',
-  normal: '0',
-  wide: '0.025em',
-  wider: '0.05em',
-  widest: '0.1em',
-  elegant: '0.15em',  // Para títulos en mayúsculas
-};
-
-// Configuración de tipografía para MUI
 export const typography = {
   fontFamily: fontFamilies.body,
+  fontWeightLight: fontWeights.light,
+  fontWeightRegular: fontWeights.regular,
+  fontWeightMedium: fontWeights.medium,
+  fontWeightBold: fontWeights.bold,
   
-  // Títulos principales - Cormorant Garamond
+  // Display Headings
   h1: {
     fontFamily: fontFamilies.heading,
-    fontWeight: fontWeights.light,
-    fontSize: fontSizes['5xl'],
-    lineHeight: lineHeights.tight,
-    letterSpacing: letterSpacings.tight,
+    fontWeight: fontWeights.bold,
+    fontSize: 'clamp(3.5rem, 8vw, 6rem)', // Responsive large text
+    lineHeight: 1.1,
+    letterSpacing: '-0.02em',
   },
   h2: {
     fontFamily: fontFamilies.heading,
-    fontWeight: fontWeights.light,
-    fontSize: fontSizes['4xl'],
-    lineHeight: lineHeights.tight,
-    letterSpacing: letterSpacings.tight,
+    fontWeight: fontWeights.semibold,
+    fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+    lineHeight: 1.2,
+    letterSpacing: '-0.01em',
   },
   h3: {
     fontFamily: fontFamilies.heading,
-    fontWeight: fontWeights.regular,
-    fontSize: fontSizes['3xl'],
-    lineHeight: lineHeights.snug,
-    letterSpacing: letterSpacings.normal,
+    fontWeight: fontWeights.semibold,
+    fontSize: 'clamp(2rem, 4vw, 3.5rem)',
+    lineHeight: 1.2,
   },
   h4: {
     fontFamily: fontFamilies.heading,
-    fontWeight: fontWeights.regular,
-    fontSize: fontSizes['2xl'],
-    lineHeight: lineHeights.snug,
-    letterSpacing: letterSpacings.normal,
+    fontWeight: fontWeights.medium,
+    fontSize: '2rem',
+    lineHeight: 1.3,
   },
   h5: {
-    fontFamily: fontFamilies.heading,
-    fontWeight: fontWeights.medium,
-    fontSize: fontSizes.xl,
-    lineHeight: lineHeights.snug,
-    letterSpacing: letterSpacings.normal,
+    fontFamily: fontFamilies.body, // Switch to sans for smaller headings
+    fontWeight: fontWeights.semibold,
+    fontSize: '1.5rem',
+    lineHeight: 1.4,
   },
   h6: {
-    fontFamily: fontFamilies.heading,
-    fontWeight: fontWeights.medium,
-    fontSize: fontSizes.lg,
-    lineHeight: lineHeights.snug,
-    letterSpacing: letterSpacings.normal,
+    fontFamily: fontFamilies.body,
+    fontWeight: fontWeights.semibold,
+    fontSize: '1.125rem',
+    lineHeight: 1.4,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
   },
   
-  // Subtítulos elegantes
+  // Body Text
   subtitle1: {
     fontFamily: fontFamilies.body,
     fontWeight: fontWeights.medium,
-    fontSize: fontSizes.md,
-    lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacings.wide,
+    fontSize: '1.125rem',
+    lineHeight: 1.6,
   },
   subtitle2: {
     fontFamily: fontFamilies.body,
     fontWeight: fontWeights.medium,
-    fontSize: fontSizes.sm,
-    lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacings.wider,
+    fontSize: '0.875rem',
+    lineHeight: 1.6,
+    letterSpacing: '0.05em',
     textTransform: 'uppercase',
   },
-  
-  // Texto body
   body1: {
     fontFamily: fontFamilies.body,
     fontWeight: fontWeights.regular,
-    fontSize: fontSizes.base,
-    lineHeight: lineHeights.relaxed,
-    letterSpacing: letterSpacings.normal,
+    fontSize: '1rem',
+    lineHeight: 1.7,
   },
   body2: {
     fontFamily: fontFamilies.body,
     fontWeight: fontWeights.regular,
-    fontSize: fontSizes.sm,
-    lineHeight: lineHeights.relaxed,
-    letterSpacing: letterSpacings.normal,
+    fontSize: '0.875rem',
+    lineHeight: 1.7,
+    color: 'text.secondary',
   },
-  
-  // Botones
   button: {
     fontFamily: fontFamilies.body,
-    fontWeight: fontWeights.medium,
-    fontSize: fontSizes.sm,
-    lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacings.wider,
-    textTransform: 'none',
+    fontWeight: fontWeights.semibold,
+    fontSize: '0.875rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.1em',
   },
-  
-  // Caption y overline
   caption: {
     fontFamily: fontFamilies.body,
     fontWeight: fontWeights.regular,
-    fontSize: fontSizes.xs,
-    lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacings.wide,
+    fontSize: '0.75rem',
+    letterSpacing: '0.02em',
   },
   overline: {
     fontFamily: fontFamilies.body,
-    fontWeight: fontWeights.semibold,
-    fontSize: fontSizes.xs,
-    lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacings.elegant,
+    fontWeight: fontWeights.bold,
+    fontSize: '0.75rem',
+    letterSpacing: '0.15em',
     textTransform: 'uppercase',
   },
 };
 
 export default typography;
-

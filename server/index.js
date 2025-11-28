@@ -212,6 +212,10 @@ const uploadImageToTempStorage = async (base64Image, filename, apiKey) => {
     const currentNgrokUrl = await getNgrokUrl();
     
     if (!currentNgrokUrl || currentNgrokUrl.includes('localhost')) {
+      if (process.env.VERCEL) {
+        console.warn('⚠️ En entorno Vercel: La subida de imágenes a Airtable no está soportada actualmente (requiere almacenamiento persistente y URL pública).');
+        throw new Error('Subida de imágenes no disponible en Vercel (requiere almacenamiento externo).');
+      }
       console.error('❌ ERROR: No se encontró URL de ngrok válida.');
       console.error('   Opciones para solucionarlo:');
       console.error('   1. Ejecuta ngrok: ngrok http 3000');
@@ -623,10 +627,17 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor proxy ejecutándose en http://localhost:${PORT}`);
-  console.log(`📝 Endpoint de generación: http://localhost:${PORT}/api/generate-image`);
-  console.log(`💾 Endpoint de Airtable: http://localhost:${PORT}/api/save-to-airtable`);
-  console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
-});
+
+// Exportar app para Vercel
+module.exports = app;
+
+// Solo escuchar si se ejecuta directamente (no importado como módulo)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor proxy ejecutándose en http://localhost:${PORT}`);
+    console.log(`📝 Endpoint de generación: http://localhost:${PORT}/api/generate-image`);
+    console.log(`💾 Endpoint de Airtable: http://localhost:${PORT}/api/save-to-airtable`);
+    console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+  });
+}
 

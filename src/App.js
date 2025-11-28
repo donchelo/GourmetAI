@@ -6,6 +6,7 @@ import ImageUploader from './components/ImageUploader';
 import ParameterPanel from './components/ParameterPanel';
 import GeneratedImages from './components/GeneratedImages';
 import History from './components/History';
+import Hero from './components/Hero';
 import useImageGeneration from './hooks/useImageGeneration';
 import { validateParameters } from './utils/validation';
 import { ThemeContextProvider } from './context/ThemeContext';
@@ -15,7 +16,6 @@ import {
   FONDOS,
   ANGULOS_CAMARA,
   INTENSIDAD_GOURMET_DEFAULT,
-  // Nuevos parámetros
   TIPOS_VAJILLA,
   COLORES_VAJILLA,
   AMBIENTES,
@@ -30,26 +30,20 @@ function AppContent() {
   const [selectedImage, setSelectedImage] = useState(null);
   const historyRef = useRef(null);
   const [parameters, setParameters] = useState({
-    // Parámetros originales
     intensidadGourmet: INTENSIDAD_GOURMET_DEFAULT,
     estiloPlato: ESTILOS_PLATO[0].value,
     iluminacion: ILUMINACIONES[0].value,
     fondo: FONDOS[0].value,
     decoracionesExtra: [],
     anguloCamara: ANGULOS_CAMARA[0].value,
-    // Nuevos parámetros - Categoría 1: Vajilla
     tipoVajilla: TIPOS_VAJILLA[0].value,
     colorVajilla: COLORES_VAJILLA[0].value,
-    // Nuevos parámetros - Categoría 2: Ambiente
     ambiente: AMBIENTES[0].value,
     momentoDelDia: MOMENTOS_DIA[0].value,
-    // Nuevos parámetros - Categoría 3: Técnica Fotográfica
     profundidadCampo: PROFUNDIDADES_CAMPO[0].value,
     aspectRatio: ASPECT_RATIOS[0].value,
-    // Nuevos parámetros - Categoría 4: Efectos Especiales
     efectoVapor: EFECTOS_VAPOR[0].value,
     efectoFrescura: EFECTOS_FRESCURA[0].value,
-    // Props ahora es un array para selección múltiple
     props: []
   });
 
@@ -73,7 +67,6 @@ function AppContent() {
       return;
     }
 
-    // Validar parámetros
     const paramValidation = validateParameters(parameters);
     if (!paramValidation.valid) {
       alert(paramValidation.error);
@@ -82,25 +75,19 @@ function AppContent() {
 
     try {
       await generate(selectedImage, parameters);
-      // Refrescar historial después de generar exitosamente
       if (historyRef.current) {
         setTimeout(() => {
           historyRef.current?.refresh();
-        }, 1000); // Esperar 1 segundo para que Airtable procese
+        }, 1000);
       }
     } catch (err) {
-      // El error ya está manejado en el hook
       console.error('Error en generación:', err);
     }
   };
 
   const handleLoadGeneration = (generationData) => {
     setSelectedImage(generationData.imagenOriginal);
-    
-    // Normalizar parámetros para compatibilidad con datos antiguos
     const normalizedParams = { ...generationData.parametros };
-    
-    // Si props es un string (datos antiguos), convertirlo a array
     if (normalizedParams.props && typeof normalizedParams.props === 'string') {
       if (normalizedParams.props === 'ninguno' || normalizedParams.props === '') {
         normalizedParams.props = [];
@@ -108,12 +95,9 @@ function AppContent() {
         normalizedParams.props = [normalizedParams.props];
       }
     }
-    
-    // Asegurar que props sea un array
     if (!Array.isArray(normalizedParams.props)) {
       normalizedParams.props = [];
     }
-    
     setParameters(normalizedParams);
   };
 
@@ -121,17 +105,10 @@ function AppContent() {
     <>
       <CssBaseline />
       <Layout>
+        <Hero />
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          {/* Columna Izquierda: Foto Original y Parámetros */}
           <Grid item xs={12} md={6}>
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: 3,
-                pr: { md: 1 }
-              }}
-            >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pr: { md: 1 } }}>
               <ImageUploader
                 onImageSelect={setSelectedImage}
                 selectedImage={selectedImage}
@@ -145,7 +122,6 @@ function AppContent() {
             </Box>
           </Grid>
 
-          {/* Columna Derecha: Foto Convertida */}
           <Grid item xs={12} md={6}>
             <Box sx={{ minHeight: '600px', height: { md: 'calc(100vh - 200px)' }, display: 'flex', flexDirection: 'column' }}>
               <GeneratedImages
@@ -160,7 +136,6 @@ function AppContent() {
           </Grid>
         </Grid>
 
-        {/* Historial en la parte inferior */}
         <Box sx={{ mt: 4 }}>
           <History ref={historyRef} onLoadGeneration={handleLoadGeneration} />
         </Box>
