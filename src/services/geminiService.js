@@ -1,9 +1,5 @@
 import axios from 'axios';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { CONFIG } from '../utils/config';
-
-// URLs de las APIs
-const IMAGEN_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:generateImages';
 
 // Modelos a probar - Priorizando Gemini 3, con fallback a modelos anteriores
 // Gemini 3 Pro es el modelo más avanzado con capacidades de razonamiento mejoradas
@@ -112,9 +108,6 @@ export const analyzeImage = async (imageBase64) => {
       try {
         console.log(`Intentando con modelo: ${modelName}`);
         
-        // Configuración para Gemini 3
-        const isGemini3 = modelName.includes('gemini-3');
-        
         // Configuración del modelo según versión
         // Para Gemini 3: 
         // - thinking_level: "high" por defecto (maximiza razonamiento)
@@ -124,7 +117,7 @@ export const analyzeImage = async (imageBase64) => {
           model: modelName,
           // Nota: thinking_level puede requerir configuración adicional según versión del SDK
           // Si el SDK soporta thinking_level, descomentar la siguiente línea:
-          // generationConfig: isGemini3 ? { thinkingLevel: 'high' } : {}
+          // generationConfig: modelName.includes('gemini-3') ? { thinkingLevel: 'high' } : {}
         };
         
         const model = genAI.getGenerativeModel(modelConfig);

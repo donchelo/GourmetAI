@@ -13,19 +13,11 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  useTheme,
-  alpha,
-  CircularProgress
+  useTheme
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import TuneIcon from '@mui/icons-material/Tune';
-import CameraEnhanceIcon from '@mui/icons-material/CameraEnhance';
-import StyleIcon from '@mui/icons-material/Style';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CasinoIcon from '@mui/icons-material/Casino';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import {
   ESTILOS_PLATO,
   ILUMINACIONES,
@@ -34,18 +26,7 @@ import {
   ANGULOS_CAMARA,
   INTENSIDAD_GOURMET_MIN,
   INTENSIDAD_GOURMET_MAX,
-  TIPOS_VAJILLA,
-  COLORES_VAJILLA,
-  AMBIENTES,
-  MOMENTOS_DIA,
-  PROFUNDIDADES_CAMPO,
-  ASPECT_RATIOS,
-  EFECTOS_VAPOR,
-  EFECTOS_FRESCURA,
-  DIRECCIONES_LUZ,
-  PROPS,
-  SATURACIONES,
-  TEXTURAS_FONDO
+  AMBIENTES
 } from '../constants/parameters';
 import { generateRandomParameters, getDefaultParameters } from '../utils/randomParameters';
 
@@ -59,18 +40,8 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     fondo,
     decoracionesExtra,
     anguloCamara,
-    tipoVajilla,
-    colorVajilla,
     ambiente,
-    momentoDelDia,
-    profundidadCampo,
-    aspectRatio,
-    efectoVapor,
-    efectoFrescura,
-    direccionLuz,
-    props,
-    saturacion,
-    texturaFondo
+    props
   } = parameters;
 
   const handleDecoracionChange = (value) => {
@@ -79,22 +50,6 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
       ? current.filter(d => d !== value)
       : [...current, value];
     onParameterChange({ decoracionesExtra: updated });
-  };
-
-  const handlePropsChange = (value) => {
-    if (value === 'ninguno') {
-      onParameterChange({ props: [] });
-      return;
-    }
-    
-    const current = props || [];
-    if (current.includes(value)) {
-      const updated = current.filter(p => p !== value);
-      onParameterChange({ props: updated });
-    } else {
-      const updated = [...current.filter(p => p !== 'ninguno'), value];
-      onParameterChange({ props: updated });
-    }
   };
 
   const handleRandomize = () => {
@@ -123,12 +78,6 @@ const ParameterPanel = ({ parameters, onParameterChange, onGenerate, isGeneratin
     minHeight: 64,
     '& .MuiAccordionSummary-content': { margin: '12px 0' },
   };
-
-  const SectionIcon = ({ icon: Icon, color }) => (
-    <Box sx={{ display: 'flex', mr: 2, color: 'text.primary' }}>
-      <Icon fontSize="small" />
-    </Box>
-  );
 
   return (
     <Paper 

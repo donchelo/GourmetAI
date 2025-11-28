@@ -4,9 +4,8 @@
  */
 
 import { colors } from './palette';
-import { borderRadius, transitions, shadows } from './tokens';
-import { fontFamilies, fontWeights } from './typography';
-import { alpha } from '@mui/material/styles';
+import { transitions, shadows } from './tokens';
+import { fontWeights } from './typography';
 
 /**
  * Generates component overrides for a specific mode

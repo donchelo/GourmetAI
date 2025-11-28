@@ -10,7 +10,23 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
   const [error, setError] = useState(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const theme = useTheme();
-  const isLight = theme.palette.mode === 'light';
+
+  const handleFile = useCallback(async (file) => {
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setError(validation.error);
+      return;
+    }
+
+    try {
+      const base64 = await imageToBase64(file);
+      onImageSelect(base64);
+      setError(null);
+    } catch (error) {
+      console.error('Error processing image:', error);
+      setError('Error processing image. Please try another file.');
+    }
+  }, [onImageSelect]);
 
   const handleDragEnter = useCallback((e) => {
     e.preventDefault();
@@ -33,7 +49,7 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
     if (file) {
       handleFile(file);
     }
-  }, []);
+  }, [handleFile]);
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
@@ -46,24 +62,7 @@ const ImageUploader = ({ onImageSelect, selectedImage }) => {
     if (file) {
       handleFile(file);
     }
-  }, []);
-
-  const handleFile = async (file) => {
-    const validation = validateImageFile(file);
-    if (!validation.valid) {
-      setError(validation.error);
-      return;
-    }
-
-    try {
-      const base64 = await imageToBase64(file);
-      onImageSelect(base64);
-      setError(null);
-    } catch (error) {
-      console.error('Error processing image:', error);
-      setError('Error processing image. Please try another file.');
-    }
-  };
+  }, [handleFile]);
 
   const clearImage = () => {
     onImageSelect(null);

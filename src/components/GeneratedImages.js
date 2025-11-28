@@ -17,7 +17,6 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import { downloadImage } from '../utils/imageUtils';
 import { downloadImageWithMetadata, createMetadata } from '../utils/metadataUtils';
 
@@ -38,8 +37,6 @@ const GeneratedImages = ({ images, isLoading, error, parameters, seed, ingredien
   const [progress, setProgress] = useState(0);
   const [startTime, setStartTime] = useState(null);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isLight = theme.palette.mode === 'light';
 
   const calculateProgress = (elapsedSeconds) => {
     const totalEstimatedSeconds = 120;
