@@ -40,13 +40,32 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://local
 app.use(cors({
   origin: (origin, callback) => {
     // Permitir requests sin origin (como mobile apps o Postman)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) {
       callback(null, true);
-    } else if (!isProduction) {
-      callback(null, true); // Permisivo en desarrollo
-    } else {
-      callback(new Error('CORS no permitido'));
+      return;
     }
+    
+    // Permitir si está en la lista de orígenes permitidos
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    
+    // En producción, permitir el mismo dominio de Vercel
+    if (isProduction) {
+      // Permitir cualquier subdominio de vercel.app
+      if (origin.includes('.vercel.app') || origin.includes('vercel.app')) {
+        callback(null, true);
+        return;
+      }
+      // Permitir el mismo dominio (mismo-origin)
+      // En Vercel, las funciones serverless pueden recibir requests del mismo dominio
+      callback(null, true);
+      return;
+    }
+    
+    // En desarrollo, ser permisivo
+    callback(null, true);
   },
   credentials: true
 }));
@@ -159,7 +178,18 @@ app.post('/api/generate-image', async (req, res) => {
 app.post('/api/generate-recipe-claude', async (req, res) => {
     try {
         console.log('📝 Recibida solicitud de generación de receta con Claude');
+        console.log('📝 Request body keys:', Object.keys(req.body || {}));
         const { prompt } = req.body;
+        
+        if (!prompt) {
+            console.error('❌ Prompt faltante en el request');
+            return res.status(400).json({ 
+                success: false,
+                error: 'Prompt es requerido' 
+            });
+        }
+        
+        console.log('📝 Prompt recibido (longitud:', prompt.length, 'caracteres)');
         
         // Leer la API key - verificar tanto REACT_APP_ANTHROPIC_API_KEY como ANTHROPIC_API_KEY
         const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
@@ -245,19 +275,25 @@ app.post('/api/generate-recipe-claude', async (req, res) => {
         return res.json({ success: true, recipe: finalText });
 
     } catch (error) {
-        console.error('❌ Error generando receta con Claude:', error);
+        // Log inmediato del error para debugging
+        console.error('❌ ========== ERROR CAPTURADO ==========');
+        console.error('❌ Tipo de error:', error?.constructor?.name || typeof error);
+        console.error('❌ Mensaje:', error?.message || 'Sin mensaje');
+        console.error('❌ Nombre:', error?.name || 'Sin nombre');
+        console.error('❌ Status:', error?.status);
+        console.error('❌ StatusCode:', error?.statusCode);
+        console.error('❌ Code:', error?.code);
         
         // Log detallado del error
         try {
-            console.error('❌ Detalles del error:', {
-                message: error?.message || 'Sin mensaje',
-                name: error?.name || 'Sin nombre',
-                status: error?.status,
-                statusCode: error?.statusCode,
-                code: error?.code,
-                response: error?.response?.data ? JSON.stringify(error.response.data).substring(0, 200) : 'Sin respuesta',
-                stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
-            });
+            if (error?.response) {
+                console.error('❌ Response data:', error.response.data);
+                console.error('❌ Response status:', error.response.status);
+            }
+            if (error?.stack) {
+                console.error('❌ Stack trace:', error.stack.substring(0, 500));
+            }
+            console.error('❌ ====================================');
         } catch (logError) {
             console.error('❌ Error al loguear detalles:', logError);
         }
@@ -357,6 +393,24 @@ app.use((req, res) => {
     path: req.path,
     method: req.method,
     availableEndpoints: ['/api/generate-image', '/api/generate-recipe-claude', '/api/health']
+  });
+});
+
+// Middleware de manejo de errores global (debe ir al final, después de todas las rutas)
+app.use((error, req, res, next) => {
+  console.error('❌ ========== ERROR NO CAPTURADO ==========');
+  console.error('❌ Error:', error);
+  console.error('❌ Stack:', error?.stack);
+  console.error('❌ =========================================');
+  
+  // Asegurar que siempre devolvamos JSON, nunca HTML
+  res.status(error.status || error.statusCode || 500).json({
+    success: false,
+    error: error.message || 'Error interno del servidor',
+    details: process.env.NODE_ENV === 'development' ? {
+      stack: error.stack,
+      name: error.name
+    } : undefined
   });
 });
 
