@@ -150,6 +150,8 @@ Un tip práctico y breve relacionado con la técnica de cocción, los ingredient
 - La presentación debe reflejar el estilo visual elegido
 - Los ingredientes deben coincidir con los especificados
 
+**IMPORTANTE:** Tienes hasta 8192 tokens disponibles para completar la receta. Asegúrate de incluir TODAS las secciones (título, descripción, ingredientes completos, instrucciones paso a paso, consejo del chef y notas) sin cortar el contenido. Usa todo el espacio disponible para crear una receta completa y detallada.
+
 Mantén un tono profesional, inspirador pero accesible. La receta debe ser clara y fácil de seguir para cualquier cocinero casero.`;
 
         // Construir la URL: si API_BASE_URL está vacío (producción), usar ruta relativa

@@ -183,33 +183,95 @@ app.post('/api/generate-recipe-claude', async (req, res) => {
         console.log('✅ API Key encontrada, inicializando cliente de Anthropic...');
         const anthropic = new Anthropic({
             apiKey: apiKey,
+            timeout: 60000, // 60 segundos de timeout para Vercel
         });
 
-        console.log('📤 Enviando solicitud a Claude...');
+        // Usar Claude Haiku 4.5 - el modelo más rápido y eficiente
+        // Opciones disponibles: claude-haiku-4-5, claude-3-5-haiku-latest, claude-3-5-haiku-20241022
+        // Nota: Si usas AWS Bedrock, el formato sería anthropic.claude-haiku-4-5-20251001-v1:0
+        const modelName = process.env.CLAUDE_MODEL || "claude-haiku-4-5";
+        console.log(`📤 Enviando solicitud a Claude con modelo ${modelName}...`);
         const msg = await anthropic.messages.create({
-            model: "claude-haiku-4-5", // Fast and cost-efficient model
-            max_tokens: 1024,
+            model: modelName,
+            max_tokens: 8192, // Límite suficiente para recetas detalladas completas
             messages: [{ role: "user", content: prompt }],
         });
 
+        // Validar que la respuesta tenga contenido
+        if (!msg || !msg.content || !Array.isArray(msg.content) || msg.content.length === 0) {
+            console.error('❌ Respuesta de Claude sin contenido válido:', msg);
+            throw new Error('La respuesta de Claude no contiene contenido válido');
+        }
+
         const text = msg.content[0].text;
-        console.log('✅ Receta generada exitosamente');
+        if (!text || typeof text !== 'string') {
+            console.error('❌ El texto de la receta no es válido:', text);
+            throw new Error('La receta generada no tiene un formato válido');
+        }
+
+        // Verificar si la respuesta se cortó por límite de tokens
+        const stopReason = msg.stop_reason || msg.content[0]?.stop_reason;
+        let finalText = text;
         
-        return res.json({ success: true, recipe: text });
+        if (stopReason === 'max_tokens') {
+            console.warn('⚠️ ADVERTENCIA: La receta se cortó por alcanzar el límite de tokens');
+            console.warn('   Tokens usados:', msg.usage?.output_tokens, 'de', 8192);
+            // Agregar nota al final del texto para informar al usuario
+            finalText = text + '\n\n*[Nota: Esta receta puede estar incompleta debido al límite de tokens]*';
+        } else {
+            console.log('✅ Receta generada completamente (stop_reason:', stopReason || 'end_turn', ')');
+        }
+
+        console.log('✅ Receta generada exitosamente (longitud:', finalText.length, 'caracteres)');
+        console.log('   Tokens usados:', msg.usage?.output_tokens || 'N/A', 'de 8192');
+        
+        return res.json({ success: true, recipe: finalText });
 
     } catch (error) {
         console.error('❌ Error generando receta con Claude:', error);
+        console.error('❌ Detalles del error:', {
+            message: error.message,
+            status: error.status,
+            statusCode: error.statusCode,
+            code: error.code,
+            response: error.response?.data,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
         
         // Mensajes de error más específicos
         let errorMessage = error.message || 'Error generando receta con Claude';
+        let statusCode = 500;
         
-        if (error.status === 401 || error.message?.includes('authentication') || error.message?.includes('invalid x-api-key')) {
-            errorMessage = 'API Key de Anthropic inválida. Por favor, verifica que tu API key sea correcta y esté configurada en el archivo .env como REACT_APP_ANTHROPIC_API_KEY';
-        } else if (error.status === 429) {
+        // Manejo de errores específicos de Anthropic
+        if (error.status === 401 || error.statusCode === 401 || 
+            error.message?.includes('authentication') || 
+            error.message?.includes('invalid x-api-key') ||
+            error.message?.includes('401')) {
+            errorMessage = 'API Key de Anthropic inválida. Por favor, verifica que tu API key sea correcta y esté configurada en Vercel como ANTHROPIC_API_KEY o REACT_APP_ANTHROPIC_API_KEY';
+            statusCode = 401;
+        } else if (error.status === 429 || error.statusCode === 429 || error.message?.includes('429')) {
             errorMessage = 'Límite de solicitudes excedido. Por favor, intenta más tarde.';
+            statusCode = 429;
+        } else if (error.status === 400 || error.statusCode === 400 || error.message?.includes('400')) {
+            errorMessage = error.message || 'Solicitud inválida a la API de Claude. Verifica el formato del prompt.';
+            statusCode = 400;
+        } else if (error.message?.includes('model') || error.message?.includes('not found') || error.message?.includes('404')) {
+            errorMessage = 'Modelo de Claude no encontrado o no disponible. Verifica que el modelo anthropic.claude-haiku-4-5-20251001-v1:0 esté disponible en tu cuenta.';
+            statusCode = 404;
+        } else if (error.message?.includes('timeout') || error.code === 'ETIMEDOUT') {
+            errorMessage = 'Tiempo de espera agotado al comunicarse con la API de Claude. Por favor, intenta de nuevo.';
+            statusCode = 504;
         }
         
-        return res.status(500).json({ error: errorMessage });
+        return res.status(statusCode).json({ 
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? {
+                originalError: error.message,
+                status: error.status || error.statusCode,
+                code: error.code,
+                responseData: error.response?.data
+            } : undefined
+        });
     }
 });
 

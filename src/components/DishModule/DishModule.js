@@ -125,9 +125,11 @@ const DishModule = () => {
           sx={{ 
             display: 'flex', 
             flexDirection: 'column',
-            height: { md: 'calc(100vh - 120px)' },
-            minHeight: { xs: '700px', md: '900px' },
+            // Altura flexible: permitir que crezca más allá del viewport si es necesario
+            minHeight: { xs: '700px', md: 'calc(100vh - 120px)' },
             maxHeight: { md: 'calc(100vh - 120px)' },
+            // Permitir que el contenido interno se expanda completamente
+            height: { md: 'auto' },
             overflowY: 'auto', // Permitir scroll en el contenedor principal si es necesario
             overflowX: 'hidden',
             // Scrollbar personalizado

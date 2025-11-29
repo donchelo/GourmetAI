@@ -76,7 +76,10 @@ const DishPreview = ({
         flexDirection: 'column', 
         gap: 2, 
         width: '100%',
-        minHeight: '100%' // Permitir que crezca más allá del 100% si es necesario
+        // Permitir que el contenido se expanda completamente sin restricciones de altura
+        height: 'auto',
+        minHeight: 'auto',
+        flexGrow: 1,
       }}
     >
       {/* Contenedor de imagen - Mantiene ancho completo siempre, altura ajustable cuando hay receta */}
@@ -142,8 +145,11 @@ const DishPreview = ({
             bgcolor: 'background.paper',
             borderRadius: 2,
             width: '100%',
-            minHeight: '600px', // Altura mínima muy generosa
-            // Sin overflow hidden - permitir que el contenido se expanda
+            // Permitir que el Paper se expanda completamente con el contenido
+            height: 'auto',
+            minHeight: 'auto',
+            maxHeight: 'none',
+            overflow: 'visible', // Asegurar que el contenido no se corte
           }}
         >
           {/* Header con título y botón de copiar */}
