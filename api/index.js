@@ -198,28 +198,45 @@ app.post('/api/generate-recipe-claude', async (req, res) => {
         });
 
         // Validar que la respuesta tenga contenido
-        if (!msg || !msg.content || !Array.isArray(msg.content) || msg.content.length === 0) {
-            console.error('❌ Respuesta de Claude sin contenido válido:', msg);
+        if (!msg) {
+            console.error('❌ Respuesta de Claude es null o undefined');
+            throw new Error('La respuesta de Claude es inválida');
+        }
+
+        if (!msg.content || !Array.isArray(msg.content) || msg.content.length === 0) {
+            console.error('❌ Respuesta de Claude sin contenido válido:', JSON.stringify(msg, null, 2));
             throw new Error('La respuesta de Claude no contiene contenido válido');
         }
 
-        const text = msg.content[0].text;
+        const firstContent = msg.content[0];
+        if (!firstContent || typeof firstContent !== 'object') {
+            console.error('❌ El primer elemento de content no es válido:', firstContent);
+            throw new Error('El contenido de la respuesta no tiene un formato válido');
+        }
+
+        const text = firstContent.text;
         if (!text || typeof text !== 'string') {
-            console.error('❌ El texto de la receta no es válido:', text);
+            console.error('❌ El texto de la receta no es válido:', typeof text, text);
             throw new Error('La receta generada no tiene un formato válido');
         }
 
         // Verificar si la respuesta se cortó por límite de tokens
-        const stopReason = msg.stop_reason || msg.content[0]?.stop_reason;
+        // stop_reason está en el nivel superior del objeto msg según la API de Anthropic
+        const stopReason = msg.stop_reason || null;
         let finalText = text;
         
-        if (stopReason === 'max_tokens') {
-            console.warn('⚠️ ADVERTENCIA: La receta se cortó por alcanzar el límite de tokens');
-            console.warn('   Tokens usados:', msg.usage?.output_tokens, 'de', 8192);
-            // Agregar nota al final del texto para informar al usuario
-            finalText = text + '\n\n*[Nota: Esta receta puede estar incompleta debido al límite de tokens]*';
-        } else {
-            console.log('✅ Receta generada completamente (stop_reason:', stopReason || 'end_turn', ')');
+        try {
+            if (stopReason === 'max_tokens') {
+                console.warn('⚠️ ADVERTENCIA: La receta se cortó por alcanzar el límite de tokens');
+                console.warn('   Tokens usados:', msg.usage?.output_tokens || 'N/A', 'de', 8192);
+                // Agregar nota al final del texto para informar al usuario
+                finalText = text + '\n\n*[Nota: Esta receta puede estar incompleta debido al límite de tokens]*';
+            } else {
+                console.log('✅ Receta generada completamente (stop_reason:', stopReason || 'end_turn', ')');
+            }
+        } catch (stopReasonError) {
+            console.warn('⚠️ Error al verificar stop_reason:', stopReasonError);
+            // Continuar sin modificar el texto si hay error al verificar stop_reason
         }
 
         console.log('✅ Receta generada exitosamente (longitud:', finalText.length, 'caracteres)');
@@ -229,49 +246,94 @@ app.post('/api/generate-recipe-claude', async (req, res) => {
 
     } catch (error) {
         console.error('❌ Error generando receta con Claude:', error);
-        console.error('❌ Detalles del error:', {
-            message: error.message,
-            status: error.status,
-            statusCode: error.statusCode,
-            code: error.code,
-            response: error.response?.data,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        });
+        
+        // Log detallado del error
+        try {
+            console.error('❌ Detalles del error:', {
+                message: error?.message || 'Sin mensaje',
+                name: error?.name || 'Sin nombre',
+                status: error?.status,
+                statusCode: error?.statusCode,
+                code: error?.code,
+                response: error?.response?.data ? JSON.stringify(error.response.data).substring(0, 200) : 'Sin respuesta',
+                stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+            });
+        } catch (logError) {
+            console.error('❌ Error al loguear detalles:', logError);
+        }
         
         // Mensajes de error más específicos
-        let errorMessage = error.message || 'Error generando receta con Claude';
+        let errorMessage = 'Error generando receta con Claude';
         let statusCode = 500;
         
+        try {
+            // Intentar extraer el mensaje de error de forma segura
+            if (error && typeof error === 'object') {
+                if (error.message && typeof error.message === 'string') {
+                    errorMessage = error.message;
+                } else if (error.toString && typeof error.toString === 'function') {
+                    errorMessage = error.toString();
+                }
+            }
+        } catch (msgError) {
+            console.error('❌ Error al extraer mensaje:', msgError);
+            errorMessage = 'Error desconocido al generar receta';
+        }
+        
         // Manejo de errores específicos de Anthropic
-        if (error.status === 401 || error.statusCode === 401 || 
-            error.message?.includes('authentication') || 
-            error.message?.includes('invalid x-api-key') ||
-            error.message?.includes('401')) {
+        if (error?.status === 401 || error?.statusCode === 401 || 
+            (typeof errorMessage === 'string' && (
+                errorMessage.includes('authentication') || 
+                errorMessage.includes('invalid x-api-key') ||
+                errorMessage.includes('401')
+            ))) {
             errorMessage = 'API Key de Anthropic inválida. Por favor, verifica que tu API key sea correcta y esté configurada en Vercel como ANTHROPIC_API_KEY o REACT_APP_ANTHROPIC_API_KEY';
             statusCode = 401;
-        } else if (error.status === 429 || error.statusCode === 429 || error.message?.includes('429')) {
+        } else if (error?.status === 429 || error?.statusCode === 429 || 
+                   (typeof errorMessage === 'string' && errorMessage.includes('429'))) {
             errorMessage = 'Límite de solicitudes excedido. Por favor, intenta más tarde.';
             statusCode = 429;
-        } else if (error.status === 400 || error.statusCode === 400 || error.message?.includes('400')) {
-            errorMessage = error.message || 'Solicitud inválida a la API de Claude. Verifica el formato del prompt.';
+        } else if (error?.status === 400 || error?.statusCode === 400 || 
+                   (typeof errorMessage === 'string' && errorMessage.includes('400'))) {
+            errorMessage = typeof errorMessage === 'string' && errorMessage.length > 0 
+                ? errorMessage 
+                : 'Solicitud inválida a la API de Claude. Verifica el formato del prompt.';
             statusCode = 400;
-        } else if (error.message?.includes('model') || error.message?.includes('not found') || error.message?.includes('404')) {
-            errorMessage = 'Modelo de Claude no encontrado o no disponible. Verifica que el modelo anthropic.claude-haiku-4-5-20251001-v1:0 esté disponible en tu cuenta.';
+        } else if (typeof errorMessage === 'string' && (
+            errorMessage.includes('model') || 
+            errorMessage.includes('not found') || 
+            errorMessage.includes('404')
+        )) {
+            errorMessage = 'Modelo de Claude no encontrado o no disponible. Verifica que el modelo claude-haiku-4-5 esté disponible en tu cuenta.';
             statusCode = 404;
-        } else if (error.message?.includes('timeout') || error.code === 'ETIMEDOUT') {
+        } else if (typeof errorMessage === 'string' && (
+            errorMessage.includes('timeout') || 
+            error?.code === 'ETIMEDOUT'
+        )) {
             errorMessage = 'Tiempo de espera agotado al comunicarse con la API de Claude. Por favor, intenta de nuevo.';
             statusCode = 504;
         }
         
-        return res.status(statusCode).json({ 
-            error: errorMessage,
-            details: process.env.NODE_ENV === 'development' ? {
-                originalError: error.message,
-                status: error.status || error.statusCode,
-                code: error.code,
-                responseData: error.response?.data
-            } : undefined
-        });
+        // Asegurar que siempre devolvamos JSON, nunca HTML
+        try {
+            return res.status(statusCode).json({ 
+                success: false,
+                error: errorMessage,
+                details: process.env.NODE_ENV === 'development' ? {
+                    originalError: error?.message || 'Sin mensaje de error',
+                    status: error?.status || error?.statusCode,
+                    code: error?.code,
+                    responseData: error?.response?.data ? JSON.stringify(error.response.data).substring(0, 500) : undefined
+                } : undefined
+            });
+        } catch (jsonError) {
+            console.error('❌ Error crítico al enviar respuesta JSON:', jsonError);
+            // Último recurso: enviar respuesta de error simple
+            return res.status(500).json({ 
+                success: false,
+                error: 'Error interno del servidor al procesar la solicitud'
+            });
+        }
     }
 });
 
