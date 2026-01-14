@@ -8,17 +8,17 @@ Aplicación web que transforma fotografías de platos de comida en versiones vis
 - 🔍 Identificación automática de ingredientes vía Gemini 3
 - 🎛️ Panel de parámetros ajustables para personalización
 - ✨ Generación de imágenes gourmet mejoradas
-- 📜 Historial de generaciones en Airtable (opcional)
+- 📜 Historial de generaciones persistente (LocalStorage)
 - 💾 Descarga de imágenes con metadata
 - 🔒 Seguridad: Helmet, Rate Limiting, CORS configurado
 - 🗜️ Compresión de respuestas para mejor rendimiento
 
 ## Requisitos Previos
 
-- Node.js 14 o superior
+- Node.js 18 o superior
 - npm o yarn
-- API Key de Gemini 3.0 Pro
-- API Key de Airtable (opcional, para historial)
+- API Key de Gemini 3.0 Pro (Google AI Studio)
+- API Key de Anthropic (Claude 3.5/4.5)
 
 ## Instalación
 
@@ -32,41 +32,19 @@ npm install
 3. Configura las variables de entorno:
    - Copia el archivo `env.example.txt` a `.env` y configura tus valores:
 ```env
-# API de Gemini (Requerido)
+# API de Gemini (Requerido para imágenes e ingredientes)
 REACT_APP_GEMINI_API_KEY=tu_api_key_de_gemini
 
-# Airtable - Historial (Opcional - configurar en servidor)
-AIRTABLE_API_KEY=tu_api_key_airtable
-AIRTABLE_BASE_ID=tu_base_id_airtable
-AIRTABLE_TABLE_NAME=Generaciones
+# API de Anthropic (Requerido para recetas)
+REACT_APP_ANTHROPIC_API_KEY=tu_api_key_de_anthropic
 
-# Servidor
-PORT=3001
+# Entorno
 NODE_ENV=development
-ALLOWED_ORIGINS=http://localhost:3000
 ```
 
-**Nota**: Las API keys de Airtable ahora se configuran solo en el servidor para mayor seguridad.
+## Ejecución Local
 
-## Configuración de Airtable (Opcional)
-
-Si deseas usar el historial de generaciones:
-
-1. Crea una base de datos en Airtable
-2. Crea una tabla llamada "Generaciones" con los siguientes campos:
-   - `Name` (Single line text) - Requerido
-   - `Imagen Original` (Attachment)
-   - `Imágenes Generadas` (Attachment)
-   - `Parámetros` (Long text)
-   - `Resumen de Parámetros` (Single line text)
-   - `Semilla` (Number)
-   - `Ingredientes Detectados` (Long text)
-   - `Clasificación de Ingredientes` (Single line text)
-   - `Fecha de Generación` (Date)
-
-## Ejecución
-
-### Opción 1: Ejecutar Todo Junto (Recomendado)
+### Ejecutar Todo Junto (Recomendado)
 
 Ejecuta tanto el servidor proxy como la aplicación React:
 
@@ -75,120 +53,45 @@ npm run dev
 ```
 
 Esto iniciará:
-- Servidor proxy en `http://localhost:3001`
+- Servidor de API en `http://localhost:3001`
 - Aplicación React en `http://localhost:3000`
-
-### Opción 2: Ejecutar por Separado
-
-**Terminal 1 - Servidor Proxy:**
-```bash
-npm run server
-```
-
-**Terminal 2 - Aplicación React:**
-```bash
-npm start
-```
 
 La aplicación se abrirá automáticamente en [http://localhost:3000](http://localhost:3000)
 
-### Construir para Producción
+## Despliegue en Vercel
 
-```bash
-npm run build
-```
+Esta aplicación está optimizada para Vercel usando Funciones Serverless.
 
-Los archivos se generarán en la carpeta `build/`.
+1. Conecta tu repositorio a Vercel.
+2. Configura las variables de entorno en el panel de Vercel:
+   - `REACT_APP_GEMINI_API_KEY`
+   - `REACT_APP_ANTHROPIC_API_KEY`
+3. Vercel detectará automáticamente el archivo `vercel.json` y configurará los rewrites necesarios.
 
 ## Estructura del Proyecto
 
 ```
 GourmetAI/
-├── server/                  # Servidor backend (Express)
-│   ├── index.js            # Servidor proxy principal
-│   └── utils/              # Utilidades del servidor
-│       └── airtableHelpers.js
-├── scripts/                 # Scripts de utilidad
-│   └── reiniciar-servidor.ps1
-├── src/                     # Código fuente frontend
+├── api/                    # Serverless Functions (Backend Express)
+│   └── index.js           # Endpoint principal de API
+├── src/                    # Código fuente frontend (React)
 │   ├── components/         # Componentes React
-│   ├── constants/          # Constantes y configuraciones
 │   ├── hooks/              # Custom React hooks
-│   ├── services/           # Servicios de API
-│   ├── utils/              # Utilidades y helpers
+│   ├── services/           # Servicios de API (comunicación con /api/*)
+│   ├── utils/              # Utilidades, incluyendo historyService.js
 │   └── __tests__/          # Tests
 ├── public/                 # Archivos públicos
+├── vercel.json             # Configuración de despliegue
 ├── package.json
 └── README.md
 ```
 
 ## Arquitectura
 
-La aplicación usa un **servidor proxy** (`server/index.js`) para evitar problemas de CORS y proteger API keys:
-- **Frontend (React)**: Se comunica con el servidor proxy
-- **Backend Proxy (Express)**: Maneja APIs de Gemini y Airtable de forma segura
-- **API de Gemini**: Genera las imágenes gourmet
-
-### Endpoints del Servidor
-
-| Endpoint | Método | Descripción |
-|----------|--------|-------------|
-| `/api/generate-image` | POST | Genera imagen gourmet |
-| `/api/save-to-airtable` | POST | Guarda generación en historial |
-| `/api/history` | GET | Obtiene historial de generaciones |
-| `/api/health` | GET | Health check del servidor |
-
-## Tecnologías Utilizadas
-
-- React 18
-- Material-UI (MUI) 5
-- Axios
-- Express
-- Gemini 3.0 API
-- Airtable API
-
-## Solución de Problemas
-
-### Error: "El servidor proxy no está ejecutándose"
-**Solución**: Ejecuta `npm run server` en una terminal separada o usa `npm run dev` para ejecutar todo junto.
-
-### Error: "API Key inválida"
-**Solución**: 
-- Verifica que tu `.env` tenga `REACT_APP_GEMINI_API_KEY` configurada
-- Reinicia ambos servidores después de cambiar `.env`
-- Verifica que la API key tenga permisos para Gemini API
-
-### Error: "Modelo no encontrado (404)"
-**Solución**:
-- Verifica que tu API key tenga acceso a Gemini 3 en Google AI Studio
-- Asegúrate de que la API esté habilitada en Google Cloud Console
-- Algunos modelos pueden no estar disponibles en tu región
-
-### Error: "Puerto 3001 ya está en uso"
-**Solución**:
-```bash
-npm run restart-server
-```
-
-O mata el proceso manualmente:
-```powershell
-netstat -ano | findstr :3001
-taskkill /F /PID <PID>
-```
-
-### Error de CORS
-**Solución**: Asegúrate de que el servidor proxy esté ejecutándose en el puerto 3001.
-
-### El historial no se carga
-**Solución**: 
-- Verifica que las variables de Airtable estén configuradas en `.env`
-- Si no deseas usar Airtable, la aplicación funcionará pero no guardará el historial
-
-## Notas Importantes
-
-- La generación de imágenes con Gemini 3.0 puede requerir que la API esté disponible públicamente. Verifica la documentación oficial de Google para el estado actual de la API.
-- El historial en Airtable es opcional. Si no configuras Airtable, la aplicación funcionará pero no guardará el historial.
-- Después de modificar `.env`, debes reiniciar ambos servidores para que los cambios surtan efecto.
+La aplicación usa un modelo híbrido para máxima seguridad y rendimiento:
+- **Frontend (React)**: Interfaz de usuario que se comunica con `/api/*`.
+- **Backend (Vercel Functions)**: Maneja las llamadas a las APIs de IA (Gemini, Claude) protegiendo las API Keys y evitando problemas de CORS.
+- **Persistencia**: Las generaciones se guardan automáticamente en el `localStorage` del navegador para consulta posterior.
 
 ## Licencia
 

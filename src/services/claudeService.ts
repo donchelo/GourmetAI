@@ -1,0 +1,163 @@
+import axios from 'axios';
+import { DishParameters } from '../types';
+
+// Base URL del backend - detectar automáticamente el entorno
+const getApiBaseUrl = (): string => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3001';
+  }
+  
+  return '';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Mapeos para convertir valores de parámetros a descripciones legibles
+const estiloMap: Record<string, string> = {
+  'rustico': 'rústico y casero',
+  'minimalista': 'minimalista y limpio',
+  'clasico-elegante': 'clásico y elegante',
+  'moderno': 'moderno y vanguardista'
+};
+
+const ambienteMap: Record<string, string> = {
+  'sin-preferencia': '',
+  'restaurante': 'restaurante elegante',
+  'cocina-casera': 'cocina casera acogedora',
+  'terraza': 'terraza exterior',
+  'buffet': 'buffet profesional',
+  'estudio': 'estudio fotográfico'
+};
+
+const momentoDelDiaMap: Record<string, string> = {
+  'sin-preferencia': '',
+  'desayuno': 'desayuno matutino',
+  'brunch': 'brunch de media mañana',
+  'almuerzo': 'almuerzo de mediodía',
+  'cena': 'cena romántica nocturna'
+};
+
+/**
+ * Genera una receta usando la API de Claude a través del backend
+ * @param {string} input - Descripción o idea principal del plato
+ * @param {DishParameters} parameters - TODOS los parámetros usados para generar la imagen
+ * @param {string} ingredientsString - Ingredientes detectados o ingresados (opcional)
+ * @returns {Promise<string>} - Receta generada en formato Markdown
+ */
+export const generateRecipeClaude = async (input: string, parameters: DishParameters, ingredientsString: string = ''): Promise<string> => {
+    try {
+        const {
+            cuisineType,
+            dishCategory,
+            cookingTechnique,
+            culinaryTags,
+            estiloPlato,
+            ambiente,
+            momentoDelDia,
+            intensidadGourmet
+        } = parameters;
+
+        const getParamValue = (param: string | string[] | undefined): string => {
+          if (!param) return '';
+          return Array.isArray(param) ? param.join(', ') : param;
+        };
+
+        const cuisine = getParamValue(cuisineType);
+        const category = getParamValue(dishCategory);
+        const technique = getParamValue(cookingTechnique);
+        const tags = getParamValue(culinaryTags);
+        
+        const finalIngredients = ingredientsString || getParamValue(parameters.ingredients) || '';
+        
+        const estilo = estiloPlato ? estiloMap[estiloPlato] || estiloPlato : '';
+        const ambienteText = ambiente && ambiente !== 'sin-preferencia' ? ambienteMap[ambiente] || ambiente : '';
+        const momentoText = momentoDelDia && momentoDelDia !== 'sin-preferencia' ? momentoDelDiaMap[momentoDelDia] || momentoDelDia : '';
+        
+        const nivelGourmet = intensidadGourmet <= 3 
+          ? 'presentación casera y natural' 
+          : intensidadGourmet <= 7 
+          ? 'presentación gourmet moderada' 
+          : 'presentación de alta cocina profesional';
+
+        const prompt = `Eres un chef profesional experto. Tu tarea es crear una receta detallada pero fácil de seguir que coincida EXACTAMENTE con el plato que se muestra en la fotografía generada.
+
+**INFORMACIÓN DEL PLATO GENERADO:**
+
+**Descripción / Idea Principal:**
+"${input}"
+
+**CONTEXTO CULINARIO (Estos parámetros definen el plato):**
+${cuisine ? `- Tipo de Cocina: ${cuisine}` : ''}
+${category ? `- Categoría del Plato: ${category}` : ''}
+${technique ? `- Técnica de Cocción Principal: ${technique}` : ''}
+${tags ? `- Características / Etiquetas Culinarias: ${tags}` : ''}
+${finalIngredients ? `- Ingredientes Clave: ${finalIngredients}` : ''}
+
+**CONTEXTO VISUAL Y PRESENTACIÓN (Estos parámetros afectan cómo se ve el plato):**
+${estilo ? `- Estilo de Presentación: ${estilo}` : ''}
+${ambienteText ? `- Ambiente: ${ambienteText}` : ''}
+${momentoText ? `- Momento del Día: ${momentoText}` : ''}
+${intensidadGourmet ? `- Nivel de Presentación: ${nivelGourmet}` : ''}
+
+**INSTRUCCIONES CRÍTICAS:**
+
+1. La receta DEBE coincidir exactamente con lo que se ve en la fotografía generada
+2. Usa los ingredientes especificados y las técnicas de cocción mencionadas
+3. El estilo de presentación debe reflejar el contexto visual (${estilo || 'elegante'})
+4. La receta debe ser apropiada para el momento del día (${momentoText || 'cualquier momento'})
+5. Si hay múltiples tipos de cocina o categorías, integra sus características de manera coherente
+6. La receta debe ser práctica, clara y deliciosa
+
+**FORMATO REQUERIDO (Markdown):**
+
+### [Nombre Creativo y Apetitoso del Plato que Refleje los Parámetros]
+
+**Descripción:**
+Una breve descripción (2-3 frases) que evoque el estilo culinario, los ingredientes principales y el contexto del plato. Debe sonar apetitoso y profesional.
+
+**Ingredientes:**
+- [Lista completa de ingredientes con cantidades específicas]
+- [Incluir todos los ingredientes mencionados y los necesarios para la técnica de cocción]
+- [Cantidades deben ser precisas y prácticas]
+
+**Instrucciones Paso a Paso:**
+1. [Paso detallado que refleje la técnica de cocción especificada]
+2. [Continuar con pasos claros y secuenciales]
+3. [Incluir detalles sobre presentación si es relevante]
+...
+
+**Consejo del Chef:**
+Un tip práctico y breve relacionado con la técnica de cocción, los ingredientes o la presentación del plato.
+
+**Notas:**
+- Asegúrate de que la receta sea coherente con el tipo de cocina y categoría especificados
+- La presentación debe reflejar el estilo visual elegido
+- Los ingredientes deben coincidir con los especificados
+
+**IMPORTANTE:** Tienes hasta 8192 tokens disponibles para completar la receta. Asegúrate de incluir TODAS las secciones (título, descripción, ingredientes completos, instrucciones paso a paso, consejo del chef y notas) sin cortar el contenido. Usa todo el espacio disponible para crear una receta completa y detallada.
+
+Mantén un tono profesional, inspirador pero accesible. La receta debe ser clara y fácil de seguir para cualquier cocinero casero.`;
+
+        const url = API_BASE_URL 
+            ? `${API_BASE_URL}/api/generate-recipe-claude`
+            : '/api/generate-recipe-claude';
+
+        const response = await axios.post(url, {
+            prompt: prompt
+        });
+
+        if (response.data && response.data.success) {
+            return response.data.recipe;
+        } else {
+            throw new Error(response.data.error || 'Error desconocido al generar receta');
+        }
+
+    } catch (error: any) {
+        console.error("Error generando receta con Claude:", error);
+        return "No se pudo generar la receta con Claude. Verifica tu API Key o intenta más tarde.";
+    }
+};
