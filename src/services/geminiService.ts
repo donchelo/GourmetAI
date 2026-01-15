@@ -28,9 +28,9 @@ export const analyzeImage = async (imageBase64: string): Promise<string> => {
   } catch (error: any) {
     console.error('Error analizando imagen via backend:', error);
     const errorData = error.response?.data;
-    const errorMessage = typeof errorData?.error === 'object' 
-      ? JSON.stringify(errorData.error) 
-      : (errorData?.error || error.message || 'Error al analizar la imagen');
+    const errorMessage = errorData?.error 
+      ? (typeof errorData.error === 'object' ? JSON.stringify(errorData.error) : errorData.error)
+      : (errorData?.message || error.message || 'Error al analizar la imagen');
     throw new Error(errorMessage);
   }
 };
@@ -298,11 +298,15 @@ export const generateGourmetVariants = async (imageBase64: string, parameters: D
     if (response.data && response.data.success) {
       return [response.data.image];
     } else {
-      throw new Error(response.data.error || 'Error generando variantes gourmet');
+      throw new Error(response.data.error || response.data.message || 'Error generando variantes gourmet');
     }
   } catch (error: any) {
     console.error('Error generando variantes via backend:', error);
-    throw new Error(error.response?.data?.error || error.message || 'Error al generar las variantes gourmet');
+    const errorData = error.response?.data;
+    const errorMessage = errorData?.error 
+      ? (typeof errorData.error === 'object' ? JSON.stringify(errorData.error) : errorData.error)
+      : (errorData?.message || error.message || 'Error al generar las variantes gourmet');
+    throw new Error(errorMessage);
   }
 };
 
@@ -323,14 +327,14 @@ export const generateImageFromPrompt = async (input: string, parameters: DishPar
     if (response.data && response.data.success) {
       return [response.data.image];
     } else {
-      throw new Error(response.data.error || 'Error generando imagen');
+      throw new Error(response.data.error || response.data.message || 'Error generando imagen');
     }
   } catch (error: any) {
     console.error('Error generando imagen desde cero via backend:', error);
     const errorData = error.response?.data;
-    const errorMessage = typeof errorData?.error === 'object' 
-      ? JSON.stringify(errorData.error) 
-      : (errorData?.error || error.message || 'Error al generar la imagen');
+    const errorMessage = errorData?.error 
+      ? (typeof errorData.error === 'object' ? JSON.stringify(errorData.error) : errorData.error)
+      : (errorData?.message || error.message || 'Error al generar la imagen');
     throw new Error(errorMessage);
   }
 };
