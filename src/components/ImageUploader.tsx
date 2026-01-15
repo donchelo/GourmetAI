@@ -5,7 +5,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import CloseIcon from '@mui/icons-material/Close';
-import { imageToBase64 } from '../utils/imageUtils';
+import { imageToBase64, compressImage } from '../utils/imageUtils';
 import { validateImageFile } from '../utils/validation';
 
 interface ImageUploaderProps {
@@ -165,8 +165,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, selectedIm
       if (blob) {
         try {
           const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
-          const base64 = await imageToBase64(file);
-          onImageSelect(base64);
+          const originalBase64 = await imageToBase64(file);
+          // Comprimir también las fotos de cámara
+          const compressedBase64 = await compressImage(originalBase64, 1200, 0.8);
+          onImageSelect(compressedBase64);
           stopCamera();
           setError(null);
         } catch (err) {

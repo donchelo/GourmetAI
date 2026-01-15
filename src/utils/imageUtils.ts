@@ -15,6 +15,47 @@ export const imageToBase64 = (file: File): Promise<string> => {
 };
 
 /**
+ * Comprime una imagen en base64 para reducir su tamaño
+ * @param {string} base64 - Imagen original en base64
+ * @param {number} maxWidth - Ancho máximo deseado
+ * @param {number} quality - Calidad de compresión (0.1 a 1.0)
+ * @returns {Promise<string>} - Imagen comprimida en base64
+ */
+export const compressImage = (base64: string, maxWidth: number = 1024, quality: number = 0.7): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = base64;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      // Calcular nuevas dimensiones manteniendo aspecto
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('No se pudo obtener el contexto del canvas'));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Exportar a base64 con compresión
+      const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+      resolve(compressedBase64);
+    };
+    img.onerror = (error) => reject(error);
+  });
+};
+
+/**
  * Descarga una imagen (soporta data URIs y URLs normales)
  * @param {string} imageUrl - URL de la imagen (data URI o URL normal)
  * @param {string} filename - Nombre del archivo

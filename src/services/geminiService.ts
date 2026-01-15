@@ -27,7 +27,11 @@ export const analyzeImage = async (imageBase64: string): Promise<string> => {
     }
   } catch (error: any) {
     console.error('Error analizando imagen via backend:', error);
-    throw new Error(error.response?.data?.error || error.message || 'Error al analizar la imagen');
+    const errorData = error.response?.data;
+    const errorMessage = typeof errorData?.error === 'object' 
+      ? JSON.stringify(errorData.error) 
+      : (errorData?.error || error.message || 'Error al analizar la imagen');
+    throw new Error(errorMessage);
   }
 };
 
@@ -323,7 +327,11 @@ export const generateImageFromPrompt = async (input: string, parameters: DishPar
     }
   } catch (error: any) {
     console.error('Error generando imagen desde cero via backend:', error);
-    throw new Error(error.response?.data?.error || error.message || 'Error al generar la imagen');
+    const errorData = error.response?.data;
+    const errorMessage = typeof errorData?.error === 'object' 
+      ? JSON.stringify(errorData.error) 
+      : (errorData?.error || error.message || 'Error al generar la imagen');
+    throw new Error(errorMessage);
   }
 };
 

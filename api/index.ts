@@ -28,7 +28,7 @@ const parseBase64Image = (imageString: string) => {
   return { data: base64Data, mimeType };
 };
 
-const getApiKey = () => process.env.REACT_APP_GEMINI_API_KEY;
+const getApiKey = () => process.env.REACT_APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
 // === Seguridad ===
 app.use(helmet({
@@ -115,18 +115,26 @@ app.post('/api/analyze-image', async (req: Request<{}, any, AnalyzeImageRequest>
     
     // Extraction for text
     let ingredients = '';
-    if (response.candidates?.[0]?.content?.parts) {
-      for (const part of response.candidates[0].content.parts) {
-        if (part.text) {
-          ingredients += part.text;
+    try {
+      if (response.candidates?.[0]?.content?.parts) {
+        for (const part of response.candidates[0].content.parts) {
+          if (part.text) {
+            ingredients += part.text;
+          }
         }
       }
+    } catch (extractError) {
+      console.warn('⚠️ Error extracting parts:', extractError);
     }
     
-    return res.json({ success: true, ingredients: ingredients.trim() || response.text().trim() });
+    const finalIngredients = ingredients.trim() || (typeof response.text === 'function' ? response.text().trim() : '');
+    
+    return res.json({ success: true, ingredients: finalIngredients });
   } catch (error: any) {
     console.error('❌ Error in /api/analyze-image:', error);
-    return res.status(500).json({ error: error.message || 'Error analizando imagen' });
+    // Extraer mensaje de error detallado de Gemini si existe
+    const message = error.response?.data?.error?.message || error.message || 'Error analizando imagen';
+    return res.status(500).json({ success: false, error: message });
   }
 });
 
@@ -196,7 +204,8 @@ app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageReques
     }
   } catch (error: any) {
     console.error('❌ Error in /api/generate-image:', error);
-    return res.status(500).json({ success: false, error: error.message || 'Error generando imagen' });
+    const message = error.response?.data?.error?.message || error.message || 'Error generando imagen';
+    return res.status(500).json({ success: false, error: message });
   }
 });
 
