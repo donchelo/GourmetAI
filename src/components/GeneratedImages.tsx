@@ -308,7 +308,7 @@ const GeneratedImages: React.FC<GeneratedImagesProps> = ({ images, isLoading, er
         >
           <img
             src={imageUrl}
-            alt="VisualFeast Generated Image"
+            alt="VisualFeast gourmet creation"
             style={{
               width: '100%',
               maxWidth: '100%',

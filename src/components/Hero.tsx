@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, useTheme, IconButton, Fade, Container } from '@mui/material';
+import { Box, Typography, IconButton, Fade, Container } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
@@ -42,7 +42,6 @@ const SLIDES: Slide[] = [
 }));
 
 const Hero: React.FC = () => {
-  const theme = useTheme();
   const [currentSlide, setCurrentSlide] = useState<number>(0);
 
   useEffect(() => {

@@ -26,7 +26,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, selectedIm
   const handleFile = useCallback(async (file: File) => {
     const validation = validateImageFile(file);
     if (!validation.valid) {
-      setError(validation.error || 'Archivo invรกlido');
+      setError(validation.error || 'Archivo inválido');
       return;
     }
 
@@ -148,8 +148,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, selectedIm
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
-    if (!video.videoWidth || !video.videoHeight || video.videoWidth === 0 || video.videoHeight === 0) {
-      setError('El video no estรก listo. Por favor, espera un momento.');
+      if (!video.videoWidth || !video.videoHeight || video.videoWidth === 0 || video.videoHeight === 0) {
+      setError('El video no está listo. Por favor, espera un momento.');
       return;
     }
 
@@ -189,7 +189,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, selectedIm
           await video.play();
         } catch (err) {
           console.error('Error reproduciendo video:', err);
-          setError('Error al reproducir el video de la cรกmara. Por favor, intenta de nuevo.');
+          setError('Error al reproducir el video de la cámara. Por favor, intenta de nuevo.');
         }
       };
       
@@ -197,7 +197,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, selectedIm
       
       const handleCanPlay = () => {
         video.play().catch(err => {
-          console.error('Error en play despuรฉs de canplay:', err);
+          console.error('Error en play después de canplay:', err);
         });
       };
       
@@ -536,7 +536,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, selectedIm
                     p: 3
                   }}
                 >
-                  Iniciando cรกmara...
+                  Iniciando cámara...
                 </Typography>
               </Box>
             )}
