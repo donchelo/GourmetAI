@@ -157,12 +157,15 @@ app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageReques
       model: 'gemini-3-pro-image-preview',
       generationConfig: {
         responseModalities: ["IMAGE"] as any,
-        imageConfig: {
-          aspectRatio: finalAspectRatio as any,
-          imageSize: imageSize || "1K"
-        } as any
       }
     }, { apiVersion: 'v1beta' });
+    
+    // Configuración de imagen movida a la solicitud de contenido si es posible
+    // o mantenida de forma simplificada
+    const imageConfig = {
+      aspectRatio: finalAspectRatio as any,
+      imageSize: imageSize || "1K"
+    };
     
     let contents: any[] = [prompt];
 
@@ -179,7 +182,13 @@ app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageReques
       contents.push({ inlineData: { data, mimeType } });
     }
     
-    const result = await model.generateContent(contents);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: contents.map(c => typeof c === 'string' ? { text: c } : (c as any)) }],
+      generationConfig: {
+        responseModalities: ["IMAGE"] as any,
+        ...({ imageConfig } as any)
+      }
+    });
     const response = await result.response;
     
     let imageData = null;

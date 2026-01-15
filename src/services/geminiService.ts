@@ -65,156 +65,156 @@ const buildPrompt = (parameters: DishParameters, input: string, isFromScratch: b
   } = parameters;
 
   const estiloMap: Record<string, string> = {
-    'rustico': 'estilo rústico y casero',
-    'minimalista': 'estilo minimalista y limpio',
-    'clasico-elegante': 'estilo clásico y elegante',
-    'moderno': 'estilo moderno y vanguardista'
+    'rustico': 'rustic and homemade style',
+    'minimalista': 'minimalist and clean style',
+    'clasico-elegante': 'classic and elegant style',
+    'moderno': 'modern and avant-garde style'
   };
 
   const iluminacionMap: Record<string, string> = {
-    'natural': 'iluminación natural suave',
-    'calida': 'iluminación cálida y acogedora',
-    'estudio': 'iluminación de estudio profesional',
-    'dramatica': 'iluminación dramática con alto contraste',
-    'suave': 'iluminación suave y difusa'
+    'natural': 'soft natural lighting',
+    'calida': 'warm and cozy lighting',
+    'estudio': 'professional studio lighting',
+    'dramatica': 'dramatic lighting with high contrast',
+    'suave': 'soft and diffused lighting'
   };
 
   const fondoMap: Record<string, string> = {
-    'madera': 'superficie de madera',
-    'marmol': 'superficie de mármol',
-    'negro': 'fondo negro',
-    'blanco': 'fondo blanco',
-    'granito': 'superficie de granito',
-    'concreto': 'superficie de concreto pulido',
-    'tela': 'mantel o tela de lino',
-    'original': 'fondo neutro elegante'
+    'madera': 'wooden surface',
+    'marmol': 'marble surface',
+    'negro': 'black background',
+    'blanco': 'white background',
+    'granito': 'granite surface',
+    'concreto': 'polished concrete surface',
+    'tela': 'linen cloth or tablecloth',
+    'original': 'elegant neutral background'
   };
 
   const anguloMap: Record<string, string> = {
-    'cenital': 'vista cenital desde arriba (90 grados)',
-    '75': 'vista casi cenital desde 75 grados',
-    '45': 'vista clásica en ángulo de 45 grados',
-    '30': 'vista baja desde 30 grados',
-    'lateral': 'vista lateral a nivel del plato',
-    'hero': 'hero shot frontal dramático',
-    'diagonal': 'vista diagonal desde una esquina',
-    'picado': 'vista en picado desde arriba inclinado'
+    'cenital': 'overhead zenith view (90 degrees)',
+    '75': 'near-zenith view from 75 degrees',
+    '45': 'classic 45-degree angle view',
+    '30': 'low view from 30 degrees',
+    'lateral': 'side view at plate level',
+    'hero': 'dramatic frontal hero shot',
+    'diagonal': 'diagonal view from a corner',
+    'picado': 'tilted overhead view'
   };
 
   const tipoVajillaMap: Record<string, string> = {
-    'original': 'plato elegante apropiado',
-    'redondo': 'plato redondo de porcelana',
-    'cuadrado': 'plato cuadrado minimalista',
-    'rectangular': 'plato rectangular alargado',
-    'bowl': 'bowl profundo elegante',
-    'pizarra': 'pizarra negra natural',
-    'tabla-madera': 'tabla de madera rústica'
+    'original': 'appropriate elegant plate',
+    'redondo': 'round porcelain plate',
+    'cuadrado': 'minimalist square plate',
+    'rectangular': 'elongated rectangular plate',
+    'bowl': 'elegant deep bowl',
+    'pizarra': 'natural black slate',
+    'tabla-madera': 'rustic wooden board'
   };
 
   const colorVajillaMap: Record<string, string> = {
-    'original': 'color neutro elegante',
-    'blanco': 'blanco clásico',
-    'negro': 'negro mate',
-    'terracota': 'terracota cálido',
-    'crema': 'crema suave'
+    'original': 'neutral elegant color',
+    'blanco': 'classic white',
+    'negro': 'matte black',
+    'terracota': 'warm terracotta',
+    'crema': 'soft cream'
   };
 
   const ambienteMap: Record<string, string> = {
     'sin-preferencia': '',
-    'restaurante': 'ambiente de restaurante elegante',
-    'cocina-casera': 'ambiente acogedor casero',
-    'terraza': 'ambiente de terraza con luz natural',
-    'buffet': 'ambiente de buffet profesional',
-    'estudio': 'estudio fotográfico profesional'
+    'restaurante': 'elegant restaurant atmosphere',
+    'cocina-casera': 'cozy home atmosphere',
+    'terraza': 'outdoor terrace atmosphere with natural light',
+    'buffet': 'professional buffet setting',
+    'estudio': 'professional photo studio setting'
   };
 
   const momentoDelDiaMap: Record<string, string> = {
     'sin-preferencia': '',
-    'desayuno': 'atmósfera brillante matutina',
-    'brunch': 'luz cálida de media mañana',
-    'almuerzo': 'luz natural de mediodía',
-    'cena': 'atmósfera íntima y cálida nocturna'
+    'desayuno': 'bright morning atmosphere',
+    'brunch': 'warm mid-morning light',
+    'almuerzo': 'midday natural light',
+    'cena': 'intimate and warm night atmosphere'
   };
 
   const profundidadCampoMap: Record<string, string> = {
-    'moderado': 'profundidad de campo moderada',
-    'bokeh-fuerte': 'bokeh pronunciado con fondo muy difuso',
-    'todo-foco': 'todo en foco nítido'
+    'moderado': 'moderate depth of field',
+    'bokeh-fuerte': 'pronounced bokeh with very blurred background',
+    'todo-foco': 'everything in sharp focus'
   };
 
   const aspectRatioMap: Record<string, string> = {
     'original': '',
-    '1:1': 'formato cuadrado',
-    '4:3': 'formato 4:3',
-    '16:9': 'formato panorámico 16:9',
-    '4:5': 'formato vertical 4:5'
+    '1:1': 'square format',
+    '4:3': '4:3 format',
+    '16:9': '16:9 panoramic format',
+    '4:5': '4:5 vertical format'
   };
 
   const direccionLuzMap: Record<string, string> = {
-    'natural': 'luz natural desde ventana',
-    'frontal': 'luz frontal directa',
-    'lateral': 'luz lateral que resalta texturas',
-    'backlight': 'retroiluminación que crea siluetas y resalta vapor',
-    'cenital': 'luz cenital desde arriba'
+    'natural': 'natural light from a window',
+    'frontal': 'direct frontal light',
+    'lateral': 'side light highlighting textures',
+    'backlight': 'backlighting creating silhouettes and highlighting steam',
+    'cenital': 'overhead top light'
   };
 
   const propsMap: Record<string, string> = {
     'ninguno': '',
-    'cubiertos': 'cubiertos elegantes al lado',
-    'servilleta': 'servilleta de tela doblada',
-    'copa': 'copa de vino a un lado',
-    'ingredientes': 'ingredientes crudos decorativos de fondo',
-    'hierbas': 'ramitas de hierbas frescas como decoración'
+    'cubiertos': 'elegant cutlery on the side',
+    'servilleta': 'folded cloth napkin',
+    'copa': 'wine glass on the side',
+    'ingredientes': 'decorative raw ingredients in the background',
+    'hierbas': 'fresh herb sprigs as decoration'
   };
 
   const saturacionMap: Record<string, string> = {
-    'normal': 'colores naturales y balanceados',
-    'bajo': 'colores suaves y desaturados',
-    'vibrante': 'colores vivos y saturados que resaltan'
+    'normal': 'natural and balanced colors',
+    'bajo': 'soft and desaturated colors',
+    'vibrante': 'vivid and saturated colors that stand out'
   };
 
   const texturaFondoMap: Record<string, string> = {
-    'lisa': 'textura lisa y uniforme',
-    'rustica': 'textura rústica con vetas naturales',
-    'desgastada': 'textura vintage desgastada',
-    'pulida': 'textura pulida y brillante'
+    'lisa': 'smooth and uniform texture',
+    'rustica': 'rustic texture with natural grain',
+    'desgastada': 'distressed vintage texture',
+    'pulida': 'polished and shiny texture'
   };
 
   const efectoVaporMap: Record<string, string> = {
     'sin-vapor': '',
-    'sutil': 'vapor suave y delicado',
-    'intenso': 'vapor abundante visible'
+    'sutil': 'soft and delicate steam',
+    'intenso': 'abundant visible steam'
   };
 
   const efectoFrescuraMap: Record<string, string> = {
     'sin-efecto': '',
-    'gotas': 'gotas de agua fresca en los ingredientes',
-    'escarcha': 'efecto de escarcha delicada'
+    'gotas': 'fresh water droplets on the ingredients',
+    'escarcha': 'delicate frost effect'
   };
 
   const decoracionesMap: Record<string, string> = {
-    'microgreens': 'microgreens frescos',
-    'salsas-decorativas': 'salsas artísticas decorativas',
-    'flores-comestibles': 'flores comestibles',
-    'especias': 'especias esparcidas artísticamente',
-    'drizzle': 'drizzle de aceite de oliva',
-    'citricos': 'ralladura de cítricos'
+    'microgreens': 'fresh microgreens',
+    'salsas-decorativas': 'decorative artistic sauces',
+    'flores-comestibles': 'edible flowers',
+    'especias': 'artistically scattered spices',
+    'drizzle': 'olive oil drizzle',
+    'citricos': 'citrus zest'
   };
 
   const intensidadText = intensidadGourmet <= 3 
-    ? 'mejora sutil manteniendo aspecto natural' 
+    ? 'subtle improvement maintaining natural look' 
     : intensidadGourmet <= 7 
-    ? 'transformación moderada con presentación gourmet' 
-    : 'transformación completa con presentación de alta cocina profesional';
+    ? 'moderate transformation with gourmet presentation' 
+    : 'complete transformation with professional haute cuisine presentation';
 
   let decoracionesText = '';
   if (decoracionesExtra && decoracionesExtra.length > 0) {
     decoracionesText = decoracionesExtra.map(d => (d && decoracionesMap[d]) || d).join(', ');
   }
 
-  const vajillaText = `${(tipoVajilla ? tipoVajillaMap[tipoVajilla] : '') || 'plato elegante'} color ${(colorVajilla ? colorVajillaMap[colorVajilla] : '') || 'neutro'}`;
-  const fondoCompleto = `${(fondo ? fondoMap[fondo] : '') || 'fondo elegante'}${texturaFondo && texturaFondoMap[texturaFondo] ? ` con ${texturaFondoMap[texturaFondo]}` : ''}`;
-  const iluminacionCompleta = `${(iluminacion ? iluminacionMap[iluminacion] : '') || 'iluminación profesional'}${direccionLuz && direccionLuzMap[direccionLuz] ? `, ${direccionLuzMap[direccionLuz]}` : ''}`;
+  const vajillaText = `${(tipoVajilla ? tipoVajillaMap[tipoVajilla] : '') || 'elegant plate'} color ${(colorVajilla ? colorVajillaMap[colorVajilla] : '') || 'neutral'}`;
+  const fondoCompleto = `${(fondo ? fondoMap[fondo] : '') || 'elegant background'}${texturaFondo && texturaFondoMap[texturaFondo] ? ` with ${texturaFondoMap[texturaFondo]}` : ''}`;
+  const iluminacionCompleta = `${(iluminacion ? iluminacionMap[iluminacion] : '') || 'professional lighting'}${direccionLuz && direccionLuzMap[direccionLuz] ? `, ${direccionLuzMap[direccionLuz]}` : ''}`;
   const ambienteText = (ambiente ? ambienteMap[ambiente] : '') || '';
   const momentoText = (momentoDelDia ? momentoDelDiaMap[momentoDelDia] : '') || '';
   
@@ -231,49 +231,49 @@ const buildPrompt = (parameters: DishParameters, input: string, isFromScratch: b
 
   let prompt = '';
   if (isFromScratch) {
-    prompt = `Genera una fotografía gastronómica profesional de alta resolución basada en la siguiente descripción: "${input}".
+    prompt = `Generate a high-resolution professional food photograph based on the following description: "${input}".
     
-    INFORMACIÓN CULINARIA ADICIONAL:
-    ${Array.isArray(cuisineType) && cuisineType.length ? `- Tipo de cocina: ${cuisineType.join(', ')}` : ''}
-    ${Array.isArray(dishCategory) && dishCategory.length ? `- Categoría: ${dishCategory.join(', ')}` : ''}
-    ${Array.isArray(cookingTechnique) && cookingTechnique.length ? `- Técnica: ${cookingTechnique.join(', ')}` : ''}
-    ${Array.isArray(culinaryTags) && culinaryTags.length ? `- Características: ${culinaryTags.join(', ')}` : ''}
+    ADDITIONAL CULINARY INFORMATION:
+    ${Array.isArray(cuisineType) && cuisineType.length ? `- Cuisine type: ${cuisineType.join(', ')}` : ''}
+    ${Array.isArray(dishCategory) && dishCategory.length ? `- Category: ${dishCategory.join(', ')}` : ''}
+    ${Array.isArray(cookingTechnique) && cookingTechnique.length ? `- Technique: ${cookingTechnique.join(', ')}` : ''}
+    ${Array.isArray(culinaryTags) && culinaryTags.length ? `- Features: ${culinaryTags.join(', ')}` : ''}
 
-ESPECIFICACIONES DE LA IMAGEN:
-- Estilo: ${(estiloPlato ? estiloMap[estiloPlato] : '') || 'elegante'}
-- Vajilla: ${vajillaText}
-- Fondo: ${fondoCompleto}
-- Iluminación: ${iluminacionCompleta}
-- Ángulo: ${(anguloCamara ? anguloMap[anguloCamara] : '') || 'ángulo profesional'}
-- Enfoque: ${(profundidadCampo ? profundidadCampoMap[profundidadCampo] : '') || 'profundidad moderada'}${ambienteText ? `\n- Ambiente: ${ambienteText}` : ''}${momentoText ? `\n- Atmósfera: ${momentoText}` : ''}${saturacionText ? `\n- Colores: ${saturacionText}` : ''}${propsText ? `\n- Props: ${propsText}` : ''}${decoracionesText ? `\n- Decoración: ${decoracionesText}` : ''}${efectosText ? `\n- Efectos: ${efectosText}` : ''}${aspectRatio && aspectRatioMap[aspectRatio] ? `\n- Formato: ${aspectRatioMap[aspectRatio]}` : ''}
+IMAGE SPECIFICATIONS:
+- Style: ${(estiloPlato ? estiloMap[estiloPlato] : '') || 'elegant'}
+- Tableware: ${vajillaText}
+- Background: ${fondoCompleto}
+- Lighting: ${iluminacionCompleta}
+- Angle: ${(anguloCamara ? anguloMap[anguloCamara] : '') || 'professional angle'}
+- Focus: ${(profundidadCampo ? profundidadCampoMap[profundidadCampo] : '') || 'moderate depth'}${ambienteText ? `\n- Atmosphere: ${ambienteText}` : ''}${momentoText ? `\n- Moment: ${momentoText}` : ''}${saturacionText ? `\n- Colors: ${saturacionText}` : ''}${propsText ? `\n- Props: ${propsText}` : ''}${decoracionesText ? `\n- Decoration: ${decoracionesText}` : ''}${efectosText ? `\n- Effects: ${efectosText}` : ''}${aspectRatio && aspectRatioMap[aspectRatio] ? `\n- Format: ${aspectRatioMap[aspectRatio]}` : ''}
 
-RESULTADO: Una imagen fotorrealista de calidad de revista culinaria. La comida debe verse deliciosa, fresca y perfectamente iluminada.`;
+RESULT: A photorealistic image of culinary magazine quality. The food must look delicious, fresh, and perfectly lit.`;
   } else {
-    const usePhysicalPlate = parameters.plateImage ? '\n- PLATO FÍSICO: Se ha proporcionado una imagen del plato físico donde DEBE servirse la comida. Utiliza exactamente este plato para la presentación final.' : '';
+    const usePhysicalPlate = parameters.plateImage ? '\n- PHYSICAL PLATE: A photo of the physical plate has been provided. Use EXACTLY this plate for the final presentation.' : '';
     
-    prompt = `Genera una fotografía gastronómica profesional gourmet basada en esta imagen de comida.
+    prompt = `Generate a professional gourmet food photograph based on this food image.
 
-REGLA FUNDAMENTAL DE INTEGRIDAD ABSOLUTA:
-- Los ALIMENTOS e INGREDIENTES deben ser EXACTAMENTE los mismos que en la imagen original: ${input}.
-- No añadas, quites ni modifiques los componentes principales de la comida.
-- El objetivo es realizar un RE-ESTILISMO FOTOGRÁFICO profesional, manteniendo la ESENCIA y APARIENCIA de la comida original lo más fielmente posible.
-- Mantén la disposición, porciones y texturas naturales de los ingredientes originales.
+ABSOLUTE INTEGRITY RULE:
+- The FOOD and INGREDIENTS must be EXACTLY the same as in the original image: ${input}.
+- Do not add, remove, or modify the main components of the food.
+- The goal is a professional PHOTOGRAPHIC RE-STYLING, maintaining the ESSENCE and APPEARANCE of the original food as faithfully as possible.
+- Maintain the arrangement, portions, and natural textures of the original ingredients.
 
-MEJORA FOTOGRÁFICA Y DE PRESENTACIÓN:
-- Transforma la iluminación a una calidad de estudio profesional (luz suave lateral, realce de texturas).
-- Mejora la nitidez y el detalle técnico de la captura.
-- El balance de blancos y la colorimetría deben ser perfectos, resaltando la frescura natural.
-- Puedes mejorar el emplatado y el entorno (plato, fondo, decoración lateral) para que parezca una fotografía de nivel editorial o estrella Michelin.${usePhysicalPlate}
+PHOTOGRAPHIC AND PRESENTATION IMPROVEMENT:
+- Transform the lighting to professional studio quality (soft side light, texture enhancement).
+- Improve sharpness and technical detail of the capture.
+- White balance and colorimetry must be perfect, highlighting natural freshness.
+- You can improve the plating and environment (plate, background, side decoration) to look like editorial or Michelin-star level photography.${usePhysicalPlate}
 
-ESPECIFICACIONES DE LA IMAGEN:
-- Estilo: ${(estiloPlato ? estiloMap[estiloPlato] : '') || 'elegante'}, ${intensidadText}
-- Vajilla: ${parameters.plateImage ? 'Usa el plato proporcionado en la segunda imagen' : vajillaText}
-- Fondo: ${fondoCompleto}
-- Iluminación: ${iluminacionCompleta}
-- Ángulo: ${(anguloCamara ? anguloMap[anguloCamara] : '') || 'ángulo profesional'}
-- Enfoque: ${(profundidadCampo ? profundidadCampoMap[profundidadCampo] : '') || 'profundidad moderada'}${ambienteText ? `\n- Ambiente: ${ambienteText}` : ''}${momentoText ? `\n- Atmósfera: ${momentoText}` : ''}${saturacionText ? `\n- Colores: ${saturacionText}` : ''}${propsText ? `\n- Props: ${propsText}` : ''}${decoracionesText ? `\n- Decoración: ${decoracionesText}` : ''}${efectosText ? `\n- Efectos: ${efectosText}` : ''}${aspectRatio && aspectRatioMap[aspectRatio] ? `\n- Formato: ${aspectRatioMap[aspectRatio]}` : ''}
+IMAGE SPECIFICATIONS:
+- Style: ${(estiloPlato ? estiloMap[estiloPlato] : '') || 'elegant'}, ${intensidadText}
+- Tableware: ${parameters.plateImage ? 'Use the plate provided in the second image' : vajillaText}
+- Background: ${fondoCompleto}
+- Lighting: ${iluminacionCompleta}
+- Angle: ${(anguloCamara ? anguloMap[anguloCamara] : '') || 'professional angle'}
+- Focus: ${(profundidadCampo ? profundidadCampoMap[profundidadCampo] : '') || 'moderate depth'}${ambienteText ? `\n- Atmosphere: ${ambienteText}` : ''}${momentoText ? `\n- Moment: ${momentoText}` : ''}${saturacionText ? `\n- Colors: ${saturacionText}` : ''}${propsText ? `\n- Props: ${propsText}` : ''}${decoracionesText ? `\n- Decoration: ${decoracionesText}` : ''}${efectosText ? `\n- Effects: ${efectosText}` : ''}${aspectRatio && aspectRatioMap[aspectRatio] ? `\n- Format: ${aspectRatioMap[aspectRatio]}` : ''}
 
-RESULTADO: Fotografía gastronómica de nivel revista internacional (tipo Michelin Guide o Bon Appétit), manteniendo la comida original pero con una ejecución técnica fotográfica perfecta y presentación gourmet.`;
+RESULT: International magazine level food photography (like Michelin Guide or Bon Appétit), keeping the original food but with perfect technical photographic execution and gourmet presentation.`;
   }
 
   return prompt;
