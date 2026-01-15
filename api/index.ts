@@ -1,16 +1,14 @@
 import express, { Request, Response, NextFunction } from 'express';
 /**
- * SERVER VERSION: 1.0.4
+ * SERVER VERSION: 1.0.5
  * MODELS: gemini-3-pro-image-preview only
+ * Compatible with Vercel Serverless Functions
  */
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
@@ -257,13 +255,21 @@ app.post('/api/generate-recipe', async (req: Request<{}, any, GenerateRecipeRequ
 });
 
 app.get('/api/health', (req: Request, res: Response) => {
+  const apiKey = getApiKey();
   res.json({ 
     status: 'ok',
-    version: '1.0.4-gemini3-only',
+    version: '1.0.5-gemini3-only',
+    environment: process.env.NODE_ENV || 'not-set',
     services: { 
-      gemini: !!getApiKey()
+      gemini: !!apiKey,
+      apiKeySource: apiKey ? (process.env.GEMINI_API_KEY ? 'GEMINI_API_KEY' : 'REACT_APP_GEMINI_API_KEY') : 'none'
     } 
   });
+});
+
+// Endpoint de diagnóstico simple
+app.get('/api/ping', (req: Request, res: Response) => {
+  res.json({ pong: true, timestamp: new Date().toISOString() });
 });
 
 // Error handling
