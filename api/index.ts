@@ -213,8 +213,21 @@ app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageReques
     }
   } catch (error: any) {
     console.error('❌ Error in /api/generate-image:', error);
-    const message = error.response?.data?.error?.message || error.message || 'Error generando imagen';
-    return res.status(500).json({ success: false, error: message });
+    
+    // Extraer el mensaje más útil posible
+    let errorMessage = 'Error generando imagen';
+    
+    if (error.response) {
+      // Error de la API de Gemini
+      errorMessage = error.response.data?.error?.message || `Error de API (${error.response.status})`;
+    } else if (error.request) {
+      // La petición se hizo pero no hubo respuesta (posible timeout)
+      errorMessage = 'La API de Gemini no respondió a tiempo. Inténtalo de nuevo.';
+    } else {
+      errorMessage = error.message;
+    }
+
+    return res.status(500).json({ success: false, error: errorMessage });
   }
 });
 
