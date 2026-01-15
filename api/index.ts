@@ -1,15 +1,13 @@
 import express, { Request, Response, NextFunction } from 'express';
 /**
- * SERVER VERSION: 1.0.3
+ * SERVER VERSION: 1.0.4
  * MODELS: gemini-3-pro-image-preview only
  */
 import cors from 'cors';
-import axios from 'axios';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import Anthropic from '@anthropic-ai/sdk';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,8 +16,19 @@ const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Confiar en el proxy (necesario para rate-limit en Vercel)
+// Confiar en el proxy
 app.set('trust proxy', 1);
+
+// === Helpers ===
+const parseBase64Image = (imageString: string) => {
+  const base64Data = imageString.includes(',') ? imageString.split(',')[1] : imageString;
+  let mimeType = "image/jpeg";
+  if (imageString.includes('data:image/png')) mimeType = "image/png";
+  if (imageString.includes('data:image/webp')) mimeType = "image/webp";
+  return { data: base64Data, mimeType };
+};
+
+const getApiKey = () => process.env.REACT_APP_GEMINI_API_KEY;
 
 // === Seguridad ===
 app.use(helmet({
@@ -44,7 +53,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://local
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || (isProduction && origin.includes('vercel.app'))) {
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     callback(null, true); // Permisivo en dev
@@ -83,7 +92,7 @@ app.post('/api/analyze-image', async (req: Request<{}, any, AnalyzeImageRequest>
   try {
     const { image } = req.body;
     console.log('🔍 ANALYZE IMAGE - Using model: gemini-3-pro-image-preview (v1beta)');
-    const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+    const apiKey = getApiKey();
 
     if (!apiKey) return res.status(500).json({ error: 'API Key de Gemini no configurada' });
     if (!image) return res.status(400).json({ error: 'Imagen es requerida' });
@@ -93,16 +102,13 @@ app.post('/api/analyze-image', async (req: Request<{}, any, AnalyzeImageRequest>
       model: 'gemini-3-pro-image-preview' 
     }, { apiVersion: 'v1beta' });
 
-    const base64Data = image.includes(',') ? image.split(',')[1] : image;
-    let mimeType = "image/jpeg";
-    if (image.includes('data:image/png')) mimeType = "image/png";
-    if (image.includes('data:image/webp')) mimeType = "image/webp";
+    const { data, mimeType } = parseBase64Image(image);
 
     const prompt = "Lista todos los ingredientes que identificas en esta imagen de comida. Responde solo con ingredientes separados por comas, sin explicaciones.";
     
     const result = await model.generateContent([
       prompt,
-      { inlineData: { data: base64Data, mimeType } }
+      { inlineData: { data, mimeType } }
     ]);
     
     const response = await result.response;
@@ -124,16 +130,16 @@ app.post('/api/analyze-image', async (req: Request<{}, any, AnalyzeImageRequest>
   }
 });
 
-  app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageRequest>, res: Response) => {
+app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageRequest>, res: Response) => {
   try {
     const { prompt, image, plateImage, aspectRatio, imageSize } = req.body;
     
     // Gemini 3 Pro requirement: Valid numeric aspect ratios only
-    const validAspectRatios = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
+    const validAspectRatios = ['1:1', '3:4', '4:3', '9:16', '16:9'];
     const finalAspectRatio = validAspectRatios.includes(aspectRatio || '') ? aspectRatio : "1:1";
     
     console.log(`🎨 GENERATE IMAGE - Using model: gemini-3-pro-image-preview (v1beta) [${finalAspectRatio}, ${imageSize || '1K'}]`);
-    const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+    const apiKey = getApiKey();
 
     if (!apiKey) return res.status(500).json({ error: 'API Key de Gemini no configurada' });
     if (!prompt) return res.status(400).json({ error: 'Prompt es requerido' });
@@ -154,21 +160,15 @@ app.post('/api/analyze-image', async (req: Request<{}, any, AnalyzeImageRequest>
 
     // Imagen principal (comida)
     if (image) {
-      const base64Data = image.includes(',') ? image.split(',')[1] : image;
-      let mimeType = "image/jpeg";
-      if (image.includes('data:image/png')) mimeType = "image/png";
-      if (image.includes('data:image/webp')) mimeType = "image/webp";
-      contents.push({ inlineData: { data: base64Data, mimeType } });
+      const { data, mimeType } = parseBase64Image(image);
+      contents.push({ inlineData: { data, mimeType } });
     }
 
     // Imagen secundaria (plato físico opcional)
     if (plateImage) {
       console.log('🍽️ Adding physical plate image to request');
-      const base64Data = plateImage.includes(',') ? plateImage.split(',')[1] : plateImage;
-      let mimeType = "image/jpeg";
-      if (plateImage.includes('data:image/png')) mimeType = "image/png";
-      if (plateImage.includes('data:image/webp')) mimeType = "image/webp";
-      contents.push({ inlineData: { data: base64Data, mimeType } });
+      const { data, mimeType } = parseBase64Image(plateImage);
+      contents.push({ inlineData: { data, mimeType } });
     }
     
     const result = await model.generateContent(contents);
@@ -200,26 +200,27 @@ app.post('/api/analyze-image', async (req: Request<{}, any, AnalyzeImageRequest>
   }
 });
 
-app.post('/api/generate-recipe-claude', async (req: Request<{}, any, GenerateRecipeRequest>, res: Response) => {
+app.post('/api/generate-recipe', async (req: Request<{}, any, GenerateRecipeRequest>, res: Response) => {
   try {
     const { prompt } = req.body;
-    const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
+    console.log('📝 GENERATE RECIPE - Using model: gemini-3-pro-image-preview (v1beta)');
+    const apiKey = getApiKey();
 
-    if (!apiKey) return res.status(500).json({ error: 'API Key de Anthropic no configurada' });
+    if (!apiKey) return res.status(500).json({ error: 'API Key de Gemini no configurada' });
     if (!prompt) return res.status(400).json({ error: 'Prompt es requerido' });
 
-    const anthropic = new Anthropic({ apiKey, timeout: 60000 });
-    const modelName = process.env.CLAUDE_MODEL || "claude-haiku-4-5";
-    
-    const msg = await anthropic.messages.create({
-      model: modelName,
-      max_tokens: 8192,
-      messages: [{ role: "user", content: prompt }],
-    });
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-3-pro-image-preview' 
+    }, { apiVersion: 'v1beta' });
 
-    const text = (msg.content[0] as any).text;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
     return res.json({ success: true, recipe: text });
   } catch (error: any) {
+    console.error('❌ Error in /api/generate-recipe:', error);
     return res.status(500).json({ success: false, error: error.message || 'Error generando receta' });
   }
 });
@@ -227,10 +228,9 @@ app.post('/api/generate-recipe-claude', async (req: Request<{}, any, GenerateRec
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ 
     status: 'ok',
-    version: '1.0.3-gemini3-only',
+    version: '1.0.4-gemini3-only',
     services: { 
-      gemini: !!process.env.REACT_APP_GEMINI_API_KEY, 
-      claude: !!(process.env.REACT_APP_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY) 
+      gemini: !!getApiKey()
     } 
   });
 });
@@ -242,9 +242,3 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 export default app;
-
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 API: http://localhost:${PORT}`);
-  });
-}

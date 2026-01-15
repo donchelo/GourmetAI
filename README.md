@@ -10,6 +10,7 @@ Aplicación web que transforma fotografías de platos de comida en versiones vis
 - ✨ Generación de imágenes gourmet mejoradas
 - 📜 Historial de generaciones persistente (LocalStorage)
 - 💾 Descarga de imágenes con metadata
+- 📜 Generación de recetas creativas vía Gemini 3
 - 🔒 Seguridad: Helmet, Rate Limiting, CORS configurado
 - 🗜️ Compresión de respuestas para mejor rendimiento
 
@@ -18,7 +19,6 @@ Aplicación web que transforma fotografías de platos de comida en versiones vis
 - Node.js 18 o superior
 - npm o yarn
 - API Key de Gemini 3.0 Pro (Google AI Studio)
-- API Key de Anthropic (Claude 3.5/4.5)
 
 ## Instalación
 
@@ -32,11 +32,8 @@ npm install
 3. Configura las variables de entorno:
    - Copia el archivo `env.example.txt` a `.env` y configura tus valores:
 ```env
-# API de Gemini (Requerido para imágenes e ingredientes)
+# API de Gemini (Requerido para imágenes, ingredientes y recetas)
 REACT_APP_GEMINI_API_KEY=tu_api_key_de_gemini
-
-# API de Anthropic (Requerido para recetas)
-REACT_APP_ANTHROPIC_API_KEY=tu_api_key_de_anthropic
 
 # Entorno
 NODE_ENV=development
@@ -58,30 +55,19 @@ Esto iniciará:
 
 La aplicación se abrirá automáticamente en [http://localhost:3000](http://localhost:3000)
 
-## Despliegue en Vercel
-
-Esta aplicación está optimizada para Vercel usando Funciones Serverless.
-
-1. Conecta tu repositorio a Vercel.
-2. Configura las variables de entorno en el panel de Vercel:
-   - `REACT_APP_GEMINI_API_KEY`
-   - `REACT_APP_ANTHROPIC_API_KEY`
-3. Vercel detectará automáticamente el archivo `vercel.json` y configurará los rewrites necesarios.
-
 ## Estructura del Proyecto
 
 ```
 GourmetAI/
-├── api/                    # Serverless Functions (Backend Express)
-│   └── index.js           # Endpoint principal de API
+├── api/                    # Backend Express
+│   └── index.ts           # Endpoint principal de API
 ├── src/                    # Código fuente frontend (React)
 │   ├── components/         # Componentes React
 │   ├── hooks/              # Custom React hooks
 │   ├── services/           # Servicios de API (comunicación con /api/*)
-│   ├── utils/              # Utilidades, incluyendo historyService.js
+│   ├── utils/              # Utilidades
 │   └── __tests__/          # Tests
 ├── public/                 # Archivos públicos
-├── vercel.json             # Configuración de despliegue
 ├── package.json
 └── README.md
 ```
@@ -90,7 +76,7 @@ GourmetAI/
 
 La aplicación usa un modelo híbrido para máxima seguridad y rendimiento:
 - **Frontend (React)**: Interfaz de usuario que se comunica con `/api/*`.
-- **Backend (Vercel Functions)**: Maneja las llamadas a las APIs de IA (Gemini, Claude) protegiendo las API Keys y evitando problemas de CORS.
+- **Backend (Express)**: Maneja las llamadas a las APIs de IA (Gemini) protegiendo las API Keys y evitando problemas de CORS.
 - **Persistencia**: Las generaciones se guardan automáticamente en el `localStorage` del navegador para consulta posterior.
 
 ## Licencia

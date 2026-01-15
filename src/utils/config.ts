@@ -14,20 +14,5 @@ export const CONFIG = {
   GENERATED_IMAGE_SIZE: {
     width: 1024,
     height: 1024
-  },
-  
-  // Validación de entorno
-  validateEnvironment: (): boolean => {
-    const required = ['REACT_APP_GEMINI_API_KEY'];
-    const missing = required.filter(
-      key => !process.env[key] || process.env[key]?.trim() === ''
-    );
-    
-    if (missing.length > 0) {
-      console.warn('Variables de entorno faltantes:', missing);
-      return false;
-    }
-    
-    return true;
   }
 };

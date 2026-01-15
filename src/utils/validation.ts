@@ -90,7 +90,7 @@ export const validateParameters = (parameters: DishParameters): ValidationResult
     ambiente: ['sin-preferencia', 'restaurante', 'cocina-casera', 'terraza', 'buffet', 'estudio'],
     momentoDelDia: ['sin-preferencia', 'desayuno', 'brunch', 'almuerzo', 'cena'],
     profundidadCampo: ['moderado', 'bokeh-fuerte', 'todo-foco'],
-    aspectRatio: ['1:1', '4:3', '16:9', '4:5', '3:2', '21:9'],
+    aspectRatio: ['1:1', '3:4', '4:3', '9:16', '16:9'],
     efectoVapor: ['sin-vapor', 'sutil', 'intenso'],
     efectoFrescura: ['sin-efecto', 'gotas', 'escarcha']
   };
@@ -106,21 +106,4 @@ export const validateParameters = (parameters: DishParameters): ValidationResult
   }
 
   return { valid: true };
-};
-
-/**
- * Valida que las variables de entorno estén configuradas
- * @returns {Object} - { valid: boolean, missing?: string[] }
- */
-export const validateEnvironment = (): { valid: boolean; missing: string[] } => {
-  const required = ['REACT_APP_GEMINI_API_KEY'];
-
-  const missing = required.filter(
-    key => !process.env[key] || process.env[key]?.trim() === ''
-  );
-
-  return {
-    valid: missing.length === 0,
-    missing
-  };
 };

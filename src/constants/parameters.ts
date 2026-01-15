@@ -98,11 +98,10 @@ export const PROFUNDIDADES_CAMPO: Option[] = [
 
 export const ASPECT_RATIOS: Option[] = [
   { value: '1:1', label: '1:1 (Cuadrado)' },
+  { value: '3:4', label: '3:4 (Retrato)' },
   { value: '4:3', label: '4:3 (Estándar)' },
-  { value: '16:9', label: '16:9 (Panorámico)' },
-  { value: '4:5', label: '4:5 (Retrato)' },
-  { value: '3:2', label: '3:2 (Clásico)' },
-  { value: '21:9', label: '21:9 (Ultra-wide)' }
+  { value: '9:16', label: '9:16 (Vertical)' },
+  { value: '16:9', label: '16:9 (Panorámico)' }
 ];
 
 export const IMAGE_SIZES: Option[] = [

@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
-import { analyzeImage, generateGourmetVariants, generateImageFromPrompt } from '../services/geminiService';
-import { generateRecipeClaude } from '../services/claudeService';
+import { analyzeImage, generateGourmetVariants, generateImageFromPrompt, generateRecipe } from '../services/geminiService';
 import { saveToHistory } from '../utils/historyService';
 import { DishParameters } from '../types';
 
@@ -165,7 +164,7 @@ const useImageGeneration = () => {
           }
         }
         
-        const generatedRecipe = await generateRecipeClaude(input, lastParameters, ingredients);
+        const generatedRecipe = await generateRecipe(input, lastParameters, ingredients);
         
         if (generatedRecipe && generatedRecipe.trim().length > 0) {
           setRecipe(generatedRecipe);
