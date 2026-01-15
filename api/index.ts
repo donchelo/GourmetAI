@@ -241,4 +241,16 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   res.status(error.status || 500).json({ success: false, error: error.message || 'Error interno' });
 });
 
+// Iniciar servidor solo en desarrollo local
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`📋 Endpoints disponibles:`);
+    console.log(`   POST /api/analyze-image`);
+    console.log(`   POST /api/generate-image`);
+    console.log(`   POST /api/generate-recipe`);
+    console.log(`   GET  /api/health`);
+  });
+}
+
 export default app;
