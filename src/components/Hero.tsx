@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, IconButton, Fade, Container } from '@mui/material';
+import { Box, Typography, IconButton, Fade, Container, Button, useTheme } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 interface Slide {
   image: string;
@@ -43,6 +45,7 @@ const SLIDES: Slide[] = [
 
 const Hero: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
+  const theme = useTheme();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -63,8 +66,8 @@ const Hero: React.FC = () => {
     <Box
       sx={{
         width: '100%',
-        height: { xs: 'auto', md: '85vh' },
-        minHeight: '600px',
+        height: { xs: 'auto', md: '90vh' },
+        minHeight: '700px',
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
@@ -73,7 +76,7 @@ const Hero: React.FC = () => {
         backgroundImage: `url('/images/home/home.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        mb: 6,
+        mb: 0,
         py: 4,
         overflow: 'hidden',
         '&::before': {
@@ -83,7 +86,7 @@ const Hero: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
           zIndex: 1
         }
       }}
@@ -129,8 +132,9 @@ const Hero: React.FC = () => {
             aspectRatio: '16/9',
             borderRadius: { xs: 2, md: 4 },
             overflow: 'hidden',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+            boxShadow: '0 40px 100px rgba(0,0,0,0.6)',
             bgcolor: '#000',
+            mb: 6
           }}
         >
           {/* Slides */}
@@ -177,7 +181,7 @@ const Hero: React.FC = () => {
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%)',
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.7) 100%)',
               pointerEvents: 'none',
               zIndex: 2,
             }}
@@ -187,7 +191,7 @@ const Hero: React.FC = () => {
           <Box 
             sx={{ 
               position: 'absolute', 
-              bottom: {xs: 40, md: 60}, 
+              bottom: {xs: 30, md: 50}, 
               left: {xs: 20, md: 40}, 
               zIndex: 3, 
               color: 'white', 
@@ -203,13 +207,13 @@ const Hero: React.FC = () => {
                   sx={{ 
                     fontWeight: 700, 
                     mb: 1, 
-                    fontFamily: 'Cormorant Garamond',
-                    fontSize: { xs: '2rem', md: '3rem' }
+                    fontFamily: theme.typography.h1.fontFamily,
+                    fontSize: { xs: '1.8rem', md: '2.8rem' }
                   }}
                 >
                   {SLIDES[currentSlide].title}
                 </Typography>
-                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, fontSize: { xs: '0.9rem', md: '1.1rem' }, textTransform: 'none', letterSpacing: 'normal' }}>
                   {SLIDES[currentSlide].subtitle}
                 </Typography>
               </Box>
@@ -282,6 +286,33 @@ const Hero: React.FC = () => {
               />
             ))}
           </Box>
+        </Box>
+
+        {/* CTA Button */}
+        <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Button 
+            variant="contained" 
+            color="secondary" 
+            size="large"
+            component={RouterLink}
+            to="/app"
+            startIcon={<PlayArrowIcon />}
+            sx={{ 
+              py: 2, 
+              px: 6, 
+              borderRadius: '50px',
+              fontWeight: 700,
+              fontSize: '1.1rem',
+              boxShadow: `0 20px 40px ${theme.palette.secondary.main}55`,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: `0 25px 50px ${theme.palette.secondary.main}77`,
+              }
+            }}
+          >
+            Empezar a Crear
+          </Button>
         </Box>
       </Container>
     </Box>

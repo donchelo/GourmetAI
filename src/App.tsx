@@ -1,20 +1,23 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 import Layout from './components/Layout';
-import Hero from './components/Hero';
-import DishModule from './components/DishModule/DishModule';
+import LandingPage from './pages/LandingPage';
+import PlatformPage from './pages/PlatformPage';
 import { ThemeContextProvider } from './context/ThemeContext';
 import { ApiProvider } from './context/ApiContext';
 
 const AppContent: React.FC = () => {
   return (
-    <>
+    <Router>
       <CssBaseline />
       <Layout>
-        <Hero />
-        <DishModule />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/app" element={<PlatformPage />} />
+        </Routes>
       </Layout>
-    </>
+    </Router>
   );
 };
 

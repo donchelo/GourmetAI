@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Grid, Tab, Tabs, Paper, Alert, AlertTitle, Link } from '@mui/material';
+import { Box, Grid, Tab, Tabs, Paper, Alert, AlertTitle, Link, Container, alpha } from '@mui/material';
 import FromScratch from './FromScratch';
 import FromPhoto from './FromPhoto';
 import DishPreview from './DishPreview';
@@ -102,110 +102,95 @@ const DishModule: React.FC = () => {
     <Box>
       {!isApiKeySet && (
         <Alert 
-          severity="warning" 
+          severity="info" 
+          variant="outlined"
           sx={{ 
-            mb: 3, 
-            borderRadius: '12px',
+            mb: 4, 
+            borderRadius: '16px',
+            borderWidth: '2px',
+            bgcolor: (theme) => alpha(theme.palette.info.main, 0.05),
+            borderColor: (theme) => alpha(theme.palette.info.main, 0.2),
+            '& .MuiAlert-icon': { color: 'info.main' },
             '& .MuiAlert-message': { width: '100%' }
           }}
         >
-          <AlertTitle sx={{ fontWeight: 700 }}>API Key de Gemini no configurada</AlertTitle>
-          Para usar GourmetAI, necesitas ingresar tu API Key de Gemini en el campo de texto ubicado en la barra superior (navbar). 
-          Puedes obtener una llave gratuita en <Link href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</Link>.
+          <AlertTitle sx={{ fontWeight: 800, color: 'info.main', fontSize: '1.1rem' }}>Paso 1: Configura tu acceso</AlertTitle>
+          Para comenzar a diseñar, ingresa tu <strong>API Key de Gemini</strong> en el campo superior derecho. 
+          Si no tienes una, obtenla gratis en <Link href="https://aistudio.google.com/" target="_blank" rel="noopener" sx={{ fontWeight: 700, color: 'info.main' }}>Google AI Studio</Link>.
         </Alert>
       )}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-      <Grid item xs={12} md={6}>
-        <Paper elevation={0} sx={{ bgcolor: 'transparent' }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs 
-                value={tabValue} 
-                onChange={handleTabChange} 
-                aria-label="dish creation modes"
-                variant="fullWidth"
-                textColor="primary"
-                indicatorColor="primary"
-                sx={{
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    '& .MuiTab-root': {
-                        textTransform: 'uppercase',
-                        fontWeight: 700,
-                        letterSpacing: '0.1em',
-                        fontSize: '0.8rem',
-                        py: 2
-                    }
-                }}
-            >
-                <Tab label="Diseñar" />
-                <Tab label="Mejorar" />
-                <Tab label="Historial" />
-            </Tabs>
-            </Box>
 
-            <TabPanel value={tabValue} index={0}>
-                <FromScratch 
-                    parameters={parameters}
-                    onParameterChange={handleParameterChange}
-                    onGenerate={generateFromScratch}
-                    isGenerating={isGenerating}
-                />
-            </TabPanel>
-
-            <TabPanel value={tabValue} index={1}>
-                <FromPhoto 
-                    parameters={parameters}
-                    onParameterChange={handleParameterChange}
-                    onGenerate={generate}
-                    isGenerating={isGenerating}
-                />
-            </TabPanel>
-
-            <TabPanel value={tabValue} index={2}>
-                <History />
-            </TabPanel>
-        </Paper>
-      </Grid>
-
-      <Grid item xs={12} md={6}>
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            minHeight: { xs: '700px', md: 'calc(100vh - 120px)' },
-            maxHeight: { md: 'calc(100vh - 120px)' },
-            height: { md: 'auto' },
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            '&::-webkit-scrollbar': {
-              width: '10px',
-            },
-            '&::-webkit-scrollbar-track': {
-              bgcolor: 'background.default',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              bgcolor: 'action.disabled',
-              borderRadius: '5px',
-              '&:hover': {
-                bgcolor: 'action.disabledBackground',
-              },
-            },
-          }}
-        >
-          <DishPreview
-            images={generatedImages}
-            isLoading={isGenerating}
-            error={error}
-            parameters={lastParameters}
-            seed={lastSeed}
-            ingredients={ingredients}
-            recipe={recipe}
-            onGenerateRecipe={fetchRecipe}
-            isRecipeLoading={isRecipeGenerating}
-          />
+      {/* Sección de Parámetros */}
+      <Paper elevation={0} sx={{ bgcolor: 'transparent', mb: 6 }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange} 
+            aria-label="dish creation modes"
+            variant="fullWidth"
+            textColor="primary"
+            indicatorColor="primary"
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              '& .MuiTab-root': {
+                textTransform: 'uppercase',
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                fontSize: '0.8rem',
+                py: 2
+              }
+            }}
+          >
+            <Tab label="Diseñar" />
+            <Tab label="Fotografía" />
+            <Tab label="Historial" />
+          </Tabs>
         </Box>
-      </Grid>
-    </Grid>
+
+        <TabPanel value={tabValue} index={0}>
+          <FromScratch 
+            parameters={parameters}
+            onParameterChange={handleParameterChange}
+            onGenerate={generateFromScratch}
+            isGenerating={isGenerating}
+          />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={1}>
+          <FromPhoto 
+            parameters={parameters}
+            onParameterChange={handleParameterChange}
+            onGenerate={generate}
+            isGenerating={isGenerating}
+          />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={2}>
+          <History />
+        </TabPanel>
+      </Paper>
+
+      {/* Sección de Generaciones */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          mt: 4
+        }}
+      >
+        <DishPreview
+          images={generatedImages}
+          isLoading={isGenerating}
+          error={error}
+          parameters={lastParameters}
+          seed={lastSeed}
+          ingredients={ingredients}
+          recipe={recipe}
+          onGenerateRecipe={fetchRecipe}
+          isRecipeLoading={isRecipeGenerating}
+        />
+      </Box>
     </Box>
   );
 };

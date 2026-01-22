@@ -1,5 +1,6 @@
 import React, { useState, useEffect, ReactNode } from 'react';
-import { Box, Container, Typography, AppBar, Toolbar, IconButton, useTheme, alpha, Slide, useScrollTrigger } from '@mui/material';
+import { Box, Container, Typography, AppBar, Toolbar, IconButton, useTheme, alpha, Slide, useScrollTrigger, Button, TextField, InputAdornment } from '@mui/material';
+import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import KeyIcon from '@mui/icons-material/Key';
@@ -7,7 +8,6 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useColorMode } from '../context/ThemeContext';
 import { useApi } from '../context/ApiContext';
-import { TextField, InputAdornment } from '@mui/material';
 
 interface HideOnScrollProps {
   children: React.ReactElement;
@@ -30,11 +30,15 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const theme = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { toggleColorMode, mode } = useColorMode();
   const { apiKey, setApiKey } = useApi();
   const [scrolled, setScrolled] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [localApiKey, setLocalApiKey] = useState(apiKey);
+
+  const isPlatform = location.pathname === '/app';
 
   useEffect(() => {
     setLocalApiKey(apiKey);
@@ -74,18 +78,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <HideOnScroll>
         <AppBar 
           position="fixed" 
-          elevation={scrolled ? 1 : 0}
+          elevation={scrolled || isPlatform ? 1 : 0}
           sx={{ 
-            backgroundColor: scrolled ? alpha(theme.palette.background.paper, 0.9) : 'transparent',
-            backdropFilter: scrolled ? 'blur(10px)' : 'none',
-            color: scrolled ? 'text.primary' : (mode === 'dark' ? 'text.primary' : theme.palette.common.black), // Adjust text color based on bg
+            backgroundColor: (scrolled || isPlatform) ? alpha(theme.palette.background.paper, 0.9) : 'transparent',
+            backdropFilter: (scrolled || isPlatform) ? 'blur(10px)' : 'none',
+            color: (scrolled || isPlatform) ? 'text.primary' : (mode === 'dark' ? 'text.primary' : theme.palette.common.black),
             transition: 'all 0.3s ease',
-            borderBottom: scrolled ? `1px solid ${alpha(theme.palette.divider, 0.5)}` : 'none',
+            borderBottom: (scrolled || isPlatform) ? `1px solid ${alpha(theme.palette.divider, 0.5)}` : 'none',
           }}
         >
           <Toolbar sx={{ justifyContent: 'space-between', minHeight: { xs: 64, md: 80 } }}>
             {/* Logo / Brand */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box 
+              sx={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer' }}
+              onClick={() => navigate('/')}
+            >
                <Typography 
                 variant="h5" 
                 component="div" 
@@ -94,7 +101,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   fontWeight: 700,
                   letterSpacing: '-0.02em',
                   fontSize: { xs: '1.5rem', md: '1.8rem' },
-                  cursor: 'pointer',
                 }}
               >
                 VisualFeast
@@ -104,45 +110,62 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Navigation Actions */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <TextField
-                size="small"
-                type={showApiKey ? 'text' : 'password'}
-                placeholder="Gemini API Key"
-                value={localApiKey}
-                onChange={handleApiKeyChange}
-                onBlur={handleApiKeyBlur}
-                variant="outlined"
-                sx={{
-                  width: { xs: '150px', sm: '250px' },
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '20px',
-                    backgroundColor: alpha(theme.palette.background.paper, 0.1),
-                    color: scrolled ? 'text.primary' : (mode === 'dark' ? 'text.primary' : theme.palette.common.black),
-                    '& fieldset': {
-                      borderColor: alpha(scrolled ? theme.palette.text.primary : (mode === 'dark' ? theme.palette.text.primary : theme.palette.common.black), 0.2),
+              {isPlatform ? (
+                <TextField
+                  size="small"
+                  type={showApiKey ? 'text' : 'password'}
+                  placeholder="Gemini API Key"
+                  value={localApiKey}
+                  onChange={handleApiKeyChange}
+                  onBlur={handleApiKeyBlur}
+                  variant="outlined"
+                  sx={{
+                    width: { xs: '150px', sm: '250px' },
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '20px',
+                      backgroundColor: alpha(theme.palette.background.paper, 0.1),
+                      color: scrolled ? 'text.primary' : (mode === 'dark' ? 'text.primary' : theme.palette.common.black),
+                      '& fieldset': {
+                        borderColor: alpha(scrolled ? theme.palette.text.primary : (mode === 'dark' ? theme.palette.text.primary : theme.palette.common.black), 0.2),
+                      },
                     },
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <KeyIcon fontSize="small" sx={{ color: 'inherit', opacity: 0.7 }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={toggleShowApiKey}
-                        onMouseDown={(e) => e.preventDefault()}
-                        sx={{ color: 'inherit', opacity: 0.7 }}
-                      >
-                        {showApiKey ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <KeyIcon fontSize="small" sx={{ color: 'inherit', opacity: 0.7 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={toggleShowApiKey}
+                          onMouseDown={(e) => e.preventDefault()}
+                          sx={{ color: 'inherit', opacity: 0.7 }}
+                        >
+                          {showApiKey ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              ) : (
+                <Button 
+                  variant="contained" 
+                  color="secondary"
+                  component={RouterLink}
+                  to="/app"
+                  sx={{ 
+                    borderRadius: '20px', 
+                    px: 3, 
+                    fontWeight: 700,
+                    display: { xs: 'none', sm: 'inline-flex' }
+                  }}
+                >
+                  Entrar a la Plataforma
+                </Button>
+              )}
               <IconButton 
                 onClick={toggleColorMode} 
                 size="large"
@@ -169,14 +192,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         component="main" 
         sx={{ 
           flexGrow: 1, 
-          pt: { xs: 10, md: 12 }, // Padding top to account for fixed header
+          pt: { xs: '64px', md: '80px' }, // Espacio para el AppBar fijo
           display: 'flex', 
           flexDirection: 'column',
         }}
       >
-        <Container maxWidth="xl" sx={{ flexGrow: 1 }}>
-          {children}
-        </Container>
+        {children}
       </Box>
 
       {/* Footer */}
