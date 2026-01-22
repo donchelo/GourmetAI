@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Alert, Typography, Divider } from '@mui/material';
+import { Box, Alert, Typography, Divider, Grid } from '@mui/material';
 import ImageUploader from '../ImageUploader';
 import ParameterPanel from '../ParameterPanel';
 import { validateParameters } from '../../utils/validation';
@@ -15,6 +15,9 @@ interface FromPhotoProps {
 const FromPhoto: React.FC<FromPhotoProps> = ({ parameters, onParameterChange, onGenerate, isGenerating }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedPlate, setSelectedPlate] = useState<string | null>(null);
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<string | null>(null);
+  const [selectedCutlery, setSelectedCutlery] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
@@ -31,12 +34,15 @@ const FromPhoto: React.FC<FromPhotoProps> = ({ parameters, onParameterChange, on
     }
 
     try {
-      // Pasamos el plato físico en los parámetros si existe
-      const paramsWithPlate = { 
+      // Pasamos las fotos de referencia en los parámetros si existen
+      const paramsWithRefs = { 
         ...parameters, 
-        plateImage: selectedPlate || undefined 
+        plateImage: selectedPlate || undefined,
+        tableImage: selectedTable || undefined,
+        restaurantImage: selectedRestaurant || undefined,
+        cutleryImage: selectedCutlery || undefined
       };
-      await onGenerate(selectedImage, paramsWithPlate);
+      await onGenerate(selectedImage, paramsWithRefs);
     } catch (err) {
       console.error('Error en generación:', err);
     }
@@ -63,16 +69,54 @@ const FromPhoto: React.FC<FromPhotoProps> = ({ parameters, onParameterChange, on
 
       <Box>
         <Typography variant="overline" sx={{ mb: 1, display: 'block', opacity: 0.7 }}>
-          Paso 2: Plato para Emplatar (Opcional)
+          Paso 2: Referencias de Estilo (Opcional)
         </Typography>
-        <ImageUploader
-          onImageSelect={setSelectedPlate}
-          selectedImage={selectedPlate}
-          label="Foto del Plato Físico"
-        />
-        <Typography variant="caption" sx={{ mt: 1, display: 'block', opacity: 0.6, fontStyle: 'italic' }}>
-          * Si agregas una foto de un plato vacío, la IA intentará emplatar tu comida en él.
-        </Typography>
+        
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <ImageUploader
+              onImageSelect={setSelectedPlate}
+              selectedImage={selectedPlate}
+              label="Foto del Plato Físico"
+            />
+            <Typography variant="caption" sx={{ mt: 1, display: 'block', opacity: 0.6, fontStyle: 'italic' }}>
+              * La IA intentará emplatar tu comida en este plato.
+            </Typography>
+          </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <ImageUploader
+              onImageSelect={setSelectedTable}
+              selectedImage={selectedTable}
+              label="Foto de la Mesa"
+            />
+            <Typography variant="caption" sx={{ mt: 1, display: 'block', opacity: 0.6, fontStyle: 'italic' }}>
+              * Referencia para la superficie y textura de la mesa.
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <ImageUploader
+              onImageSelect={setSelectedRestaurant}
+              selectedImage={selectedRestaurant}
+              label="Foto del Restaurante"
+            />
+            <Typography variant="caption" sx={{ mt: 1, display: 'block', opacity: 0.6, fontStyle: 'italic' }}>
+              * Referencia para el ambiente y decoración de fondo.
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <ImageUploader
+              onImageSelect={setSelectedCutlery}
+              selectedImage={selectedCutlery}
+              label="Foto de Cubiertos"
+            />
+            <Typography variant="caption" sx={{ mt: 1, display: 'block', opacity: 0.6, fontStyle: 'italic' }}>
+              * Referencia para el estilo de los cubiertos (props).
+            </Typography>
+          </Grid>
+        </Grid>
       </Box>
       
       <Divider sx={{ my: 1, borderStyle: 'dashed', opacity: 0.5 }} />

@@ -25,6 +25,9 @@ export interface DishParameters {
   culinaryTags?: string[];
   ingredients?: string;
   plateImage?: string;
+  tableImage?: string;
+  restaurantImage?: string;
+  cutleryImage?: string;
 }
 
 export interface GenerationResult {

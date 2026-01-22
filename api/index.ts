@@ -81,6 +81,9 @@ interface GenerateImageRequest {
   prompt: string;
   image?: string;
   plateImage?: string;
+  tableImage?: string;
+  restaurantImage?: string;
+  cutleryImage?: string;
   aspectRatio?: string;
   imageSize?: string;
 }
@@ -140,9 +143,18 @@ app.post('/api/analyze-image', async (req: Request<{}, any, AnalyzeImageRequest>
   }
 });
 
-app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageRequest>, res: Response) => {
+  app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageRequest>, res: Response) => {
   try {
-    const { prompt, image, plateImage, aspectRatio, imageSize } = req.body;
+    const { 
+      prompt, 
+      image, 
+      plateImage, 
+      tableImage, 
+      restaurantImage, 
+      cutleryImage, 
+      aspectRatio, 
+      imageSize 
+    } = req.body;
     
     // Gemini 3 Pro requirement: Valid numeric aspect ratios only
     const validAspectRatios = ['1:1', '3:4', '4:3', '9:16', '16:9'];
@@ -177,11 +189,20 @@ app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageReques
       contents.push({ inlineData: { data, mimeType } });
     }
 
-    // Imagen secundaria (plato físico opcional)
-    if (plateImage) {
-      console.log('🍽️ Adding physical plate image to request');
-      const { data, mimeType } = parseBase64Image(plateImage);
-      contents.push({ inlineData: { data, mimeType } });
+    // Imágenes secundarias (referencias opcionales)
+    const refImages = [
+      { key: 'plateImage', data: plateImage, label: '🍽️ physical plate' },
+      { key: 'tableImage', data: tableImage, label: '🪵 table' },
+      { key: 'restaurantImage', data: restaurantImage, label: '🏠 restaurant' },
+      { key: 'cutleryImage', data: cutleryImage, label: '🍴 cutlery' }
+    ];
+
+    for (const ref of refImages) {
+      if (ref.data) {
+        console.log(`Adding ${ref.label} image to request`);
+        const { data, mimeType } = parseBase64Image(ref.data);
+        contents.push({ inlineData: { data, mimeType } });
+      }
     }
     
     const result = await model.generateContent({

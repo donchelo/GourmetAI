@@ -254,6 +254,9 @@ IMAGE SPECIFICATIONS:
 RESULT: A photorealistic image of culinary magazine quality. The food must look delicious, fresh, and perfectly lit.`;
   } else {
     const usePhysicalPlate = parameters.plateImage ? '\n- PHYSICAL PLATE: A photo of the physical plate has been provided. Use EXACTLY this plate for the final presentation.' : '';
+    const useTableRef = parameters.tableImage ? '\n- TABLE REFERENCE: A photo of a table has been provided. Use its surface, material, and texture as the background for the dish.' : '';
+    const useRestaurantRef = parameters.restaurantImage ? '\n- RESTAURANT REFERENCE: A photo of a restaurant has been provided. Use its atmosphere, lighting style, and background decor as inspiration for the environment.' : '';
+    const useCutleryRef = parameters.cutleryImage ? '\n- CUTLERY REFERENCE: A photo of cutlery has been provided. Use similar style and design for any cutlery shown in the final image.' : '';
     
     prompt = `Generate a professional gourmet food photograph based on this food image.
 
@@ -267,7 +270,7 @@ PHOTOGRAPHIC AND PRESENTATION IMPROVEMENT:
 - Transform the lighting to professional studio quality (soft side light, texture enhancement).
 - Improve sharpness and technical detail of the capture.
 - White balance and colorimetry must be perfect, highlighting natural freshness.
-- You can improve the plating and environment (plate, background, side decoration) to look like editorial or Michelin-star level photography.${usePhysicalPlate}
+- You can improve the plating and environment (plate, background, side decoration) to look like editorial or Michelin-star level photography.${usePhysicalPlate}${useTableRef}${useRestaurantRef}${useCutleryRef}
 
 IMAGE SPECIFICATIONS:
 - Style: ${(estiloPlato ? estiloMap[estiloPlato] : '') || 'elegant'}, ${intensidadText}
@@ -302,6 +305,9 @@ export const generateGourmetVariants = async (
       prompt,
       image: imageBase64,
       plateImage: parameters.plateImage,
+      tableImage: parameters.tableImage,
+      restaurantImage: parameters.restaurantImage,
+      cutleryImage: parameters.cutleryImage,
       aspectRatio: parameters.aspectRatio,
       imageSize: parameters.imageSize
     }, { headers });

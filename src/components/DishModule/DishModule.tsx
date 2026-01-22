@@ -73,7 +73,10 @@ const DishModule: React.FC = () => {
     dishCategory: [],
     cookingTechnique: [],
     culinaryTags: [],
-    plateImage: ''
+    plateImage: '',
+    tableImage: '',
+    restaurantImage: '',
+    cutleryImage: ''
   });
 
   const {
