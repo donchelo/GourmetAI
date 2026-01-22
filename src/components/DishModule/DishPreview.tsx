@@ -17,6 +17,7 @@ import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { DishParameters } from '../../types';
+import { useApi } from '../../context/ApiContext';
 
 interface DishPreviewProps {
   images: string[];
@@ -41,6 +42,7 @@ const DishPreview: React.FC<DishPreviewProps> = ({
   onGenerateRecipe,
   isRecipeLoading
 }) => {
+  const { isApiKeySet } = useApi();
   const [copied, setCopied] = useState<boolean>(false);
   const theme = useTheme();
 
@@ -143,14 +145,14 @@ const DishPreview: React.FC<DishPreviewProps> = ({
                 variant="outlined" 
                 startIcon={isRecipeLoading ? <CircularProgress size={20} /> : <RestaurantMenuIcon />}
                 onClick={onGenerateRecipe}
-                disabled={isRecipeLoading}
+                disabled={isRecipeLoading || !isApiKeySet}
                 sx={{ 
                     textTransform: 'uppercase', 
                     letterSpacing: '0.05em',
                     fontWeight: 600
                 }}
               >
-                  {isRecipeLoading ? 'Generando Receta...' : 'Generar Receta del Plato'}
+                  {isRecipeLoading ? 'Generando Receta...' : (!isApiKeySet ? 'Configura tu API Key para generar receta' : 'Generar Receta del Plato')}
               </Button>
           </Box>
       )}

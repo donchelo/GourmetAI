@@ -2,8 +2,10 @@ import { useState, useCallback } from 'react';
 import { analyzeImage, generateGourmetVariants, generateImageFromPrompt, generateRecipe } from '../services/geminiService';
 import { saveToHistory } from '../utils/historyService';
 import { DishParameters } from '../types';
+import { useApi } from '../context/ApiContext';
 
 const useImageGeneration = () => {
+  const { apiKey } = useApi();
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isRecipeGenerating, setIsRecipeGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,14 +24,15 @@ const useImageGeneration = () => {
 
     try {
       // Paso 1: Analizar imagen y detectar ingredientes
-      const detectedIngredients = await analyzeImage(imageBase64);
+      const detectedIngredients = await analyzeImage(imageBase64, apiKey);
       setIngredients(detectedIngredients);
 
       // Paso 2: Generar imagen gourmet (parameters incluye plateImage si se proporcionó)
       const variants = await generateGourmetVariants(
         imageBase64,
         parameters,
-        detectedIngredients
+        detectedIngredients,
+        apiKey
       );
 
       if (!variants || variants.length === 0) {
@@ -97,7 +100,7 @@ const useImageGeneration = () => {
       const ingredientsStr = ingredientsList.join(', ');
       setIngredients(ingredientsStr);
 
-      const variants = await generateImageFromPrompt(input, parameters);
+      const variants = await generateImageFromPrompt(input, parameters, apiKey);
 
       if (!variants || variants.length === 0) {
         throw new Error('No se generó la imagen. Por favor, intenta de nuevo.');
@@ -164,7 +167,7 @@ const useImageGeneration = () => {
           }
         }
         
-        const generatedRecipe = await generateRecipe(input, lastParameters, ingredients);
+        const generatedRecipe = await generateRecipe(input, lastParameters, ingredients, apiKey);
         
         if (generatedRecipe && generatedRecipe.trim().length > 0) {
           setRecipe(generatedRecipe);

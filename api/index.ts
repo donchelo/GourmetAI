@@ -26,7 +26,11 @@ const parseBase64Image = (imageString: string) => {
   return { data: base64Data, mimeType };
 };
 
-const getApiKey = () => process.env.REACT_APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+const getApiKey = (req: Request) => {
+  const headerKey = req.headers['x-gemini-key'];
+  if (headerKey && typeof headerKey === 'string') return headerKey;
+  return process.env.REACT_APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+};
 
 // === Seguridad ===
 app.use(helmet({
@@ -90,7 +94,7 @@ app.post('/api/analyze-image', async (req: Request<{}, any, AnalyzeImageRequest>
   try {
     const { image } = req.body;
     console.log('🔍 ANALYZE IMAGE - Using model: gemini-3-pro-image-preview (v1beta)');
-    const apiKey = getApiKey();
+    const apiKey = getApiKey(req);
 
     if (!apiKey) return res.status(500).json({ error: 'API Key de Gemini no configurada' });
     if (!image) return res.status(400).json({ error: 'Imagen es requerida' });
@@ -145,7 +149,7 @@ app.post('/api/generate-image', async (req: Request<{}, any, GenerateImageReques
     const finalAspectRatio = validAspectRatios.includes(aspectRatio || '') ? aspectRatio : "1:1";
     
     console.log(`🎨 GENERATE IMAGE - Using model: gemini-3-pro-image-preview (v1beta) [${finalAspectRatio}, ${imageSize || '1K'}]`);
-    const apiKey = getApiKey();
+    const apiKey = getApiKey(req);
 
     if (!apiKey) return res.status(500).json({ error: 'API Key de Gemini no configurada' });
     if (!prompt) return res.status(400).json({ error: 'Prompt es requerido' });
@@ -233,7 +237,7 @@ app.post('/api/generate-recipe', async (req: Request<{}, any, GenerateRecipeRequ
   try {
     const { prompt } = req.body;
     console.log('📝 GENERATE RECIPE - Using model: gemini-3-pro-image-preview (v1beta)');
-    const apiKey = getApiKey();
+    const apiKey = getApiKey(req);
 
     if (!apiKey) return res.status(500).json({ error: 'API Key de Gemini no configurada' });
     if (!prompt) return res.status(400).json({ error: 'Prompt es requerido' });
@@ -255,14 +259,14 @@ app.post('/api/generate-recipe', async (req: Request<{}, any, GenerateRecipeRequ
 });
 
 app.get('/api/health', (req: Request, res: Response) => {
-  const apiKey = getApiKey();
+  const apiKey = getApiKey(req);
   res.json({ 
     status: 'ok',
-    version: '1.0.5-gemini3-only',
+    version: '1.0.6-manual-key',
     environment: process.env.NODE_ENV || 'not-set',
     services: { 
       gemini: !!apiKey,
-      apiKeySource: apiKey ? (process.env.GEMINI_API_KEY ? 'GEMINI_API_KEY' : 'REACT_APP_GEMINI_API_KEY') : 'none'
+      apiKeySource: req.headers['x-gemini-key'] ? 'header' : (apiKey ? (process.env.GEMINI_API_KEY ? 'GEMINI_API_KEY' : 'REACT_APP_GEMINI_API_KEY') : 'none')
     } 
   });
 });

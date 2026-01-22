@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Hero from './components/Hero';
 import DishModule from './components/DishModule/DishModule';
 import { ThemeContextProvider } from './context/ThemeContext';
+import { ApiProvider } from './context/ApiContext';
 
 const AppContent: React.FC = () => {
   return (
@@ -20,7 +21,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ThemeContextProvider>
-      <AppContent />
+      <ApiProvider>
+        <AppContent />
+      </ApiProvider>
     </ThemeContextProvider>
   );
 };

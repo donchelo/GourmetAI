@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Box, Grid, Tab, Tabs, Paper } from '@mui/material';
+import { Box, Grid, Tab, Tabs, Paper, Alert, AlertTitle, Link } from '@mui/material';
 import FromScratch from './FromScratch';
 import FromPhoto from './FromPhoto';
 import DishPreview from './DishPreview';
 import History from '../History';
 import useImageGeneration from '../../hooks/useImageGeneration';
+import { useApi } from '../../context/ApiContext';
 import { 
   INTENSIDAD_GOURMET_DEFAULT, 
   ESTILOS_PLATO, 
@@ -50,6 +51,7 @@ const TabPanel: React.FC<TabPanelProps> = (props) => {
 
 const DishModule: React.FC = () => {
   const [tabValue, setTabValue] = useState<number>(0);
+  const { isApiKeySet } = useApi();
   
   const [parameters, setParameters] = useState<DishParameters>({
     intensidadGourmet: INTENSIDAD_GOURMET_DEFAULT,
@@ -97,7 +99,22 @@ const DishModule: React.FC = () => {
   };
 
   return (
-    <Grid container spacing={3} sx={{ mb: 4 }}>
+    <Box>
+      {!isApiKeySet && (
+        <Alert 
+          severity="warning" 
+          sx={{ 
+            mb: 3, 
+            borderRadius: '12px',
+            '& .MuiAlert-message': { width: '100%' }
+          }}
+        >
+          <AlertTitle sx={{ fontWeight: 700 }}>API Key de Gemini no configurada</AlertTitle>
+          Para usar GourmetAI, necesitas ingresar tu API Key de Gemini en el campo de texto ubicado en la barra superior (navbar). 
+          Puedes obtener una llave gratuita en <Link href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</Link>.
+        </Alert>
+      )}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
       <Grid item xs={12} md={6}>
         <Paper elevation={0} sx={{ bgcolor: 'transparent' }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -189,6 +206,7 @@ const DishModule: React.FC = () => {
         </Box>
       </Grid>
     </Grid>
+    </Box>
   );
 };
 

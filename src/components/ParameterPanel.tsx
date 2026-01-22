@@ -19,6 +19,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CasinoIcon from '@mui/icons-material/Casino';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import { useApi } from '../context/ApiContext';
 import {
   ESTILOS_PLATO,
   ILUMINACIONES,
@@ -50,6 +51,7 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({
   hideHeaderControls = false 
 }) => {
   const theme = useTheme();
+  const { isApiKeySet } = useApi();
   
   const {
     intensidadGourmet,
@@ -322,7 +324,7 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({
         fullWidth
         size="large"
         onClick={onGenerate}
-        disabled={isGenerating}
+        disabled={isGenerating || !isApiKeySet}
         sx={{ 
           mt: 4, 
           py: 2,
@@ -338,7 +340,7 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({
           },
         }}
       >
-        {isGenerating ? 'PROCESANDO...' : 'GENERAR IMAGEN'}
+        {isGenerating ? 'PROCESANDO...' : (!isApiKeySet ? 'CONFIGURA TU API KEY' : 'GENERAR IMAGEN')}
       </Button>
     </Paper>
   );

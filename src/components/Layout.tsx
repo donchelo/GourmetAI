@@ -2,7 +2,12 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import { Box, Container, Typography, AppBar, Toolbar, IconButton, useTheme, alpha, Slide, useScrollTrigger } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import KeyIcon from '@mui/icons-material/Key';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useColorMode } from '../context/ThemeContext';
+import { useApi } from '../context/ApiContext';
+import { TextField, InputAdornment } from '@mui/material';
 
 interface HideOnScrollProps {
   children: React.ReactElement;
@@ -26,7 +31,14 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const theme = useTheme();
   const { toggleColorMode, mode } = useColorMode();
+  const { apiKey, setApiKey } = useApi();
   const [scrolled, setScrolled] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [localApiKey, setLocalApiKey] = useState(apiKey);
+
+  useEffect(() => {
+    setLocalApiKey(apiKey);
+  }, [apiKey]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +47,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalApiKey(e.target.value);
+  };
+
+  const handleApiKeyBlur = () => {
+    setApiKey(localApiKey);
+  };
+
+  const toggleShowApiKey = () => {
+    setShowApiKey(!showApiKey);
+  };
 
   return (
     <Box 
@@ -54,7 +78,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           sx={{ 
             backgroundColor: scrolled ? alpha(theme.palette.background.paper, 0.9) : 'transparent',
             backdropFilter: scrolled ? 'blur(10px)' : 'none',
-            color: scrolled ? 'text.primary' : (mode === 'dark' ? 'text.primary' : 'black'), // Adjust text color based on bg
+            color: scrolled ? 'text.primary' : (mode === 'dark' ? 'text.primary' : theme.palette.common.black), // Adjust text color based on bg
             transition: 'all 0.3s ease',
             borderBottom: scrolled ? `1px solid ${alpha(theme.palette.divider, 0.5)}` : 'none',
           }}
@@ -80,6 +104,45 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Navigation Actions */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <TextField
+                size="small"
+                type={showApiKey ? 'text' : 'password'}
+                placeholder="Gemini API Key"
+                value={localApiKey}
+                onChange={handleApiKeyChange}
+                onBlur={handleApiKeyBlur}
+                variant="outlined"
+                sx={{
+                  width: { xs: '150px', sm: '250px' },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '20px',
+                    backgroundColor: alpha(theme.palette.background.paper, 0.1),
+                    color: scrolled ? 'text.primary' : (mode === 'dark' ? 'text.primary' : theme.palette.common.black),
+                    '& fieldset': {
+                      borderColor: alpha(scrolled ? theme.palette.text.primary : (mode === 'dark' ? theme.palette.text.primary : theme.palette.common.black), 0.2),
+                    },
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <KeyIcon fontSize="small" sx={{ color: 'inherit', opacity: 0.7 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={toggleShowApiKey}
+                        onMouseDown={(e) => e.preventDefault()}
+                        sx={{ color: 'inherit', opacity: 0.7 }}
+                      >
+                        {showApiKey ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
               <IconButton 
                 onClick={toggleColorMode} 
                 size="large"

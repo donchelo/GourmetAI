@@ -13,12 +13,16 @@ const API_BASE_URL = getApiBaseUrl();
 /**
  * Analiza una imagen y detecta ingredientes usando el backend
  * @param {string} imageBase64 - Imagen en base64
+ * @param {string} apiKey - API Key de Gemini (opcional, enviada en headers)
  * @returns {Promise<string>} - Lista de ingredientes detectados
  */
-export const analyzeImage = async (imageBase64: string): Promise<string> => {
+export const analyzeImage = async (imageBase64: string, apiKey?: string): Promise<string> => {
   try {
     const url = `${API_BASE_URL}/api/analyze-image`;
-    const response = await axios.post(url, { image: imageBase64 });
+    const headers: Record<string, string> = {};
+    if (apiKey) headers['x-gemini-key'] = apiKey;
+    
+    const response = await axios.post(url, { image: imageBase64 }, { headers });
     
     if (response.data && response.data.success) {
       return response.data.ingredients;
@@ -282,10 +286,17 @@ RESULT: International magazine level food photography (like Michelin Guide or Bo
 /**
  * Genera variantes gourmet a través del backend
  */
-export const generateGourmetVariants = async (imageBase64: string, parameters: DishParameters, ingredients: string): Promise<string[]> => {
+export const generateGourmetVariants = async (
+  imageBase64: string, 
+  parameters: DishParameters, 
+  ingredients: string,
+  apiKey?: string
+): Promise<string[]> => {
   try {
     const prompt = buildPrompt(parameters, ingredients, false);
     const url = `${API_BASE_URL}/api/generate-image`;
+    const headers: Record<string, string> = {};
+    if (apiKey) headers['x-gemini-key'] = apiKey;
     
     const response = await axios.post(url, {
       prompt,
@@ -293,7 +304,7 @@ export const generateGourmetVariants = async (imageBase64: string, parameters: D
       plateImage: parameters.plateImage,
       aspectRatio: parameters.aspectRatio,
       imageSize: parameters.imageSize
-    });
+    }, { headers });
     
     if (response.data && response.data.success) {
       return [response.data.image];
@@ -313,16 +324,22 @@ export const generateGourmetVariants = async (imageBase64: string, parameters: D
 /**
  * Genera imagen desde cero a través del backend
  */
-export const generateImageFromPrompt = async (input: string, parameters: DishParameters): Promise<string[]> => {
+export const generateImageFromPrompt = async (
+  input: string, 
+  parameters: DishParameters,
+  apiKey?: string
+): Promise<string[]> => {
   try {
     const prompt = buildPrompt(parameters, input, true);
     const url = `${API_BASE_URL}/api/generate-image`;
+    const headers: Record<string, string> = {};
+    if (apiKey) headers['x-gemini-key'] = apiKey;
     
     const response = await axios.post(url, { 
       prompt,
       aspectRatio: parameters.aspectRatio,
       imageSize: parameters.imageSize
-    });
+    }, { headers });
     
     if (response.data && response.data.success) {
       return [response.data.image];
@@ -344,9 +361,15 @@ export const generateImageFromPrompt = async (input: string, parameters: DishPar
  * @param {string} input - Descripción o idea principal del plato
  * @param {DishParameters} parameters - TODOS los parámetros usados para generar la imagen
  * @param {string} ingredientsString - Ingredientes detectados o ingresados (opcional)
+ * @param {string} apiKey - API Key de Gemini (opcional, enviada en headers)
  * @returns {Promise<string>} - Receta generada en formato Markdown
  */
-export const generateRecipe = async (input: string, parameters: DishParameters, ingredientsString: string = ''): Promise<string> => {
+export const generateRecipe = async (
+  input: string, 
+  parameters: DishParameters, 
+  ingredientsString: string = '',
+  apiKey?: string
+): Promise<string> => {
     try {
         const {
             cuisineType,
@@ -463,10 +486,12 @@ Un tip práctico y breve relacionado con la técnica de cocción, los ingredient
 Mantén un tono profesional, inspirador pero accesible. La receta debe ser clara y fácil de seguir para cualquier cocinero casero.`;
 
         const url = `${API_BASE_URL}/api/generate-recipe`;
+        const headers: Record<string, string> = {};
+        if (apiKey) headers['x-gemini-key'] = apiKey;
 
         const response = await axios.post(url, {
             prompt: prompt
-        });
+        }, { headers });
 
         if (response.data && response.data.success) {
             return response.data.recipe;
