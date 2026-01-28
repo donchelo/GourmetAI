@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Grid, Tab, Tabs, Paper, Alert, AlertTitle, Link, Container, alpha } from '@mui/material';
+import { Box, Tab, Tabs, Paper, Alert, AlertTitle, Link, alpha } from '@mui/material';
 import FromScratch from './FromScratch';
 import FromPhoto from './FromPhoto';
 import DishPreview from './DishPreview';

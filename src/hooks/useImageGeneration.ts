@@ -63,7 +63,7 @@ const useImageGeneration = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, []);
+  }, [apiKey]);
 
   const generateFromScratch = useCallback(async (ingredientsList: string[], idea: string, parameters: DishParameters) => {
     setIsGenerating(true);
@@ -131,7 +131,7 @@ const useImageGeneration = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, []);
+  }, [apiKey]);
 
   const fetchRecipe = useCallback(async () => {
       if (!lastParameters || !generatedImages.length) {
@@ -182,7 +182,7 @@ const useImageGeneration = () => {
       } finally {
           setIsRecipeGenerating(false);
       }
-  }, [lastParameters, generatedImages, ingredients, lastIdea]);
+  }, [lastParameters, generatedImages, ingredients, lastIdea, apiKey]);
 
   const reset = useCallback(() => {
     setGeneratedImages([]);
